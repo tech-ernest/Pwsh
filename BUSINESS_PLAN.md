@@ -1,110 +1,111 @@
-# Business Plan: Paid PowerShell Admin Tools for Microsoft 365 / Intune Admins
+# Business Plan: Script-Assisted Reselling (eBay + Vinted)
 
-**Owner profile:** Full-time employed (8–4), 5–10 hrs/week during setup, <£100/month budget, IT/scripting/sysadmin background. Wants low-effort, automatable income of £200–2,000/month within 12 months. Light async support only, no craft/Etsy business.
+**Owner profile:** Full-time employed (8–4), 5–10 hrs/week, £500–1,000 working capital for stock, IT/scripting background, knows fitness and laser/maker gear. Happy to pack and post; sells direct to buyers. Goal: £200–2,000/month profit within 12 months.
+
+*(Previous iterations — laser-cut design files, paid admin tools — are in git history. This plan supersedes them.)*
 
 ---
 
-## 1. The Idea
+## 1. The Model
 
-Build small, polished, **paid PowerShell tools that solve painful recurring problems for Microsoft 365 / Intune / Entra ID administrators**, sold as instant digital downloads with licence keys. Marketing runs on autopilot: free scripts on GitHub + PowerShell Gallery and SEO blog posts that rank for the exact tasks admins google at work.
+Buy underpriced items online, resell them properly on eBay (and Vinted where it fits). The classic flipping business — but with two edges most resellers don't have:
 
-You are the target customer. You already know which tasks make admins swear, which is the hardest part of any product business solved for free.
+1. **Automated sourcing.** Scripts watch the market 24/7 and ping your phone when something mispriced appears. Everyone else refreshes eBay manually at lunch; your bots do it every 10 minutes while you're at work. Sourcing is 80% of this game, and it's the part that automates best.
+2. **Niche knowledge.** You know fitness gear and laser/maker equipment. Knowing that a listing titled "garmin watch spares repairs" just needs a £12 strap, or that a "laser engraver untested" is a £300 machine missing a £20 lens, is exactly the information gap flipping profits live in.
 
-### Why this wins for you specifically
+### Why this fits your constraints
 
-| Requirement | How this fits |
+| Requirement | How it fits |
 |---|---|
-| Low effort / automated | Digital delivery + licence keys are fully automated (Lemon Squeezy/Gumroad). Marketing funnel (SEO posts + GitHub) works while you sleep. |
-| <£100/mo budget | Domain ~£10/year. Blog on Cloudflare Pages = £0. Store = £0 fixed + ~5–10% per sale. |
-| 5–10 hrs/week | First product = 4–6 weeks of evenings writing PowerShell you already know how to write. Steady state = 2–4 hrs/week. |
-| B2B pricing reaches the goal | £39–79 per tool, **expensed on a company card without approval**. £500/mo = ~10 sales/month. Compare: an Etsy shop needs ~150 sales for the same money. |
-| Light async support | Support = email about install/licence issues. No calls, no personal brand required (a product brand name is fine). |
-| Skill fit | It's literally your day-job skill set. Every tool you build also makes you better at your job. |
-
-### Why the other three directions lose (for now)
-
-- **Automated content + affiliate/ads:** post-2024 Google actively demotes AI-generated niche sites; 12+ months to meaningful income with high platform risk. Content is used *inside* this plan as marketing, where it doesn't need to earn money directly.
-- **Reselling/arbitrage with automation:** scripts can find deals, but buying, storing, listing and shipping is a second job, not a low-effort business.
-- **Fitness digital products:** selling to consumers needs an audience/personal brand; you wanted light-touch and low visibility. Park it — revisit only if you later want a content side-project.
+| Works around 8–4 | Bots watch listings during the day; you review alerts and click buy from your desk/phone. Packing is a batched evening task. |
+| £500–1,000 capital | Ideal range. Spread across 15–30 items at £15–50 each — enough to learn fast, no single mistake hurts. |
+| 5–10 hrs/week | ~2 hrs sourcing/buying (mostly reacting to alerts), ~2–3 hrs listing and packing, at 10–25 flips/month. |
+| Light async contact | Buyer messages are async; templates handle most. No calls, no brand-building. |
+| Scripting skills | eBay's developer APIs are free. Sourcing scanners, sold-price comps, and relist automation are weekend PowerShell projects. |
+| "I can add more money" | Capital compounds: profits recycle into stock. £750 at ~40% net margin turned ~1.5×/month grows fast if you keep reinvesting. |
 
 ---
 
-## 2. What to Build (product line)
+## 2. What to Flip
 
-Pick pains that are: recurring, hated, and ignored or half-solved by Microsoft. Strong candidates, roughly in order:
+**Rule: small, testable, brand-name items with liquid demand and a price you can verify from sold listings.** Your two niches both qualify:
 
-1. **M365 Tenant Report** — one command produces a polished HTML report: licences and cost waste, MFA/CA coverage, stale accounts, mailbox sizes, admin roles, shared mailbox audit. *Buyer: every MSP tech and IT manager who needs to show something to the boss/client.*
-2. **Employee Offboarding Tool** — disable account, revoke sessions, convert mailbox to shared, set forwarding/OOF, remove licences, remove from groups, transfer OneDrive, output an audit report. One of the most-googled admin tasks; getting it wrong has consequences, which is exactly when people pay.
-3. **Intune Documentation & Backup** — export all Intune policies/profiles/apps to readable HTML/Markdown + JSON backup, with drift comparison between two exports. Intune admins complain about this constantly.
-4. **Entra/AD Hygiene Toolkit** — stale devices/users/groups cleanup with report-first safety mode.
+- **Fitness tech & gear:** Garmin/Polar/Suunto watches, heart-rate straps, smart scales, Concept2 accessories, quality brands (Eleiko, Rogue) accessories. High brand loyalty, constant demand, small parcels, and "untested/spares" listings are routinely fine or trivially fixable.
+- **Laser/maker equipment:** used engraver parts and accessories (lenses, modules, rotary attachments, air assists), 3D-printer parts, brand-name hand tools. You can test, describe accurately, and photograph competently — which instantly beats the seller you bought from.
+- **General "badly listed" plays (any category you can verify):** misspelled titles ("Gramin", "Dyston"), wrong categories, auctions ending 3am Tuesday, terrible photos. These sell under market *because buyers can't find them* — your bots can.
 
-Rules of thumb:
-- **Report-generating tools sell best** — output the buyer can forward to their boss justifies the price instantly.
-- Free scripts exist for pieces of all of these. You're not selling the script; you're selling *polished, maintained, tested, one-command, with support* — that's what a business happily pays £49 to skip a day of glue work for.
-- Each tool must be demoable: screenshots of the HTML report do the selling.
+**Avoid:** clothing at the start (returns, fakes, low value density — Vinted later maybe), anything you can't authenticate (trainers, designer goods), large/heavy items (couriers eat the margin), untested items you don't know how to test.
 
-**Pricing:** £39–£79 per tool (one-time, current major version), MSP/multi-tenant licence at 2–3×, later a £129 all-tools bundle. Don't price under £29 — B2B buyers read cheap as untrustworthy.
+**Target per flip:** buy £15–50, sell £30–100, **net £10–30 profit after fees and postage**, minimum 30% net margin or you pass. Volume goal by month 4–6: 20–30 flips/month = £250–600/month profit.
 
 ---
 
-## 3. The Automated Marketing Funnel
+## 3. The Automation Layer (your moat)
 
-This is the part that makes it low-effort long-term. Three layers, all free:
+Build in this order — each is a small standalone script, and this repo is where they live:
 
-1. **GitHub (free tier as bait):** publish genuinely useful free scripts — simplified single-purpose versions of your paid tools. README links to the pro version. Your existing Pwsh repo becomes the public portfolio.
-2. **PowerShell Gallery:** publish the free modules there too — admins search it directly, zero competition for attention compared to Google.
-3. **SEO blog (Cloudflare Pages + any static generator):** one post per week targeting long-tail queries admins type at work: "export intune configuration to html", "office 365 offboarding checklist script", "find unused m365 licenses powershell". Each post genuinely answers the question with a free script, then mentions the tool that does it all in one command. These queries have low competition and *commercial intent baked in*.
+1. **Sold-comp checker** (week 1): given a search term, pull recent eBay sold prices → median, range, sell-through. This is your buy/no-buy decision tool. Never buy without comps.
+2. **Deal scanner** (weeks 2–3): scheduled job hitting the eBay Browse API every 10–15 min for your saved searches (niche keywords + "spares repairs", "untested", "job lot") with price-below-threshold filters → pushes alerts to Telegram/ntfy with a one-click buy link. First mover on an underpriced Buy-It-Now wins; bots are first movers.
+3. **Misspelling generator** (week 3): feed it brand names, it expands to typo variants and searches those too. Decades-old trick, still works, because typos never stop.
+4. **Ending-soon auction watcher** (week 4): auctions in your niches ending at low-traffic hours with low bids → alert 15 min before end.
+5. **Listing helper** (later): template-based listing creation, and 30-day relist/reprice sweep for stale stock.
 
-Optional accelerant: answer relevant questions on r/sysadmin, r/Intune, r/PowerShell (helpful first, link only when directly relevant). 20 min/week, and one good answer can outrank everything else you do for months.
+Total tooling cost: £0. eBay developer account is free; Telegram/ntfy push is free.
 
 ---
 
 ## 4. Roadmap
 
-### Month 1–2: First product (8 hrs/week)
-- Week 1: pick product #1 (recommendation: **M365 Tenant Report** — broadest audience). Register a brand-y domain. Set up Lemon Squeezy (handles VAT/EU tax for you — this matters, don't use PayPal links).
-- Weeks 2–6: build it. Graph API via `Microsoft.Graph` PowerShell SDK; ship as a signed module + simple installer + PDF quickstart. Test against a free M365 developer tenant.
-- Weeks 7–8: landing page with report screenshots, buy button, FAQ. Publish the free lite version to GitHub + PSGallery. Write 3 launch blog posts.
+### Weeks 1–2: Sell before you buy
+- List 10–20 things you already own and don't need (everyone has £200+ of this). Zero-risk practice at photos, pricing, packing, buyer messages — and it builds the feedback score you need before buyers trust you with £80 items. Also builds a packaging stash.
+- Register as an **eBay business seller** from the outset (reselling for profit = business, and eBay now reports seller data to HMRC — do it clean from day one).
+- Build script #1 (sold-comp checker).
 
-### Month 3–4: Distribution (5 hrs/week)
-- 1 SEO blog post/week (each with a working free script — that's what earns links and rankings).
-- Post the free tool where admins gather; note which posts drive traffic.
-- Expect first sales here. Single-digit months are normal; every sale at this stage validates pricing, not volume.
+### Weeks 3–6: First stock cycle (deploy ~£300 of the £750)
+- Deal scanner live. Buy 10–15 items, strictly within your niches, strictly comp-verified, 30%+ margin rule.
+- Expect 2–3 duds — that's tuition, and it's why the first cycle is only £300.
+- Photograph well (daylight + plain background beats 90% of eBay), describe honestly including flaws (honest flaw descriptions *reduce* returns).
 
-### Month 5–8: Second product + compounding
-- Build product #2 (Offboarding Tool) using everything learned.
-- Cross-sell: every tool's report footer and README links the others. Buyers of one admin tool are the best prospects for the next.
-- Keep the weekly post cadence; old posts start ranking around month 4–6 — SEO compounds exactly when you'd otherwise plateau.
+### Months 2–3: Full deployment
+- All capital working. Refine scanner filters based on what actually sold fast vs sat.
+- Batch operations: list Sundays, pack Tue/Thu evenings, drop parcels on the way to work.
+- Track everything in a simple ledger (spreadsheet or script): buy price, fees, postage, net profit, days-to-sell per item. Kill any category with slow turns.
 
-### Month 9–12: Bundle + steady state
-- Bundle at £129, MSP licences, maybe a "new major version" paid upgrade path.
-- Steady state effort: ~2–4 hrs/week (one post OR one feature + support emails).
-- Target: £300–1,000/mo. £1k/mo ≈ 20 sales/month across 2–3 products and a bundle — a realistic figure for a two-product catalogue with 12 months of SEO behind it.
+### Months 4–12: Compound
+- Reinvest all profit until stock pot hits £2,000–3,000 — at ~40% net margin and monthly-ish turns, that's the £500–1,000/month profit zone.
+- Scale what the ledger says works; add adjacent niches with the same playbook.
+- If volume becomes the bottleneck (packing >3 hrs/week), *then* consider FBA/consolidation — not before.
 
 ---
 
-## 5. Costs
+## 5. Money
 
-| Item | Cost |
+**Realistic trajectory (net profit, after fees/postage/duds):**
+
+| Period | Expectation |
 |---|---|
-| Domain | ~£10/year |
-| Blog/landing hosting (Cloudflare Pages) | £0 |
-| Lemon Squeezy / Gumroad | £0 fixed + ~5–10% per sale |
-| M365 developer tenant (testing) | £0 |
-| Code-signing cert (optional, later — buys trust) | ~£50–80/yr when revenue justifies it |
-| **Total fixed** | **≈ £1–2/month** |
+| Month 1 | ~£50–100 (own-stuff sales; learning) |
+| Months 2–3 | £100–250/mo |
+| Months 4–6 | £250–500/mo |
+| Months 7–12 | £400–800/mo, capital-dependent |
+
+**Cost structure per sale:** eBay business fees ~13% + ~£0.30, postage £2–4 (Royal Mail 48 via eBay labels), packaging pennies if you hoard boxes. Vinted (0% seller fees) for anything that fits its categories.
+
+**Fixed costs: ~£0/month.** Capital is tied up in stock, not spent.
 
 ---
 
-## 6. Risks & Mitigations
+## 6. Rules, Risks & Compliance
 
 | Risk | Mitigation |
 |---|---|
-| Microsoft ships the feature natively | Pick pains MS has ignored for years (reporting polish, offboarding orchestration, Intune docs). Multi-product catalogue means no single kill-shot. |
-| "Why pay? Free scripts exist" | You're selling the assembled, maintained, supported whole. Frame price against the buyer's day rate: £49 vs a day of duct tape. Some people will never pay — they were never customers. |
-| Graph API / module changes break tools | Recurring maintenance is real (~monthly check). It's also your moat — free scripts rot, your product doesn't. |
-| Slow start demoralises | Like any organic-traffic business, months 1–3 are quiet. Early KPI = posts published and free-tool downloads, not revenue. |
-| Day-job conflict | Build on your own kit, own time, own tenant. Check your employment contract's IP/side-work clause **before launch** (UK contracts commonly claim work "related to" your role). |
+| Buyer scams / "item not as described" | Photograph serials before shipping, tracked postage always, described-flaws honesty. Budget ~5% of revenue for returns/losses — it's a cost of business, not a crisis. |
+| Dud purchases | £300 first cycle, comp-check discipline, niches you can actually test. |
+| Stale stock (cash trapped) | 30-day reprice rule, ledger tracks days-to-sell, take the small loss and recycle capital — dead stock is worse than a 10% loss. |
+| Fakes | Stick to categories you can authenticate; avoid trainers/designer entirely. |
+| Time creep | Hard cap: if it exceeds ~10 hrs/week, raise minimum profit-per-flip (fewer, better flips) rather than working more. |
+| **HMRC** | Register as self-employed once past £1,000/year turnover (you will be, quickly). File self-assessment. eBay auto-reports to HMRC — being registered *before* they notice is the cheap option. Keep the ledger; profits are what's taxed. |
+| Platform dependence | Feedback score is the asset; protect it. Vinted/FB Marketplace as secondary rails. |
 
 ---
 
@@ -112,10 +113,10 @@ Optional accelerant: answer relevant questions on r/sysadmin, r/Intune, r/PowerS
 
 | When | Target |
 |---|---|
-| Month 2 | Product #1 shipped, store live, free lite version on GitHub + PSGallery |
-| Month 3 | 6+ blog posts live, first sale |
-| Month 6 | Product #2 shipped, £100–200/mo |
-| Month 9 | Bundle live, 30+ posts ranking, £200–400/mo |
-| Month 12 | £300–1,000/mo at 2–4 hrs/week maintenance |
+| Week 2 | Business account live, 10+ own items listed, comp-checker script working |
+| Week 6 | Deal scanner alerting to phone, first 10 flips bought |
+| Month 3 | Full £750 deployed, ledger running, £150+/mo profit |
+| Month 6 | £250–500/mo, stock pot grown past £1,500 via reinvestment |
+| Month 12 | £400–800/mo at ≤10 hrs/week, sourcing ~90% automated |
 
-**Upfront cash: ~£10.** Everything else is evenings — spent writing PowerShell, which you'd half-enjoy anyway.
+**First action:** list something you already own tonight. The scripts make this business good, but the first sale makes it real.
