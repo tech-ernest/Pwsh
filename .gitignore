@@ -1,0 +1,9 @@
+# Local config with API keys — never commit
+config/settings.json
+
+# Runtime state and business records
+data/*
+!data/.gitkeep
+
+# Scratch
+*.log

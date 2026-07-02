@@ -1,0 +1,44 @@
+{
+  "ebay": {
+    "clientId": "",
+    "clientSecret": "",
+    "marketplaceId": "EBAY_GB",
+    "site": "www.ebay.co.uk"
+  },
+  "fees": {
+    "feeRate": 0.13,
+    "feeFixed": 0.3,
+    "defaultPostage": 3.35
+  },
+  "rules": {
+    "minMarginPct": 30
+  },
+  "alerts": {
+    "ntfyTopic": "",
+    "telegramBotToken": "",
+    "telegramChatId": ""
+  },
+  "searches": [
+    {
+      "name": "RTX 3060 under market",
+      "query": "rtx 3060",
+      "maxPrice": 180,
+      "cexQuery": "rtx 3060",
+      "buyingOptions": "FIXED_PRICE"
+    },
+    {
+      "name": "Garmin faulty/untested",
+      "query": "garmin watch (faulty, spares, repairs, untested)",
+      "maxPrice": 40,
+      "cexQuery": "",
+      "buyingOptions": "FIXED_PRICE"
+    },
+    {
+      "name": "Gaming PC part-out candidates",
+      "query": "gaming pc (no display, faulty, spares)",
+      "maxPrice": 120,
+      "cexQuery": "",
+      "buyingOptions": "FIXED_PRICE|AUCTION"
+    }
+  ]
+}
