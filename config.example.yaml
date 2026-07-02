@@ -1,0 +1,59 @@
+# TrendPilot configuration.
+# Copy to config.yaml, adjust, and run:  trendpilot run --config config.yaml
+# Secrets are NEVER read from this file — set environment variables:
+#   T212_API_KEY         Trading 212 API key (Settings -> API in the T212 app)
+#   TELEGRAM_BOT_TOKEN   optional, for Telegram signal delivery
+#   TELEGRAM_CHAT_ID     optional, for Telegram signal delivery
+
+# signal  = compute + notify only (no orders ever sent)
+# execute = place orders on your T212 Invest/ISA account
+# both    = execute AND send the signal notification
+mode: signal
+
+# demo = T212 practice environment (recommended first), live = real money.
+# Note: your API key is environment-specific — generate it in the matching account.
+environment: demo
+
+# Fraction of account value the bot may deploy (rest stays in cash).
+max_allocation: 0.95
+
+# Halt all trading if account equity falls this far below its high-water mark.
+# After a halt, review the account and run `trendpilot resume`.
+drawdown_halt: 0.30
+
+# Refuse to trade on stale or suspicious data.
+max_data_age_days: 5
+max_daily_move: 0.20
+
+# Log orders instead of sending them (works in both environments).
+dry_run: false
+
+min_order_value: 1.0
+state_file: trendpilot_state.json
+telegram_enabled: false
+
+strategy:
+  ensemble: true            # average 6/9/12-month momentum (more robust)
+  momentum_months: 12       # used when ensemble is false
+  sma_months: 10
+  cash_hurdle_annual: 0.04
+
+# Default universe: GBP-denominated UCITS funds on the LSE. No FX fee, and
+# UK residents can actually buy them (US-domiciled ETFs are blocked by PRIIPs).
+# Verify each t212_ticker once against GET /equity/metadata/instruments —
+# see docs/SETUP.md. cfd_symbol is only used to word the CFD signal.
+assets:
+  risk:
+    - key: equities
+      data_symbol: VUAG.L     # Vanguard S&P 500 (Acc), GBP
+      t212_ticker: VUAGl_EQ
+      cfd_symbol: US500
+    - key: gold
+      data_symbol: SGLN.L     # iShares Physical Gold ETC, GBP
+      t212_ticker: SGLNl_EQ
+      cfd_symbol: GOLD
+  defensive:
+    key: bonds
+    data_symbol: VAGP.L       # Vanguard Global Agg Bond, GBP hedged
+    t212_ticker: VAGPl_EQ
+    cfd_symbol: ""

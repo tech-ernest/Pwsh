@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trendpilot"
+version = "0.1.0"
+description = "Trend-filtered dual-momentum trading bot for Trading 212 (API execution + signal mode)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+dependencies = [
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "requests>=2.31",
+    "PyYAML>=6.0",
+    "yfinance>=0.2.40",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+backtest = ["skfolio>=0.4"]
+
+[project.scripts]
+trendpilot = "trendpilot.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["trendpilot*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
