@@ -1,0 +1,20 @@
+# Trading bot configuration.
+# SAFE DEFAULTS: paper mode. Live trading additionally requires
+# KRAKEN_API_KEY / KRAKEN_API_SECRET env vars and the
+# --i-understand-live flag.
+
+exchange: kraken
+pair: BTC/GBP
+mode: paper            # paper | live
+capital_gbp: 100
+
+strategy:              # selected by backtest/ - see RESEARCH.md
+  sma_window: 200
+  band: 0.02
+
+risk:
+  max_drawdown_stop: 0.35   # liquidate + halt if account falls 35% from peak
+  min_order_gbp: 10         # refuse orders smaller than this
+  assumed_fee: 0.0040       # Kraken Pro base taker fee (paper-mode fills)
+
+state_file: bot/state.json
