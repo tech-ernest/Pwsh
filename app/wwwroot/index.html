@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlipKit</title>
+<style>
+  :root {
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;
+    --good: #0ca30c;
+    --good-text: #006300;
+    --warning: #fab219;
+    --critical: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface-1: #1a1a19;
+      --page: #0d0d0d;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --muted: #898781;
+      --grid: #2c2c2a;
+      --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5;
+      --good-text: #0ca30c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  header {
+    display: flex; align-items: baseline; gap: 12px;
+    padding: 14px 20px; border-bottom: 1px solid var(--grid);
+  }
+  header h1 { font-size: 18px; margin: 0; }
+  #status { font-size: 13px; color: var(--ink-2); }
+  nav { display: flex; gap: 4px; padding: 10px 20px 0; flex-wrap: wrap; }
+  nav button {
+    border: 1px solid transparent; background: none; color: var(--ink-2);
+    font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 8px 8px 0 0; cursor: pointer;
+  }
+  nav button:hover { color: var(--ink); }
+  nav button.active {
+    color: var(--ink); font-weight: 600; background: var(--surface-1);
+    border-color: var(--grid); border-bottom-color: var(--surface-1);
+  }
+  main { padding: 20px; max-width: 980px; margin: 0 auto; }
+  section { display: none; }
+  section.active { display: block; }
+  .card {
+    background: var(--surface-1); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px; margin-bottom: 16px;
+  }
+  h2 { font-size: 15px; margin: 0 0 10px; }
+  .hint { color: var(--muted); font-size: 13px; }
+  form.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink-2); }
+  input, select {
+    font: inherit; color: var(--ink); background: var(--page);
+    border: 1px solid var(--grid); border-radius: 6px; padding: 7px 10px; min-width: 110px;
+  }
+  input:focus { outline: 2px solid var(--series-1); outline-offset: -1px; }
+  button.go {
+    font: inherit; font-weight: 600; color: #fff; background: var(--series-1);
+    border: none; border-radius: 6px; padding: 8px 18px; cursor: pointer;
+  }
+  button.go:disabled { opacity: .5; cursor: wait; }
+  button.link { background: none; border: none; color: var(--series-1); cursor: pointer; font: inherit; font-size: 13px; padding: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; color: var(--muted); font-weight: 500; font-size: 12.5px; border-bottom: 1px solid var(--grid); padding: 6px 8px; }
+  td { padding: 7px 8px; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .tile .v { font-size: 26px; font-weight: 650; }
+  .tile .l { font-size: 12.5px; color: var(--ink-2); margin-top: 2px; }
+  .tile .v.good { color: var(--good-text); }
+  .verdict { display: inline-flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 700; margin: 6px 0 12px; }
+  .verdict .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .kv div { font-size: 13px; color: var(--ink-2); }
+  .kv b { display: block; font-size: 16px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .barrow { display: grid; grid-template-columns: 140px 1fr 70px; gap: 10px; align-items: center; margin: 6px 0; font-size: 13.5px; }
+  .barrow .track { height: 10px; border-radius: 0 4px 4px 0; background: var(--series-1); min-width: 2px; }
+  .barrow .val { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .barrow:hover .track { opacity: .85; }
+  .chip { display: inline-block; margin: 3px; padding: 4px 10px; border: 1px solid var(--grid); border-radius: 14px; font-size: 13px; }
+  .chip a { color: var(--series-1); text-decoration: none; }
+  .hit { padding: 10px 0; border-bottom: 1px solid var(--grid); }
+  .hit:last-child { border-bottom: none; }
+  .hit a { color: var(--series-1); text-decoration: none; font-weight: 600; }
+  .hit .meta { font-size: 13px; color: var(--ink-2); }
+  .err { color: var(--critical); font-size: 14px; margin-top: 10px; }
+  .ok { color: var(--good-text); font-size: 14px; margin-top: 10px; }
+  .soldform td { background: var(--page); }
+  .note { background: var(--page); border: 1px dashed var(--grid); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<header>
+  <h1>FlipKit</h1>
+  <span id="status">checking config…</span>
+</header>
+<nav>
+  <button data-tab="check" class="active">Deal checker</button>
+  <button data-tab="scan">Scanner</button>
+  <button data-tab="ledger">Ledger</button>
+  <button data-tab="stats">Stats</button>
+  <button data-tab="typos">Typos</button>
+</nav>
+<main>
+
+<section id="tab-check" class="active">
+  <div class="card">
+    <h2>Should I buy it?</h2>
+    <p class="hint">Comps from eBay sold listings + CeX cash floor, minus fees and postage. Obey the verdict — never buy on gut.</p>
+    <form class="row" id="checkForm">
+      <label>Search term (model, be specific)
+        <input name="searchTerm" required placeholder="rtx 3060 12gb" size="26"></label>
+      <label>Buy price £
+        <input name="buyPrice" required type="number" step="0.01" min="0" placeholder="140"></label>
+      <label>Postage £ (blank = default)
+        <input name="postage" type="number" step="0.01" min="0" placeholder="3.35"></label>
+      <button class="go">Check</button>
+    </form>
+    <div id="checkOut"></div>
+  </div>
+</section>
+
+<section id="tab-scan">
+  <div class="card">
+    <h2>Deal scanner</h2>
+    <p class="hint">Runs every saved search from <code>config/settings.json</code>. Dry run lists hits here; live also pushes alerts and marks them seen. The scheduled task does this every 15 minutes on its own.</p>
+    <form class="row" id="scanForm">
+      <label>Mode
+        <select name="mode"><option value="dry">Dry run (list only)</option><option value="live">Live (alert + mark seen)</option></select></label>
+      <button class="go">Scan now</button>
+    </form>
+    <div id="scanOut"></div>
+  </div>
+</section>
+
+<section id="tab-ledger">
+  <div class="card">
+    <h2>Record a purchase</h2>
+    <form class="row" id="buyForm">
+      <label>Item <input name="item" required placeholder="RTX 3060 Zotac 12GB" size="24"></label>
+      <label>Category
+        <select name="category">
+          <option>PC hardware</option><option>Fitness tech</option><option>Clothing</option><option>Other</option>
+        </select></label>
+      <label>Source
+        <select name="source"><option>ebay</option><option>vinted</option><option>gumtree</option><option>facebook</option><option>cex</option><option>other</option></select></label>
+      <label>Buy price £ <input name="buyPrice" required type="number" step="0.01" min="0"></label>
+      <label>Notes <input name="notes" placeholder="optional"></label>
+      <button class="go">Add</button>
+    </form>
+    <div id="buyOut"></div>
+  </div>
+  <div class="card">
+    <h2>Ledger</h2>
+    <div id="ledgerOut" class="hint">loading…</div>
+  </div>
+</section>
+
+<section id="tab-stats">
+  <div id="statsTiles" class="tiles"></div>
+  <div class="card">
+    <h2>Net profit by category</h2>
+    <div id="statsBars" class="hint">loading…</div>
+  </div>
+  <div class="card">
+    <h2>Category detail</h2>
+    <div id="statsTable" class="hint">loading…</div>
+  </div>
+</section>
+
+<section id="tab-typos">
+  <div class="card">
+    <h2>Misspelling hunter</h2>
+    <p class="hint">Typo variants of a brand/model — badly listed items sell cheap because nobody finds them. Click a chip to search it on eBay.</p>
+    <form class="row" id="typoForm">
+      <label>Word <input name="word" required placeholder="garmin"></label>
+      <button class="go">Generate</button>
+    </form>
+    <div id="typoOut"></div>
+  </div>
+</section>
+
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const gbp = n => '£' + Number(n).toFixed(2);
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+function busy(form, on) { form.querySelector('button.go').disabled = on; }
+
+/* tabs (URL hash = bookmarkable, e.g. /#stats) */
+function openTab(name) {
+  const b = document.querySelector(`nav button[data-tab="${name}"]`);
+  if (!b) return;
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('active', x === b));
+  document.querySelectorAll('main section').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
+  history.replaceState(null, '', '#' + name);
+  if (name === 'ledger') loadLedger();
+  if (name === 'stats') loadStats();
+}
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => openTab(b.dataset.tab));
+if (location.hash) openTab(location.hash.slice(1));
+
+/* status */
+api('/api/status').then(s => {
+  $('#status').textContent = s.configFound
+    ? `config ok · eBay keys ${s.ebayKeys ? '✓' : 'missing'} · alerts ${s.alertsChannel ? '✓' : 'not set'} · ${s.searches} saved searches`
+    : 'no config/settings.json yet — copy the sample and fill it in';
+}).catch(() => $('#status').textContent = 'status unavailable');
+
+/* deal checker */
+$('#checkForm').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target, out = $('#checkOut');
+  const payload = { searchTerm: f.searchTerm.value, buyPrice: f.buyPrice.value, postage: f.postage.value };
+  busy(f, true); out.innerHTML = '<p class="hint">fetching comps…</p>';
+  try {
+    const d = await api('/api/deal-check', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const color = d.Verdict.startsWith('BUY') ? 'var(--good)' : d.Verdict === 'RISKY' ? 'var(--warning)' : 'var(--critical)';
+    out.innerHTML = `
+      <div class="verdict"><span class="dot" style="background:${color}"></span>${esc(d.Verdict)}</div>
+      <div class="kv">
+        <div>Comps found<b>${d.CompsCount}</b></div>
+        <div>Median sold<b>${gbp(d.MedianSold)}</b></div>
+        <div>Pessimistic (P25)<b>${gbp(d.P25Sold)}</b></div>
+        <div>Expected net<b>${gbp(d.ExpectedNet)} (${d.ExpectedMarginPct}%)</b></div>
+        <div>Conservative net<b>${gbp(d.ConservativeNet)} (${d.ConservMarginPct}%)</b></div>
+        <div>CeX cash floor<b>${d.CexCashFloor ? gbp(d.CexCashFloor) + (d.BelowCexFloor ? ' — you are below it' : '') : '—'}</b></div>
+      </div>`;
+  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+  busy(f, false);
+};
+
+/* scanner */
+$('#scanForm').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target, out = $('#scanOut');
+  busy(f, true); out.innerHTML = '<p class="hint">scanning all saved searches…</p>';
+  try {
+    const hits = await api('/api/scan', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ live: f.mode.value === 'live' }) });
+    out.innerHTML = hits.length === 0
+      ? '<p class="hint">No new hits — everything current has been seen before (or searches failed; check the server window).</p>'
+      : hits.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
+          <div class="meta">${esc(h.Search)} · ${gbp(h.Price)} · ${esc(h.Condition)} ${h.Note ? '· <b>' + esc(h.Note) + '</b>' : ''}</div></div>`).join('');
+  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+  busy(f, false);
+};
+
+/* ledger */
+async function loadLedger() {
+  const out = $('#ledgerOut');
+  try {
+    const rows = await api('/api/ledger');
+    if (rows.length === 0) { out.innerHTML = '<p class="hint">Empty — record your first purchase above.</p>'; return; }
+    out.innerHTML = `<div style="overflow-x:auto"><table>
+      <tr><th>#</th><th>Item</th><th>Category</th><th>Bought</th><th>Buy £</th><th>Sold</th><th>Net £</th><th>Days</th><th></th></tr>
+      ${rows.map(r => `<tr>
+        <td>${esc(r.Id)}</td><td>${esc(r.Item)}</td><td>${esc(r.Category)}</td>
+        <td>${esc(r.BuyDate)}</td><td>${gbp(r.BuyPrice)}</td>
+        <td>${r.SoldDate ? esc(r.SoldDate) + ' @ ' + gbp(r.SoldPrice) : '<span class="hint">open</span>'}</td>
+        <td>${r.Net !== '' ? gbp(r.Net) : '—'}</td><td>${esc(r.DaysToSell) || '—'}</td>
+        <td>${r.SoldDate ? '' : `<button class="link" onclick="sellRow(this,${Number(r.Id)})">mark sold</button>`}</td>
+      </tr>`).join('')}
+    </table></div>`;
+  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+}
+
+window.sellRow = (btn, id) => {
+  const tr = btn.closest('tr');
+  const form = document.createElement('tr');
+  form.className = 'soldform';
+  form.innerHTML = `<td colspan="9">
+    Sold #${id} for £ <input type="number" step="0.01" min="0" class="sp" style="width:90px">
+    fees £ <input type="number" step="0.01" min="0" class="fe" style="width:80px">
+    postage £ <input type="number" step="0.01" min="0" class="po" style="width:80px" value="3.35">
+    <button class="go" style="padding:5px 12px">Save</button></td>`;
+  form.querySelector('button').onclick = async () => {
+    try {
+      await api('/api/ledger/complete', { method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ id, soldPrice: form.querySelector('.sp').value, fees: form.querySelector('.fe').value, postage: form.querySelector('.po').value }) });
+      loadLedger();
+    } catch (err) { alert(err.message); }
+  };
+  tr.after(form);
+  btn.remove();
+};
+
+$('#buyForm').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target, out = $('#buyOut');
+  busy(f, true);
+  try {
+    const r = await api('/api/ledger', { method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ item: f.item.value, category: f.category.value, source: f.source.value, buyPrice: f.buyPrice.value, notes: f.notes.value }) });
+    out.innerHTML = `<p class="ok">Added #${esc(r.Id)} — ${esc(r.Item)}</p>`;
+    f.item.value = ''; f.buyPrice.value = ''; f.notes.value = '';
+    loadLedger();
+  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+  busy(f, false);
+};
+
+/* stats */
+async function loadStats() {
+  try {
+    const s = await api('/api/stats');
+    const t = s.Summary;
+    $('#statsTiles').innerHTML = `
+      <div class="tile"><div class="v ${t.TotalNetProfit > 0 ? 'good' : ''}">${gbp(t.TotalNetProfit)}</div><div class="l">total net profit</div></div>
+      <div class="tile"><div class="v">${t.FlipsCompleted}</div><div class="l">flips completed</div></div>
+      <div class="tile"><div class="v">${t.AvgMarginPct}%</div><div class="l">avg margin</div></div>
+      <div class="tile"><div class="v">${t.AvgDaysToSell}</div><div class="l">avg days to sell</div></div>
+      <div class="tile"><div class="v">${gbp(t.CapitalDeployed)}</div><div class="l">capital in ${t.OpenItems} open item${t.OpenItems === 1 ? '' : 's'}</div></div>`;
+    const cats = s.ByCategory || [];
+    if (cats.length === 0) { $('#statsBars').innerHTML = '<p class="hint">No completed flips yet.</p>'; $('#statsTable').innerHTML = ''; return; }
+    const max = Math.max(...cats.map(c => Math.abs(Number(c.NetProfit))), 1);
+    $('#statsBars').innerHTML = cats.map(c => `
+      <div class="barrow" title="${esc(c.Category)}: ${gbp(c.NetProfit)} across ${c.Flips} flips">
+        <span>${esc(c.Category)}</span>
+        <span><span class="track" style="width:${Math.max(2, 100 * Math.abs(c.NetProfit) / max)}%; display:block"></span></span>
+        <span class="val">${gbp(c.NetProfit)}</span>
+      </div>`).join('');
+    $('#statsTable').innerHTML = `<table>
+      <tr><th>Category</th><th>Flips</th><th>Net profit</th><th>Avg days to sell</th></tr>
+      ${cats.map(c => `<tr><td>${esc(c.Category)}</td><td>${c.Flips}</td><td>${gbp(c.NetProfit)}</td><td>${c.AvgDaysToSell}</td></tr>`).join('')}
+    </table>`;
+  } catch (err) {
+    $('#statsTiles').innerHTML = '';
+    $('#statsBars').innerHTML = `<p class="hint">${esc(err.message)}</p>`;
+    $('#statsTable').innerHTML = '';
+  }
+}
+
+/* typos */
+$('#typoForm').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target, out = $('#typoOut');
+  busy(f, true);
+  try {
+    const words = await api('/api/misspell?word=' + encodeURIComponent(f.word.value));
+    out.innerHTML = words.map(w =>
+      `<span class="chip"><a href="https://www.ebay.co.uk/sch/i.html?_nkw=${encodeURIComponent(w)}" target="_blank" rel="noopener">${esc(w)}</a></span>`).join('');
+  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+  busy(f, false);
+};
+</script>
+</body>
+</html>

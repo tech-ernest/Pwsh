@@ -26,14 +26,15 @@ function Get-FlipLedgerStats {
         CapitalDeployed  = [math]::Round((($open.BuyPrice | Measure-Object -Sum).Sum), 2)
     }
 
-    $byCategory = $closed | Group-Object Category | ForEach-Object {
+    # @() so a single category still serializes as a JSON array for the app.
+    $byCategory = @($closed | Group-Object Category | ForEach-Object {
         [pscustomobject]@{
             Category      = $_.Name
             Flips         = $_.Count
             NetProfit     = [math]::Round((($_.Group.Net | Measure-Object -Sum).Sum), 2)
             AvgDaysToSell = [math]::Round((($_.Group.DaysToSell | Measure-Object -Average).Average), 1)
         }
-    } | Sort-Object NetProfit -Descending
+    } | Sort-Object NetProfit -Descending)
 
     [pscustomobject]@{
         Summary    = $summary

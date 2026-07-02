@@ -15,7 +15,24 @@ PowerShell toolkit for the reselling business described in [BUSINESS_PLAN.md](BU
 | `New-MisspellingList 'garmin'` | Typo variants for badly-listed-item hunting |
 | `Send-FlipAlert` | Push to your phone via ntfy (zero setup) or Telegram |
 | `Add-FlipLedgerEntry` / `Complete-FlipLedgerEntry` / `Get-FlipLedgerStats` | The business's memory: profit, margins, days-to-sell, capital deployed, per category |
-| `scripts/Invoke-DealScan.ps1` | The scan loop: every saved search in config, alerts only on new listings |
+| `Invoke-FlipScan` / `scripts/Invoke-DealScan.ps1` | The scan loop: every saved search in config, alerts only on new listings |
+| `app/Start-FlipKitApp.ps1` | **The interactive app** — local web dashboard over all of the above |
+
+## The app
+
+```powershell
+pwsh -File app/Start-FlipKitApp.ps1     # opens http://localhost:8321
+```
+
+A dependency-free local dashboard (pure PowerShell HTTP server + one HTML page, localhost-only):
+
+- **Deal checker** — type a model + buy price, get the BUY / RISKY / PASS verdict with comps, margins, and the CeX floor
+- **Scanner** — run all saved searches on demand (dry run or live-with-alerts); the scheduled task still runs on its own
+- **Ledger** — record purchases, mark items sold, see open stock at a glance
+- **Stats** — profit tiles, net profit by category, days-to-sell — the "what deserves more capital" view
+- **Typos** — misspelling variants as chips that click straight through to eBay searches
+
+Tabs are bookmarkable (`/#stats`). Light and dark mode follow your system.
 
 ## Setup (once, ~20 minutes)
 

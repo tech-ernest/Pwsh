@@ -14,6 +14,7 @@
         'New-MisspellingList'
         'Get-EbayToken'
         'Find-EbayDeals'
+        'Invoke-FlipScan'
         'Send-FlipAlert'
         'Add-FlipLedgerEntry'
         'Complete-FlipLedgerEntry'
