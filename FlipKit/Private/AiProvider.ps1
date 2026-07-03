@@ -13,6 +13,52 @@ function Get-FlipAiConfig {
     throw 'No AI provider configured. Free option: install Ollama from ollama.com, run "ollama pull llama3.1:8b", then add to config/settings.json: "ai": { "provider": "ollama", "model": "llama3.1:8b" }'
 }
 
+function Invoke-FlipAiHttpPost {
+    <#
+        JSON POST for AI providers. Prefers curl.exe (proven reliable on
+        Windows where Invoke-RestMethod header handling has bitten us);
+        falls back to Invoke-RestMethod. Body goes via a temp file to avoid
+        command-line quoting/length limits.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$Uri,
+        [hashtable]$Headers = @{},
+        [Parameter(Mandatory)][string]$BodyJson,
+        [int]$TimeoutSec = 300
+    )
+
+    $curl = Get-Command curl.exe -ErrorAction SilentlyContinue
+    if ($curl) {
+        $tmp = [IO.Path]::GetTempFileName()
+        try {
+            [IO.File]::WriteAllText($tmp, $BodyJson, [Text.UTF8Encoding]::new($false))
+            $args = @('-sS', '--fail-with-body', '--max-time', $TimeoutSec, '-X', 'POST', '-H', 'Content-Type: application/json')
+            foreach ($k in $Headers.Keys) { $args += @('-H', "${k}: $($Headers[$k])") }
+            $args += @('--data-binary', "@$tmp", $Uri)
+
+            $out = (& $curl.Source @args 2>$null) -join "`n"
+            if ($LASTEXITCODE -ne 0) {
+                $apiMessage = try { ($out | ConvertFrom-Json).error.message } catch { $null }
+                if ($apiMessage) { throw "AI API error: $apiMessage" }
+                throw "AI request failed (curl exit $LASTEXITCODE): $($out.Substring(0, [math]::Min(300, $out.Length)))"
+            }
+            return $out | ConvertFrom-Json
+        }
+        finally { Remove-Item $tmp -ErrorAction SilentlyContinue }
+    }
+
+    try {
+        Invoke-RestMethod -Method Post -Uri $Uri -Headers $Headers `
+            -ContentType 'application/json; charset=utf-8' `
+            -Body ([Text.Encoding]::UTF8.GetBytes($BodyJson)) -TimeoutSec $TimeoutSec
+    }
+    catch {
+        $apiMessage = try { ($_.ErrorDetails.Message | ConvertFrom-Json).error.message } catch { $null }
+        if ($apiMessage) { throw "AI API error: $apiMessage" }
+        throw
+    }
+}
+
 function Invoke-FlipAi {
     <#
         Provider-agnostic chat completion. Takes a system prompt, a
@@ -77,19 +123,10 @@ function Invoke-FlipAi {
             if ($JsonSchema) { $body.response_format = @{ type = 'json_object' } }
 
             $headers = @{}
-            if ($ai.PSObject.Properties['apiKey'] -and $ai.apiKey) { $headers.Authorization = "Bearer $($ai.apiKey)" }
+            if ($ai.PSObject.Properties['apiKey'] -and $ai.apiKey) { $headers.Authorization = "Bearer $($ai.apiKey.Trim())" }
 
-            try {
-                $resp = Invoke-RestMethod -Method Post -Uri "$($ai.baseUrl.TrimEnd('/'))/v1/chat/completions" `
-                    -Headers $headers -ContentType 'application/json; charset=utf-8' `
-                    -Body ([Text.Encoding]::UTF8.GetBytes(($body | ConvertTo-Json -Depth 14))) `
-                    -TimeoutSec 300
-            }
-            catch {
-                $apiMessage = try { ($_.ErrorDetails.Message | ConvertFrom-Json).error.message } catch { $null }
-                if ($apiMessage) { throw "AI API error: $apiMessage" }
-                throw
-            }
+            $resp = Invoke-FlipAiHttpPost -Uri "$($ai.baseUrl.TrimEnd('/'))/v1/chat/completions" `
+                -Headers $headers -BodyJson ($body | ConvertTo-Json -Depth 14)
             return $resp.choices[0].message.content
         }
 
@@ -103,18 +140,9 @@ function Invoke-FlipAi {
             }
             if ($JsonSchema) { $body.output_config = @{ format = @{ type = 'json_schema'; schema = $JsonSchema } } }
 
-            try {
-                $resp = Invoke-RestMethod -Method Post -Uri 'https://api.anthropic.com/v1/messages' `
-                    -Headers @{ 'x-api-key' = $ai.apiKey; 'anthropic-version' = '2023-06-01' } `
-                    -ContentType 'application/json; charset=utf-8' `
-                    -Body ([Text.Encoding]::UTF8.GetBytes(($body | ConvertTo-Json -Depth 14))) `
-                    -TimeoutSec 300
-            }
-            catch {
-                $apiMessage = try { ($_.ErrorDetails.Message | ConvertFrom-Json).error.message } catch { $null }
-                if ($apiMessage) { throw "Claude API error: $apiMessage" }
-                throw
-            }
+            $resp = Invoke-FlipAiHttpPost -Uri 'https://api.anthropic.com/v1/messages' `
+                -Headers @{ 'x-api-key' = $ai.apiKey.Trim(); 'anthropic-version' = '2023-06-01' } `
+                -BodyJson ($body | ConvertTo-Json -Depth 14)
             if ($resp.stop_reason -eq 'refusal') { return '(The model declined this request.)' }
             return (@($resp.content) | Where-Object { $_.type -eq 'text' } | ForEach-Object { $_.text }) -join "`n"
         }
