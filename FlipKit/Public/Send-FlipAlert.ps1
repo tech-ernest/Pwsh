@@ -20,18 +20,30 @@ function Send-FlipAlert {
 
     $cfg = Get-FlipConfig
     $sent = $false
+    $configured = $false
 
     if ($cfg.alerts.ntfyTopic) {
+        $configured = $true
         try {
-            $headers = @{ Title = $Title; Priority = $Priority; Tags = 'moneybag' }
-            if ($Url) { $headers.Click = $Url }
-            Invoke-RestMethod -Method Post -Uri "https://ntfy.sh/$($cfg.alerts.ntfyTopic)" -Headers $headers -Body $Message | Out-Null
+            # JSON publish endpoint: HTTP headers are ASCII-only, and titles
+            # carry £ signs and the odd emoji — the JSON body is full UTF-8.
+            $payload = @{
+                topic    = $cfg.alerts.ntfyTopic
+                title    = $Title
+                message  = $Message
+                priority = $Priority
+                tags     = @('moneybag')
+            }
+            if ($Url) { $payload.click = $Url }
+            $body = [Text.Encoding]::UTF8.GetBytes((ConvertTo-Json $payload -Compress))
+            Invoke-RestMethod -Method Post -Uri 'https://ntfy.sh' -ContentType 'application/json; charset=utf-8' -Body $body | Out-Null
             $sent = $true
         }
         catch { Write-Warning "ntfy alert failed: $_" }
     }
 
     if ($cfg.alerts.telegramBotToken -and $cfg.alerts.telegramChatId) {
+        $configured = $true
         try {
             $text = "*$Title*`n$Message"
             if ($Url) { $text += "`n$Url" }
@@ -45,5 +57,8 @@ function Send-FlipAlert {
         catch { Write-Warning "Telegram alert failed: $_" }
     }
 
-    if (-not $sent) { Write-Warning 'No alert channel configured (set alerts.ntfyTopic in config) — printing instead.'; Write-Host "[ALERT] $Title — $Message $Url" }
+    if (-not $sent) {
+        if (-not $configured) { Write-Warning 'No alert channel configured (set alerts.ntfyTopic in config).' }
+        Write-Host "[ALERT] $Title — $Message $Url"
+    }
 }

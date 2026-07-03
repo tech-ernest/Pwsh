@@ -39,10 +39,17 @@ function Find-EbayDeals {
     }
 
     foreach ($item in $resp.itemSummaries) {
+        # Fixed-price listings carry 'price'; auctions carry 'currentBidPrice'.
+        $priceValue =
+            if ($item.PSObject.Properties['price'] -and $item.price) { [double]$item.price.value }
+            elseif ($item.PSObject.Properties['currentBidPrice'] -and $item.currentBidPrice) { [double]$item.currentBidPrice.value }
+            else { $null }
+        if ($null -eq $priceValue) { continue }
+
         [pscustomobject]@{
             ItemId    = $item.itemId
             Title     = $item.title
-            Price     = [double]$item.price.value
+            Price     = $priceValue
             Condition = if ($item.PSObject.Properties['condition']) { $item.condition } else { 'Unknown' }
             BuyingOpt = ($item.buyingOptions -join ',')
             Url       = $item.itemWebUrl
