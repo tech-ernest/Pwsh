@@ -18,8 +18,12 @@ function Invoke-FlipScan {
 
     $cfg = Get-FlipConfig
     $seenPath = Join-Path (Get-FlipDataDir) 'seen-items.json'
-    $seen = if (Test-Path $seenPath) { [System.Collections.Generic.HashSet[string]]@(Get-Content -Raw $seenPath | ConvertFrom-Json) }
-            else { [System.Collections.Generic.HashSet[string]]::new() }
+    # Built imperatively: emitting a HashSet from an if-expression makes
+    # PowerShell enumerate it (an empty set becomes $null).
+    $seen = [System.Collections.Generic.HashSet[string]]::new()
+    if (Test-Path $seenPath) {
+        foreach ($id in @(Get-Content -Raw $seenPath | ConvertFrom-Json)) { [void]$seen.Add([string]$id) }
+    }
 
     $hits = [System.Collections.Generic.List[object]]::new()
 

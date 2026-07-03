@@ -91,6 +91,40 @@ Assert ($stats.Summary.TotalNetProfit -eq 43.40) 'stats: total net'
 Assert ($stats.Summary.OpenItems -eq 1 -and $stats.Summary.CapitalDeployed -eq 38) 'stats: open capital'
 Assert ($stats.ByCategory[0].Category -eq 'PC hardware') 'stats: category breakdown'
 
+Write-Host "`n== Invoke-FlipScan (mocked network) =="
+$testCfg = Join-Path $tempRoot 'settings.json'
+@{
+    ebay     = @{ clientId = 'x'; clientSecret = 'y'; marketplaceId = 'EBAY_GB'; site = 'www.ebay.co.uk' }
+    fees     = @{ feeRate = 0.13; feeFixed = 0.3; defaultPostage = 3.35 }
+    rules    = @{ minMarginPct = 30 }
+    alerts   = @{ ntfyTopic = ''; telegramBotToken = ''; telegramChatId = '' }
+    searches = @(@{ name = 'Test search'; query = 'test'; maxPrice = 100; cexQuery = 'test'; buyingOptions = 'FIXED_PRICE' })
+} | ConvertTo-Json -Depth 5 | Set-Content $testCfg
+$env:FLIPKIT_CONFIG = $testCfg
+
+& $module {
+    function script:Find-EbayDeals { param($Query, $MaxPrice, $BuyingOptions)
+        [pscustomobject]@{ ItemId = 'v1|111|0'; Title = 'GPU A'; Price = 80.0; Condition = 'Used'; BuyingOpt = 'FIXED_PRICE'; Url = 'https://a'; Query = $Query }
+        [pscustomobject]@{ ItemId = 'v1|222|0'; Title = 'GPU B'; Price = 90.0; Condition = 'Used'; BuyingOpt = 'FIXED_PRICE'; Url = 'https://b'; Query = $Query }
+    }
+    # CeX blocked (the Cloudflare case) must not sink the scan
+    function script:Get-CexPrice { param($Query, $Top) throw 'blocked' }
+    function script:Send-FlipAlert { param($Title, $Message, $Url) $script:AlertCount++ }
+    $script:AlertCount = 0
+}
+
+$dry = @(Invoke-FlipScan -DryRun)
+Assert ($dry.Count -eq 2) 'dry run returns hits on first sight'
+$dry2 = @(Invoke-FlipScan -DryRun)
+Assert ($dry2.Count -eq 2) 'dry run does not mark items seen'
+
+$live = @(Invoke-FlipScan)
+Assert ($live.Count -eq 2) 'live run returns hits'
+Assert ((& $module { $script:AlertCount }) -eq 2) 'live run sends one alert per hit'
+$live2 = @(Invoke-FlipScan)
+Assert ($live2.Count -eq 0) 'second live run: everything already seen'
+
+$env:FLIPKIT_CONFIG = $null
 Remove-Item -Recurse -Force $tempRoot
 
 Write-Host "`n$($script:Passed) passed, $($script:Failed) failed."
