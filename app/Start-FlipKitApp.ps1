@@ -43,7 +43,12 @@ if (-not $NoBrowser) {
 
 try {
     while ($listener.IsListening) {
-        $ctx = $listener.GetContext()
+        # Wait in short slices instead of blocking in GetContext(): PowerShell
+        # can only honour Ctrl+C between statements, and a hard block inside
+        # the listener call crashes the console on interrupt.
+        $ctxTask = $listener.GetContextAsync()
+        while (-not $ctxTask.Wait(250)) { }
+        $ctx = $ctxTask.GetAwaiter().GetResult()
         $req = $ctx.Request
         $res = $ctx.Response
         $route = "$($req.HttpMethod) $($req.Url.AbsolutePath)"
