@@ -26,6 +26,9 @@ function Invoke-FlipScan {
     }
 
     $hits = [System.Collections.Generic.List[object]]::new()
+    # Circuit breaker: when CeX is unreachable (bot-walled networks), fail once
+    # and skip it for the rest of the run instead of paying retry+backoff per item.
+    $cexAvailable = $true
 
     foreach ($search in $cfg.searches) {
         Write-Verbose "Scanning: $($search.name) — '$($search.query)' under £$($search.maxPrice)"
@@ -46,14 +49,17 @@ function Invoke-FlipScan {
 
             $note = ''
             # Optional CeX floor check per search: flags near-risk-free buys.
-            if ($search.PSObject.Properties['cexQuery'] -and $search.cexQuery) {
+            if ($cexAvailable -and $search.PSObject.Properties['cexQuery'] -and $search.cexQuery) {
                 try {
-                    $cex = Get-CexPrice -Query $search.cexQuery -Top 1
+                    $cex = @(Get-CexPrice -Query $search.cexQuery -Top 1)
                     if ($cex -and $item.Price -lt $cex[0].CashBuy) {
                         $note = 'BELOW CeX cash £{0}!' -f $cex[0].CashBuy
                     }
                 }
-                catch { Write-Verbose "CeX check failed: $_" }
+                catch {
+                    $cexAvailable = $false
+                    Write-Verbose "CeX unreachable — skipping CeX checks for the rest of this scan. ($_)"
+                }
             }
 
             $hit = [pscustomobject]@{
