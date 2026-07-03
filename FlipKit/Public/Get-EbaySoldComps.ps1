@@ -28,14 +28,14 @@ function Get-EbaySoldComps {
     # Warm-up: hit the homepage first to collect session cookies, then request
     # the search page on that session. Bare cookie-less search requests get
     # eBay's generic error page instead of results.
-    $session = [Microsoft.PowerShell.Commands.WebRequestSession]::new()
+    $jar = Join-Path (Get-FlipDataDir) 'ebay-cookies.txt'
     try {
-        Invoke-FlipWebRequest -Uri "https://$Site/" -AsBrowser -WebSession $session | Out-Null
+        Invoke-FlipWebRequest -Uri "https://$Site/" -AsBrowser -CookieJar $jar | Out-Null
         Start-Sleep -Milliseconds 800
     }
     catch { Write-Verbose "Homepage warm-up failed (continuing anyway): $_" }
 
-    $html = (Invoke-FlipWebRequest -Uri $uri -AsBrowser -WebSession $session).Content
+    $html = (Invoke-FlipWebRequest -Uri $uri -AsBrowser -CookieJar $jar).Content
 
     if ($DumpHtml) {
         $dump = Join-Path (Get-FlipDataDir) 'last-sold-page.html'
