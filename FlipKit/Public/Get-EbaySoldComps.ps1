@@ -23,9 +23,19 @@ function Get-EbaySoldComps {
         [string]$Site = 'www.ebay.co.uk'
     )
 
-    $uri = 'https://{0}/sch/i.html?_nkw={1}&LH_Sold=1&LH_Complete=1&_ipg=60' -f $Site, [uri]::EscapeDataString($SearchTerm)
+    $uri = 'https://{0}/sch/i.html?_from=R40&_nkw={1}&_sacat=0&LH_Sold=1&LH_Complete=1&_ipg=60' -f $Site, [uri]::EscapeDataString($SearchTerm)
 
-    $html = (Invoke-FlipWebRequest -Uri $uri).Content
+    # Warm-up: hit the homepage first to collect session cookies, then request
+    # the search page on that session. Bare cookie-less search requests get
+    # eBay's generic error page instead of results.
+    $session = [Microsoft.PowerShell.Commands.WebRequestSession]::new()
+    try {
+        Invoke-FlipWebRequest -Uri "https://$Site/" -AsBrowser -WebSession $session | Out-Null
+        Start-Sleep -Milliseconds 800
+    }
+    catch { Write-Verbose "Homepage warm-up failed (continuing anyway): $_" }
+
+    $html = (Invoke-FlipWebRequest -Uri $uri -AsBrowser -WebSession $session).Content
 
     if ($DumpHtml) {
         $dump = Join-Path (Get-FlipDataDir) 'last-sold-page.html'

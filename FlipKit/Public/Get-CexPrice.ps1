@@ -18,7 +18,14 @@ function Get-CexPrice {
 
     $uri = 'https://wss2.cex.uk.webuy.io/v3/boxes?q={0}&firstRecord=1&count={1}' -f [uri]::EscapeDataString($Query), $Top
 
-    $resp = Invoke-FlipWebRequest -Uri $uri
+    # CeX's own site calls this API cross-origin from uk.webuy.com; sending the
+    # same Origin/Referer/Accept is what gets requests past their Cloudflare.
+    $headers = @{
+        Accept  = 'application/json, text/plain, */*'
+        Origin  = 'https://uk.webuy.com'
+        Referer = 'https://uk.webuy.com/'
+    }
+    $resp = Invoke-FlipWebRequest -Uri $uri -Headers $headers
     $json = $resp.Content | ConvertFrom-Json
 
     $boxes = $json.response.data.boxes
