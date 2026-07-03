@@ -71,8 +71,26 @@ try {
                         configFound   = [bool]$cfg
                         ebayKeys      = [bool]($cfg -and $cfg.ebay.clientId -and $cfg.ebay.clientSecret)
                         alertsChannel = [bool]($cfg -and ($cfg.alerts.ntfyTopic -or $cfg.alerts.telegramBotToken))
+                        claude        = [bool]($cfg -and $cfg.PSObject.Properties['anthropic'] -and $cfg.anthropic.apiKey)
                         searches      = if ($cfg) { @($cfg.searches).Count } else { 0 }
                     }
+                }
+
+                '^POST /api/chat$' {
+                    $history = @($body.messages | ForEach-Object { @{ role = $_.role; content = $_.content } })
+                    Write-Json $res @{ reply = (Invoke-FlipChat -Messages $history) }
+                }
+
+                '^POST /api/triage$' {
+                    Write-Json $res @(Invoke-FlipTriage -Hits @($body.hits))
+                }
+
+                '^GET /api/pulse$' {
+                    Write-Json $res (Get-FlipMarketPulse -Query $req.QueryString['q'])
+                }
+
+                '^POST /api/suggest$' {
+                    Write-Json $res @(Invoke-FlipSuggest)
                 }
 
                 '^GET /api/comps$' {

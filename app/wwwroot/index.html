@@ -103,6 +103,18 @@
   .ok { color: var(--good-text); font-size: 14px; margin-top: 10px; }
   .soldform td { background: var(--page); }
   .note { background: var(--page); border: 1px dashed var(--grid); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--ink-2); }
+  /* chat */
+  #chatLog { display: flex; flex-direction: column; gap: 10px; max-height: 55vh; overflow-y: auto; padding: 4px 2px; margin-bottom: 12px; }
+  .msg { max-width: 85%; padding: 9px 13px; border-radius: 12px; font-size: 14.5px; white-space: pre-wrap; overflow-wrap: break-word; }
+  .msg.user { align-self: flex-end; background: var(--series-1); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.bot { align-self: flex-start; background: var(--page); border: 1px solid var(--grid); border-bottom-left-radius: 4px; }
+  .msg.pending { color: var(--muted); font-style: italic; }
+  #chatForm { display: flex; gap: 8px; }
+  #chatForm input { flex: 1; }
+  /* triage tiers */
+  .tier { margin: 14px 0 4px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .tier .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .fixtag { display: inline-block; font-size: 11.5px; border: 1px solid var(--grid); border-radius: 10px; padding: 1px 8px; color: var(--ink-2); margin-left: 6px; }
 </style>
 </head>
 <body>
@@ -115,6 +127,8 @@
   <button data-tab="scan">Scanner</button>
   <button data-tab="ledger">Ledger</button>
   <button data-tab="stats">Stats</button>
+  <button data-tab="market">Market</button>
+  <button data-tab="chat">Chat</button>
   <button data-tab="typos">Typos</button>
 </nav>
 <main>
@@ -184,6 +198,36 @@
   </div>
 </section>
 
+<section id="tab-market">
+  <div class="card">
+    <h2>Market pulse</h2>
+    <p class="hint">Live supply + prices for any keyword (and sold data when the comps source is reachable). High sold-count against low live supply = hot market.</p>
+    <form class="row" id="pulseForm">
+      <label>Keyword <input name="q" required placeholder="steam deck" size="24"></label>
+      <button class="go">Check</button>
+    </form>
+    <div id="pulseOut"></div>
+  </div>
+  <div class="card">
+    <h2>Suggest new search lanes</h2>
+    <p class="hint">Claude proposes hot lanes that fit your capital and the 30% rule, each checked against live eBay supply. Copy the ones you like into <code>config/settings.json</code>.</p>
+    <form class="row" id="suggestForm"><button class="go">Suggest lanes</button></form>
+    <div id="suggestOut"></div>
+  </div>
+</section>
+
+<section id="tab-chat">
+  <div class="card">
+    <h2>Business copilot</h2>
+    <p class="hint">Claude with your live ledger, stats and searches as context. Ask about deals, pricing, what deserves more capital, listing copy…</p>
+    <div id="chatLog"></div>
+    <form id="chatForm">
+      <input name="q" placeholder="Is £45 sane for a faulty Forerunner 245?" autocomplete="off">
+      <button class="go">Send</button>
+    </form>
+  </div>
+</section>
+
 <section id="tab-typos">
   <div class="card">
     <h2>Misspelling hunter</h2>
@@ -226,7 +270,7 @@ if (location.hash) openTab(location.hash.slice(1));
 /* status */
 api('/api/status').then(s => {
   $('#status').textContent = s.configFound
-    ? `config ok · eBay keys ${s.ebayKeys ? '✓' : 'missing'} · alerts ${s.alertsChannel ? '✓' : 'not set'} · ${s.searches} saved searches`
+    ? `config ok · eBay keys ${s.ebayKeys ? '✓' : 'missing'} · alerts ${s.alertsChannel ? '✓' : 'not set'} · Claude ${s.claude ? '✓' : 'not set'} · ${s.searches} saved searches`
     : 'no config/settings.json yet — copy the sample and fill it in';
 }).catch(() => $('#status').textContent = 'status unavailable');
 
@@ -254,18 +298,45 @@ $('#checkForm').onsubmit = async e => {
 };
 
 /* scanner */
+let lastHits = [];
+const hitHtml = h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
+    <div class="meta">${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)} ${h.Note ? '· <b>' + esc(h.Note) + '</b>' : ''}</div></div>`;
+
 $('#scanForm').onsubmit = async e => {
   e.preventDefault();
   const f = e.target, out = $('#scanOut');
   busy(f, true); out.innerHTML = '<p class="hint">scanning all saved searches…</p>';
   try {
     const hits = await api('/api/scan', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ live: f.mode.value === 'live' }) });
+    lastHits = hits;
     out.innerHTML = hits.length === 0
       ? '<p class="hint">No new hits — everything current has been seen before (or searches failed; check the server window).</p>'
-      : hits.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
-          <div class="meta">${esc(h.Search)} · ${gbp(h.Price)} · ${esc(h.Condition)} ${h.Note ? '· <b>' + esc(h.Note) + '</b>' : ''}</div></div>`).join('');
+      : `<p style="margin:10px 0"><button class="go" onclick="triage()">Triage with Claude — group by profit &amp; fix difficulty</button></p>`
+        + hits.map(hitHtml).join('');
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
   busy(f, false);
+};
+
+window.triage = async () => {
+  const out = $('#scanOut');
+  out.innerHTML = '<p class="hint">Claude is scoring ' + Math.min(lastHits.length, 40) + ' listings for resale value and repair difficulty… (10–30s)</p>';
+  try {
+    const scored = await api('/api/triage', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ hits: lastHits }) });
+    const tiers = [
+      { key: 'hot',          label: 'Hot — buy-grade margin, easy or no fix', color: 'var(--good)' },
+      { key: 'worth_a_look', label: 'Worth a look — decent margin, more effort or uncertainty', color: 'var(--warning)' },
+      { key: 'skip',         label: 'Skip', color: 'var(--critical)' },
+    ];
+    out.innerHTML = tiers.map(t => {
+      const items = scored.filter(x => x.Tier === t.key).sort((a, b) => b.EstNetProfit - a.EstNetProfit);
+      if (items.length === 0) return '';
+      return `<div class="tier"><span class="dot" style="background:${t.color}"></span>${t.label} (${items.length})</div>`
+        + items.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
+            <span class="fixtag">fix: ${esc(h.FixDifficulty)}</span>
+            <div class="meta">ask ${gbp(h.Price)} → est resale ${gbp(h.EstResale)} → <b>est net ${gbp(h.EstNetProfit)}</b></div>
+            <div class="meta">${esc(h.Note)}</div></div>`).join('');
+    }).join('') || '<p class="hint">Nothing came back from triage.</p>';
+  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>` + lastHits.map(hitHtml).join(''); }
 };
 
 /* ledger */
@@ -351,6 +422,68 @@ async function loadStats() {
     $('#statsTable').innerHTML = '';
   }
 }
+
+/* chat */
+const chatHistory = [];
+$('#chatForm').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target, log = $('#chatLog');
+  const text = f.q.value.trim();
+  if (!text) return;
+  f.q.value = '';
+  chatHistory.push({ role: 'user', content: text });
+  log.insertAdjacentHTML('beforeend', `<div class="msg user">${esc(text)}</div>`);
+  const pending = document.createElement('div');
+  pending.className = 'msg bot pending'; pending.textContent = 'thinking…';
+  log.appendChild(pending); log.scrollTop = log.scrollHeight;
+  busy(f, true);
+  try {
+    const r = await api('/api/chat', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ messages: chatHistory }) });
+    chatHistory.push({ role: 'assistant', content: r.reply });
+    pending.classList.remove('pending');
+    pending.textContent = r.reply;
+  } catch (err) {
+    chatHistory.pop(); // failed turn doesn't belong in history
+    pending.classList.add('err'); pending.classList.remove('pending');
+    pending.textContent = 'Error: ' + err.message;
+  }
+  log.scrollTop = log.scrollHeight;
+  busy(f, false);
+};
+
+/* market */
+$('#pulseForm').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target, out = $('#pulseOut');
+  busy(f, true); out.innerHTML = '<p class="hint">checking…</p>';
+  try {
+    const p = await api('/api/pulse?q=' + encodeURIComponent(f.q.value));
+    out.innerHTML = `<div class="kv" style="margin-top:10px">
+      <div>Live listings<b>${p.LiveListings}</b></div>
+      <div>Live median<b>${p.LiveMedian != null ? gbp(p.LiveMedian) : '—'}</b></div>
+      <div>Cheapest live<b>${p.LiveMin != null ? gbp(p.LiveMin) : '—'}</b></div>
+      <div>Recent solds<b>${p.SoldCount != null ? p.SoldCount : 'n/a'}</b></div>
+      <div>Sold median<b>${p.SoldMedian != null ? gbp(p.SoldMedian) : 'n/a'}</b></div>
+      <div>Sell-through*<b>${p.SellThrough != null ? p.SellThrough : 'n/a'}</b></div>
+    </div><p class="hint" style="margin-top:8px">*recent solds ÷ live supply — above ~0.5 is healthy demand.</p>`;
+  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+  busy(f, false);
+};
+
+$('#suggestForm').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target, out = $('#suggestOut');
+  busy(f, true); out.innerHTML = '<p class="hint">Claude is proposing lanes and checking live supply… (20–60s)</p>';
+  try {
+    const lanes = await api('/api/suggest', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+    out.innerHTML = lanes.map(l => `<div class="hit"><b>${esc(l.Name)}</b>
+        <span class="fixtag">${l.LiveListings != null ? l.LiveListings + ' live listings' : 'supply unknown'}</span>
+        <div class="meta">${esc(l.Why)}</div>
+        <div class="meta"><code>{ "name": "${esc(l.Name)}", "query": "${esc(l.Query)}", ${l.CategoryIds ? '"categoryIds": "' + esc(l.CategoryIds) + '", ' : ''}"minPrice": ${Number(l.MinPrice)}, "maxPrice": ${Number(l.MaxPrice)}, "cexQuery": "", "buyingOptions": "FIXED_PRICE" }</code></div>
+      </div>`).join('') || '<p class="hint">No lanes returned.</p>';
+  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+  busy(f, false);
+};
 
 /* typos */
 $('#typoForm').onsubmit = async e => {

@@ -124,6 +124,13 @@ Assert ((& $module { $script:AlertCount }) -eq 2) 'live run sends one alert per 
 $live2 = @(Invoke-FlipScan)
 Assert ($live2.Count -eq 0) 'second live run: everything already seen'
 
+Write-Host "`n== Chat system prompt =="
+$prompt = & $module { Get-FlipChatSystemPrompt }
+Assert ($prompt -match 'FlipKit Copilot') 'prompt has persona'
+Assert ($prompt -match '1 completed flips') 'prompt embeds live ledger stats'
+Assert ($prompt -match 'Test search') 'prompt embeds scanner searches'
+Assert ($prompt -match 'Garmin FR245') 'prompt lists open stock'
+
 $env:FLIPKIT_CONFIG = $null
 Remove-Item -Recurse -Force $tempRoot
 

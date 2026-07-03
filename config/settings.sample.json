@@ -18,6 +18,10 @@
     "telegramBotToken": "",
     "telegramChatId": ""
   },
+  "anthropic": {
+    "apiKey": "",
+    "model": "claude-opus-4-8"
+  },
   "_comment": "categoryIds (UK): 27386 graphics cards, 164 CPUs, 1244 motherboards, 179 desktop PCs, 177 laptops. minPrice filters out box-only/accessory noise.",
   "searches": [
     {

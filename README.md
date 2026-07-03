@@ -27,12 +27,24 @@ pwsh -File app/Start-FlipKitApp.ps1     # opens http://localhost:8321
 A dependency-free local dashboard (pure PowerShell HTTP server + one HTML page, localhost-only):
 
 - **Deal checker** — type a model + buy price, get the BUY / RISKY / PASS verdict with comps, margins, and the CeX floor
-- **Scanner** — run all saved searches on demand (dry run or live-with-alerts); the scheduled task still runs on its own
+- **Scanner** — run all saved searches on demand (dry run or live-with-alerts), then **Triage with Claude**: hits grouped into Hot / Worth a look / Skip by estimated net profit and repair difficulty
 - **Ledger** — record purchases, mark items sold, see open stock at a glance
 - **Stats** — profit tiles, net profit by category, days-to-sell — the "what deserves more capital" view
+- **Market** — live supply/price pulse for any keyword, and Claude-suggested new search lanes checked against real eBay volume
+- **Chat** — Claude as business copilot, with your live ledger, stats, and searches as context
 - **Typos** — misspelling variants as chips that click straight through to eBay searches
 
 Tabs are bookmarkable (`/#stats`). Light and dark mode follow your system.
+
+### Claude features (Chat, Triage, Suggest)
+
+Need an Anthropic API key: create one at [console.anthropic.com](https://console.anthropic.com) (add a few pounds of credit), then in `config/settings.json`:
+
+```json
+"anthropic": { "apiKey": "sk-ant-...", "model": "claude-opus-4-8" }
+```
+
+Costs are pay-per-use — a chat message or a 40-item triage typically costs a few pence on the default model. Set `"model": "claude-haiku-4-5"` for a cheaper/faster option.
 
 ## Setup (once, ~20 minutes)
 
