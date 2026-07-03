@@ -18,27 +18,51 @@
     "telegramBotToken": "",
     "telegramChatId": ""
   },
+  "_comment": "categoryIds (UK): 27386 graphics cards, 164 CPUs, 1244 motherboards, 179 desktop PCs, 177 laptops. minPrice filters out box-only/accessory noise.",
   "searches": [
     {
-      "name": "RTX 3060 under market",
-      "query": "rtx 3060",
-      "maxPrice": 180,
-      "cexQuery": "rtx 3060",
+      "name": "Faulty/untested GPUs (whole category)",
+      "query": "(faulty, spares, repairs, untested, no display)",
+      "categoryIds": "27386",
+      "minPrice": 30,
+      "maxPrice": 250,
+      "cexQuery": "",
+      "buyingOptions": "FIXED_PRICE"
+    },
+    {
+      "name": "Faulty/untested CPUs",
+      "query": "(faulty, untested, spares, bent pins)",
+      "categoryIds": "164",
+      "minPrice": 15,
+      "maxPrice": 120,
+      "cexQuery": "",
+      "buyingOptions": "FIXED_PRICE"
+    },
+    {
+      "name": "Part-out desktop towers",
+      "query": "(faulty, spares, no display, untested)",
+      "categoryIds": "179",
+      "minPrice": 40,
+      "maxPrice": 150,
+      "cexQuery": "",
+      "buyingOptions": "FIXED_PRICE|AUCTION"
+    },
+    {
+      "name": "Gaming laptops spares/repair",
+      "query": "gaming (faulty, spares, repairs)",
+      "categoryIds": "177",
+      "minPrice": 50,
+      "maxPrice": 200,
+      "cexQuery": "",
       "buyingOptions": "FIXED_PRICE"
     },
     {
       "name": "Garmin faulty/untested",
       "query": "garmin watch (faulty, spares, repairs, untested)",
+      "minPrice": 5,
       "maxPrice": 40,
       "cexQuery": "",
       "buyingOptions": "FIXED_PRICE"
-    },
-    {
-      "name": "Gaming PC part-out candidates",
-      "query": "gaming pc (no display, faulty, spares)",
-      "maxPrice": 120,
-      "cexQuery": "",
-      "buyingOptions": "FIXED_PRICE|AUCTION"
     }
   ]
 }

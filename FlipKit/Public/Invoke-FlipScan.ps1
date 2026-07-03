@@ -35,8 +35,12 @@ function Invoke-FlipScan {
 
         $buyingOptions = if ($search.PSObject.Properties['buyingOptions'] -and $search.buyingOptions) { $search.buyingOptions } else { 'FIXED_PRICE' }
 
+        $findParams = @{ Query = $search.query; MaxPrice = $search.maxPrice; BuyingOptions = $buyingOptions }
+        if ($search.PSObject.Properties['minPrice'] -and $search.minPrice) { $findParams.MinPrice = $search.minPrice }
+        if ($search.PSObject.Properties['categoryIds'] -and $search.categoryIds) { $findParams.CategoryIds = $search.categoryIds }
+
         $items = try {
-            Find-EbayDeals -Query $search.query -MaxPrice $search.maxPrice -BuyingOptions $buyingOptions
+            Find-EbayDeals @findParams
         }
         catch {
             Write-Warning "Search '$($search.name)' failed: $_"

@@ -15,6 +15,10 @@ function Find-EbayDeals {
     param(
         [Parameter(Mandatory, Position = 0)][string]$Query,
         [Parameter(Mandatory)][double]$MaxPrice,
+        [double]$MinPrice = 0,
+        # eBay category ids, comma-separated (e.g. '27386' = Graphics Cards) —
+        # scopes the search so broad keyword sets stay on-topic.
+        [string]$CategoryIds,
         # FIXED_PRICE, AUCTION, or 'FIXED_PRICE|AUCTION'
         [string]$BuyingOptions = 'FIXED_PRICE',
         [int]$Limit = 50,
@@ -24,9 +28,11 @@ function Find-EbayDeals {
     $cfg = Get-FlipConfig
     if (-not $MarketplaceId) { $MarketplaceId = $cfg.ebay.marketplaceId }
 
-    $filter = 'price:[..{0}],priceCurrency:GBP,buyingOptions:{{{1}}}' -f $MaxPrice, $BuyingOptions
+    $priceRange = if ($MinPrice -gt 0) { '[{0}..{1}]' -f $MinPrice, $MaxPrice } else { '[..{0}]' -f $MaxPrice }
+    $filter = 'price:{0},priceCurrency:GBP,buyingOptions:{{{1}}}' -f $priceRange, $BuyingOptions
     $uri = 'https://api.ebay.com/buy/browse/v1/item_summary/search?q={0}&filter={1}&sort=newlyListed&limit={2}' -f
         [uri]::EscapeDataString($Query), [uri]::EscapeDataString($filter), $Limit
+    if ($CategoryIds) { $uri += '&category_ids=' + [uri]::EscapeDataString($CategoryIds) }
 
     $resp = Invoke-RestMethod -Uri $uri -Headers @{
         Authorization                = "Bearer $(Get-EbayToken)"
