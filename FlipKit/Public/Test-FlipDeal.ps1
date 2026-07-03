@@ -43,8 +43,12 @@ function Test-FlipDeal {
     if (-not $Comps) { throw "No comps available for '$SearchTerm' — can't judge this deal." }
 
     if (-not $PSBoundParameters.ContainsKey('CexCashFloor') -and -not $SkipCex) {
-        $cex = Get-CexPrice -Query $SearchTerm -Top 1 -ErrorAction SilentlyContinue
-        if ($cex) { $CexCashFloor = $cex[0].CashBuy }
+        # CeX is a bonus data source — a bot-wall block there must not sink the verdict.
+        try {
+            $cex = @(Get-CexPrice -Query $SearchTerm -Top 1)
+            if ($cex) { $CexCashFloor = $cex[0].CashBuy }
+        }
+        catch { Write-Verbose "CeX floor unavailable: $_" }
     }
 
     $net = {

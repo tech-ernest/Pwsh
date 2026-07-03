@@ -76,7 +76,9 @@ function Invoke-FlipWebRequest {
     foreach ($attempt in 1..2) {
         try {
             if ($curl) {
-                $args = @('-sS', '--fail-with-body', '--compressed', '--max-time', $TimeoutSec, '-A', $script:BrowserUA)
+                # -4: residential IPv6 ranges score worse with bot walls (Cloudflare
+                # blocked a user's IPv6 while IPv4 passed) — prefer IPv4 throughout.
+                $args = @('-sS', '-4', '--fail-with-body', '--compressed', '--max-time', $TimeoutSec, '-A', $script:BrowserUA)
                 foreach ($k in $Headers.Keys) { $args += @('-H', "${k}: $($Headers[$k])") }
                 if ($CookieJar) { $args += @('-b', $CookieJar, '-c', $CookieJar) }
                 $args += $Uri
