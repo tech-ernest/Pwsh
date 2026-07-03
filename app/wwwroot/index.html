@@ -210,7 +210,7 @@
   </div>
   <div class="card">
     <h2>Suggest new search lanes</h2>
-    <p class="hint">Claude proposes hot lanes that fit your capital and the 30% rule, each checked against live eBay supply. Copy the ones you like into <code>config/settings.json</code>.</p>
+    <p class="hint">The AI proposes hot lanes that fit your capital and the 30% rule, each checked against live eBay supply. Copy the ones you like into <code>config/settings.json</code>.</p>
     <form class="row" id="suggestForm"><button class="go">Suggest lanes</button></form>
     <div id="suggestOut"></div>
   </div>
@@ -219,7 +219,7 @@
 <section id="tab-chat">
   <div class="card">
     <h2>Business copilot</h2>
-    <p class="hint">Claude with your live ledger, stats and searches as context. Ask about deals, pricing, what deserves more capital, listing copy…</p>
+    <p class="hint">Your configured AI model (Ollama / Groq / Claude — see config) with your live ledger, stats and searches as context. Ask about deals, pricing, what deserves more capital, listing copy…</p>
     <div id="chatLog"></div>
     <form id="chatForm">
       <input name="q" placeholder="Is £45 sane for a faulty Forerunner 245?" autocomplete="off">
@@ -270,7 +270,7 @@ if (location.hash) openTab(location.hash.slice(1));
 /* status */
 api('/api/status').then(s => {
   $('#status').textContent = s.configFound
-    ? `config ok · eBay keys ${s.ebayKeys ? '✓' : 'missing'} · alerts ${s.alertsChannel ? '✓' : 'not set'} · Claude ${s.claude ? '✓' : 'not set'} · ${s.searches} saved searches`
+    ? `config ok · eBay keys ${s.ebayKeys ? '✓' : 'missing'} · alerts ${s.alertsChannel ? '✓' : 'not set'} · AI ${s.ai ? '✓' : 'not set'} · ${s.searches} saved searches`
     : 'no config/settings.json yet — copy the sample and fill it in';
 }).catch(() => $('#status').textContent = 'status unavailable');
 
@@ -311,7 +311,7 @@ $('#scanForm').onsubmit = async e => {
     lastHits = hits;
     out.innerHTML = hits.length === 0
       ? '<p class="hint">No new hits — everything current has been seen before (or searches failed; check the server window).</p>'
-      : `<p style="margin:10px 0"><button class="go" onclick="triage()">Triage with Claude — group by profit &amp; fix difficulty</button></p>`
+      : `<p style="margin:10px 0"><button class="go" onclick="triage()">AI triage — group by profit &amp; fix difficulty</button></p>`
         + hits.map(hitHtml).join('');
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
   busy(f, false);
@@ -319,7 +319,7 @@ $('#scanForm').onsubmit = async e => {
 
 window.triage = async () => {
   const out = $('#scanOut');
-  out.innerHTML = '<p class="hint">Claude is scoring ' + Math.min(lastHits.length, 40) + ' listings for resale value and repair difficulty… (10–30s)</p>';
+  out.innerHTML = '<p class="hint">The AI is scoring ' + Math.min(lastHits.length, 40) + ' listings for resale value and repair difficulty… (can take a minute on local models)</p>';
   try {
     const scored = await api('/api/triage', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ hits: lastHits }) });
     const tiers = [
@@ -473,7 +473,7 @@ $('#pulseForm').onsubmit = async e => {
 $('#suggestForm').onsubmit = async e => {
   e.preventDefault();
   const f = e.target, out = $('#suggestOut');
-  busy(f, true); out.innerHTML = '<p class="hint">Claude is proposing lanes and checking live supply… (20–60s)</p>';
+  busy(f, true); out.innerHTML = '<p class="hint">Proposing lanes and checking live supply… (can take a minute)</p>';
   try {
     const lanes = await api('/api/suggest', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
     out.innerHTML = lanes.map(l => `<div class="hit"><b>${esc(l.Name)}</b>

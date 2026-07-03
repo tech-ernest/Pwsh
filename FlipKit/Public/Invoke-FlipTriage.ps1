@@ -1,7 +1,7 @@
 function Invoke-FlipTriage {
     <#
     .SYNOPSIS
-        Has Claude score scan hits by expected profit and repair difficulty.
+        Has the configured AI model score scan hits by expected profit and repair difficulty.
     .DESCRIPTION
         Sends the hit list to Claude with a strict JSON schema (structured
         outputs) so every item comes back with a tier (hot / worth_a_look /
@@ -13,8 +13,7 @@ function Invoke-FlipTriage {
     [CmdletBinding()]
     param(
         # Scan hits: objects with Title, Price, Condition (Search/Url/Note optional)
-        [Parameter(Mandatory, ValueFromPipeline)][array]$Hits,
-        [string]$Model
+        [Parameter(Mandatory, ValueFromPipeline)][array]$Hits
     )
 
     begin { $all = [System.Collections.Generic.List[object]]::new() }
@@ -64,18 +63,9 @@ Task: triage the numbered listings below for this reseller. For each item estima
 Judge fixability from the fault described in the title (e.g. "battery doesn't hold charge" = easy; "no display" on a GPU = moderate-to-hard; "artefacting" = hard). Box-only, cables, brackets and other accessories are skip unless genuinely profitable as accessories.
 '@
 
-        $resp = Invoke-FlipClaudeApi -Model $Model -Body @{
-            max_tokens    = 16000
-            thinking      = @{ type = 'adaptive' }
-            system        = $system
-            output_config = @{ format = @{ type = 'json_schema'; schema = $schema } }
-            messages      = @(@{ role = 'user'; content = ($itemLines -join "`n") })
-        }
-
-        if ($resp.stop_reason -eq 'refusal') { throw 'Claude declined to triage this batch.' }
-
-        $text = (@($resp.content) | Where-Object { $_.type -eq 'text' } | Select-Object -First 1).text
-        $parsed = $text | ConvertFrom-Json
+        $text = Invoke-FlipAi -System $system -JsonSchema $schema `
+            -Messages @(@{ role = 'user'; content = ($itemLines -join "`n") })
+        $parsed = ConvertFrom-FlipAiJson -Text $text
 
         foreach ($t in $parsed.items) {
             if ($t.index -lt 0 -or $t.index -ge $batch.Count) { continue }

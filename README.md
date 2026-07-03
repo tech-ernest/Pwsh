@@ -36,15 +36,30 @@ A dependency-free local dashboard (pure PowerShell HTTP server + one HTML page, 
 
 Tabs are bookmarkable (`/#stats`). Light and dark mode follow your system.
 
-### Claude features (Chat, Triage, Suggest)
+### AI features (Chat, Triage, Suggest) — free by default
 
-Need an Anthropic API key: create one at [console.anthropic.com](https://console.anthropic.com) (add a few pounds of credit), then in `config/settings.json`:
+The AI backend is configurable via the `ai` section in `config/settings.json`. Three options:
 
+**Ollama — free, local, private (recommended).** Install from [ollama.com](https://ollama.com), then:
+```powershell
+ollama pull llama3.1:8b     # or qwen2.5:14b if you have 12GB+ VRAM
+```
 ```json
-"anthropic": { "apiKey": "sk-ant-...", "model": "claude-opus-4-8" }
+"ai": { "provider": "ollama", "model": "llama3.1:8b" }
 ```
 
-Costs are pay-per-use — a chat message or a 40-item triage typically costs a few pence on the default model. Set `"model": "claude-haiku-4-5"` for a cheaper/faster option.
+**Free hosted tiers (better quality, needs a free account).** Any OpenAI-compatible API works, e.g. Groq's free tier runs Llama 3.3 70B fast:
+```json
+"ai": { "provider": "openai", "baseUrl": "https://api.groq.com/openai", "model": "llama-3.3-70b-versatile", "apiKey": "gsk_..." }
+```
+(Google Gemini's free tier also works: baseUrl `https://generativelanguage.googleapis.com/v1beta/openai`, model `gemini-2.5-flash`.)
+
+**Claude API — paid, best quality.** Key from console.anthropic.com:
+```json
+"ai": { "provider": "anthropic", "model": "claude-opus-4-8", "apiKey": "sk-ant-..." }
+```
+
+Local-model caveat: an 8B model's price estimates in Triage are rougher than a frontier model's — treat them as a first-pass sort and sanity-check anything you'd actually buy.
 
 ## Setup (once, ~20 minutes)
 

@@ -52,10 +52,10 @@ function Get-FlipMarketPulse {
 function Invoke-FlipSuggest {
     <#
     .SYNOPSIS
-        Asks Claude to propose new scanner search lanes, then checks live
-        supply for each via the eBay API.
+        Asks the configured AI model to propose new scanner search lanes,
+        then checks live supply for each via the eBay API.
     .DESCRIPTION
-        Claude suggests lanes that fit the business (niches, capital, the
+        The model suggests lanes that fit the business (niches, capital, the
         30% rule) with concrete queries/categories/price caps; each lane is
         then enriched with a live-listing count so you can see which markets
         actually have volume before adding them to config.
@@ -63,7 +63,7 @@ function Invoke-FlipSuggest {
         Invoke-FlipSuggest | Format-Table Name, Query, MaxPrice, LiveListings
     #>
     [CmdletBinding()]
-    param([string]$Model)
+    param()
 
     $schema = @{
         type                 = 'object'
@@ -95,18 +95,9 @@ function Invoke-FlipSuggest {
 Task: propose 5-8 NEW scanner search lanes for this reseller - markets that are currently hot on eBay UK with strong resale demand, that fit the capital limits and the 30% margin rule, and that are not already covered by the active searches listed above. Prefer testable, brand-name, small-parcel goods. For each lane give: a short name; the eBay query string (space = AND, parentheses with commas = OR, e.g. "(faulty, spares, untested)"); category_ids where a category scope helps (27386 graphics cards, 164 CPUs, 1244 motherboards, 179 desktop PCs, 177 laptops, 175672 monitors, 139971 video game consoles - empty string if none fits); a sensible min_price (to filter accessory junk) and max_price; and one sentence on why the lane is hot right now and what the typical flip looks like.
 '@
 
-    $resp = Invoke-FlipClaudeApi -Model $Model -Body @{
-        max_tokens    = 16000
-        thinking      = @{ type = 'adaptive' }
-        system        = $system
-        output_config = @{ format = @{ type = 'json_schema'; schema = $schema } }
-        messages      = @(@{ role = 'user'; content = 'Suggest new search lanes.' })
-    }
-
-    if ($resp.stop_reason -eq 'refusal') { throw 'Claude declined the suggestion request.' }
-
-    $text = (@($resp.content) | Where-Object { $_.type -eq 'text' } | Select-Object -First 1).text
-    $parsed = $text | ConvertFrom-Json
+    $text = Invoke-FlipAi -System $system -JsonSchema $schema `
+        -Messages @(@{ role = 'user'; content = 'Suggest new search lanes.' })
+    $parsed = ConvertFrom-FlipAiJson -Text $text
 
     foreach ($lane in $parsed.lanes) {
         # Enrich with live supply so dead markets are visible before adding to config.

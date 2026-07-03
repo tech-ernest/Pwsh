@@ -18,9 +18,12 @@
     "telegramBotToken": "",
     "telegramChatId": ""
   },
-  "anthropic": {
+  "ai": {
+    "provider": "ollama",
+    "model": "llama3.1:8b",
+    "baseUrl": "",
     "apiKey": "",
-    "model": "claude-opus-4-8"
+    "_providers": "ollama = free, local (install from ollama.com, then: ollama pull llama3.1:8b). openai = any OpenAI-compatible API incl. free tiers: Groq (baseUrl https://api.groq.com/openai, model llama-3.3-70b-versatile), Gemini (baseUrl https://generativelanguage.googleapis.com/v1beta/openai, model gemini-2.5-flash), OpenRouter free models. anthropic = Claude API, paid, best quality (apiKey from console.anthropic.com, model claude-opus-4-8)."
   },
   "_comment": "categoryIds (UK): 27386 graphics cards, 164 CPUs, 1244 motherboards, 179 desktop PCs, 177 laptops. minPrice filters out box-only/accessory noise.",
   "searches": [

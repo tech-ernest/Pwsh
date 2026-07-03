@@ -46,75 +46,22 @@ Your job: help evaluate deals, think through pricing and margins, decide which c
     $lines -join "`n`n"
 }
 
-function Invoke-FlipClaudeApi {
-    <#
-        Shared Anthropic Messages API caller (PowerShell has no official SDK,
-        so this is raw HTTP). $Body is the request hashtable minus model,
-        which is resolved from config here.
-    #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)][hashtable]$Body,
-        [string]$Model
-    )
-
-    $cfg = Get-FlipConfig
-    $anthropic = if ($cfg.PSObject.Properties['anthropic']) { $cfg.anthropic } else { $null }
-    if (-not $anthropic -or -not $anthropic.apiKey) {
-        throw "Anthropic API key missing. Get one at console.anthropic.com and add it to config/settings.json under `"anthropic`": { `"apiKey`": `"sk-ant-...`" }."
-    }
-
-    if (-not $Model) {
-        $Model = if ($anthropic.PSObject.Properties['model'] -and $anthropic.model) { $anthropic.model } else { 'claude-opus-4-8' }
-    }
-    $Body.model = $Model
-
-    $json = $Body | ConvertTo-Json -Depth 12
-
-    try {
-        Invoke-RestMethod -Method Post -Uri 'https://api.anthropic.com/v1/messages' `
-            -Headers @{ 'x-api-key' = $anthropic.apiKey; 'anthropic-version' = '2023-06-01' } `
-            -ContentType 'application/json; charset=utf-8' `
-            -Body ([Text.Encoding]::UTF8.GetBytes($json)) `
-            -TimeoutSec 300
-    }
-    catch {
-        # Surface the API's own error message (invalid key, overloaded, ...) instead of raw HTTP noise.
-        $apiMessage = try { ($_.ErrorDetails.Message | ConvertFrom-Json).error.message } catch { $null }
-        if ($apiMessage) { throw "Claude API error: $apiMessage" }
-        throw
-    }
-}
-
 function Invoke-FlipChat {
     <#
     .SYNOPSIS
-        Sends a chat conversation to Claude with live business context; returns the reply text.
+        Chat with the configured AI model with live business context; returns the reply text.
     .DESCRIPTION
-        Needs anthropic.apiKey in config/settings.json - create one at
-        console.anthropic.com. Model defaults to claude-opus-4-8; set
-        anthropic.model in config to change it (e.g. claude-haiku-4-5 for cheaper).
+        Uses the provider from config's "ai" section - Ollama (free, local),
+        any OpenAI-compatible API (Groq/OpenRouter/Gemini free tiers), or the
+        Claude API. See config/settings.sample.json.
     .EXAMPLE
         Invoke-FlipChat -Messages @(@{ role = 'user'; content = 'Is 40 quid sane for a faulty Forerunner 245?' })
     #>
     [CmdletBinding()]
     param(
         # Full conversation history: array of @{ role = 'user'|'assistant'; content = '...' }
-        [Parameter(Mandatory)][array]$Messages,
-        [string]$Model
+        [Parameter(Mandatory)][array]$Messages
     )
 
-    $resp = Invoke-FlipClaudeApi -Model $Model -Body @{
-        max_tokens = 16000
-        thinking   = @{ type = 'adaptive' }
-        system     = Get-FlipChatSystemPrompt
-        messages   = $Messages
-    }
-
-    if ($resp.stop_reason -eq 'refusal') {
-        return '(Claude declined to answer that request.)'
-    }
-
-    # Thinking blocks come first; the reply is the text blocks.
-    (@($resp.content) | Where-Object { $_.type -eq 'text' } | ForEach-Object { $_.text }) -join "`n"
+    Invoke-FlipAi -System (Get-FlipChatSystemPrompt) -Messages $Messages
 }

@@ -71,7 +71,7 @@ try {
                         configFound   = [bool]$cfg
                         ebayKeys      = [bool]($cfg -and $cfg.ebay.clientId -and $cfg.ebay.clientSecret)
                         alertsChannel = [bool]($cfg -and ($cfg.alerts.ntfyTopic -or $cfg.alerts.telegramBotToken))
-                        claude        = [bool]($cfg -and $cfg.PSObject.Properties['anthropic'] -and $cfg.anthropic.apiKey)
+                        ai            = [bool]($cfg -and (($cfg.PSObject.Properties['ai'] -and $cfg.ai.provider) -or ($cfg.PSObject.Properties['anthropic'] -and $cfg.anthropic.apiKey)))
                         searches      = if ($cfg) { @($cfg.searches).Count } else { 0 }
                     }
                 }
