@@ -138,6 +138,15 @@ try {
                     Write-Json $res (Get-FlipLedgerStats)
                 }
 
+                '^GET /api/settings$' {
+                    Write-Json $res (Get-FlipSettingsView)
+                }
+
+                '^POST /api/settings$' {
+                    Save-FlipSettings -New $body.config
+                    Write-Json $res @{ ok = $true }
+                }
+
                 '^GET /api/hits$' {
                     Write-Json $res @(Get-FlipRecentHits)
                 }

@@ -115,6 +115,10 @@
   .tier { margin: 14px 0 4px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
   .tier .dot { width: 10px; height: 10px; border-radius: 50%; }
   .fixtag { display: inline-block; font-size: 11.5px; border: 1px solid var(--grid); border-radius: 10px; padding: 1px 8px; color: var(--ink-2); margin-left: 6px; }
+  /* settings */
+  .sgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+  .srow { border: 1px solid var(--grid); border-radius: 8px; padding: 10px 12px; margin: 8px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; align-items: end; }
+  .srow input, .srow select { min-width: 0; }
 </style>
 </head>
 <body>
@@ -130,6 +134,7 @@
   <button data-tab="market">Market</button>
   <button data-tab="chat">Chat</button>
   <button data-tab="typos">Typos</button>
+  <button data-tab="settings">Settings</button>
 </nav>
 <main>
 
@@ -164,6 +169,10 @@
   <div class="card">
     <h2>Recent hits</h2>
     <p class="hint">Everything the scanner found lately, scheduled runs included. Mark reviewed items as not interested to clear them.</p>
+    <form class="row" style="margin-bottom:8px">
+      <label>Show deals from
+        <select id="scanFilter"><option value="">all searches</option></select></label>
+    </form>
     <div id="hitsOut" class="hint">loading…</div>
   </div>
 </section>
@@ -246,6 +255,65 @@
   </div>
 </section>
 
+<section id="tab-settings">
+  <div class="card">
+    <h2>eBay API</h2>
+    <div class="sgrid">
+      <label>Client ID (App ID) <input id="s-ebay-clientId"></label>
+      <label>Cert ID (secret) <input id="s-ebay-clientSecret" type="password" autocomplete="off"></label>
+      <label>Marketplace <input id="s-ebay-marketplaceId"></label>
+      <label>Site <input id="s-ebay-site"></label>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Fees &amp; rules</h2>
+    <div class="sgrid">
+      <label>Fee rate (0.13 = 13%) <input id="s-fees-feeRate" type="number" step="0.005"></label>
+      <label>Fixed fee £ <input id="s-fees-feeFixed" type="number" step="0.05"></label>
+      <label>Default postage £ <input id="s-fees-defaultPostage" type="number" step="0.05"></label>
+      <label>Min margin % <input id="s-rules-minMarginPct" type="number" step="1"></label>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Alerts</h2>
+    <div class="sgrid">
+      <label>ntfy topic <input id="s-alerts-ntfyTopic"></label>
+      <label>Max alerts per scan <input id="s-alerts-maxPerScan" type="number" step="1"></label>
+      <label>Telegram bot token <input id="s-alerts-telegramBotToken" type="password" autocomplete="off"></label>
+      <label>Telegram chat id <input id="s-alerts-telegramChatId"></label>
+    </div>
+  </div>
+  <div class="card">
+    <h2>AI</h2>
+    <div class="sgrid">
+      <label>Provider
+        <select id="s-ai-provider"><option value="ollama">ollama (free, local)</option><option value="openai">openai-compatible (Groq etc.)</option><option value="anthropic">anthropic (Claude)</option></select></label>
+      <label>Model <input id="s-ai-model"></label>
+      <label>Base URL <input id="s-ai-baseUrl" placeholder="https://api.groq.com/openai"></label>
+      <label>API key <input id="s-ai-apiKey" type="password" autocomplete="off"></label>
+    </div>
+  </div>
+  <div class="card">
+    <h2>CeX (Algolia fallback)</h2>
+    <div class="sgrid">
+      <label>Algolia App Id <input id="s-cex-algoliaAppId"></label>
+      <label>Algolia API key <input id="s-cex-algoliaApiKey" type="password" autocomplete="off"></label>
+      <label>Index <input id="s-cex-algoliaIndex" placeholder="prod_cex_uk"></label>
+    </div>
+    <p class="hint">See README "Fixing CeX" for where these two public keys come from.</p>
+  </div>
+  <div class="card">
+    <h2>Scanner searches</h2>
+    <div id="s-searches"></div>
+    <p><button class="link" onclick="addSearchRow()">➕ add search</button></p>
+  </div>
+  <div class="card">
+    <p class="hint">Secret fields show blank when a value is saved — leave blank to keep it. Changes apply from the next scan; no restart needed.</p>
+    <form class="row" id="settingsForm"><button class="go">Save all settings</button></form>
+    <div id="settingsOut"></div>
+  </div>
+</section>
+
 </main>
 <script>
 const $ = s => document.querySelector(s);
@@ -270,6 +338,7 @@ function openTab(name) {
   if (name === 'ledger') loadLedger();
   if (name === 'stats') loadStats();
   if (name === 'scan') loadHits();
+  if (name === 'settings') loadSettings();
 }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => openTab(b.dataset.tab));
 if (location.hash) openTab(location.hash.slice(1));
@@ -325,18 +394,30 @@ $('#scanForm').onsubmit = async e => {
   busy(f, false);
 };
 
-async function loadHits() {
+let allRecentHits = [];
+
+function renderHits() {
   const out = $('#hitsOut');
-  try {
-    const hits = await api('/api/hits');
-    out.innerHTML = hits.length === 0
-      ? '<p class="hint">Nothing yet — history builds as live scans run.</p>'
-      : hits.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
-          <div class="meta">${esc(h.FoundAt)} · ${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}
-            ${h.Note ? '· <b>' + esc(h.Note) + '</b> ' : ''}
-            · <button class="link" data-id="${esc(h.ItemId)}" onclick="dismissHit(this.dataset.id)">not interested</button></div></div>`).join('');
-  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+  const want = $('#scanFilter').value;
+  const hits = want ? allRecentHits.filter(h => h.Search === want) : allRecentHits;
+  out.innerHTML = hits.length === 0
+    ? '<p class="hint">Nothing here — history builds as live scans run, or try a different filter.</p>'
+    : hits.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
+        <div class="meta">${esc(h.FoundAt)} · ${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}
+          ${h.Note ? '· <b>' + esc(h.Note) + '</b> ' : ''}
+          · <button class="link" data-id="${esc(h.ItemId)}" onclick="dismissHit(this.dataset.id)">not interested</button></div></div>`).join('');
 }
+
+async function loadHits() {
+  try {
+    allRecentHits = await api('/api/hits');
+    const sel = $('#scanFilter'), keep = sel.value;
+    const names = [...new Set(allRecentHits.map(h => h.Search).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">all searches</option>' + names.map(n => `<option${n === keep ? ' selected' : ''}>${esc(n)}</option>`).join('');
+    renderHits();
+  } catch (err) { $('#hitsOut').innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+}
+$('#scanFilter').onchange = renderHits;
 
 window.dismissHit = async id => {
   try {
@@ -531,6 +612,76 @@ window.addLane = async btn => {
     btn.textContent = '✓ added — next scan picks it up';
     btn.disabled = true;
   } catch (err) { alert(err.message); }
+};
+
+/* settings */
+const sVal = id => document.getElementById(id).value.trim();
+const sSet = (id, v) => { document.getElementById(id).value = v ?? ''; };
+const SECRET_HINT = 'saved — leave blank to keep';
+
+function searchRowHtml(s = {}) {
+  const opt = v => `<option ${s.buyingOptions === v ? 'selected' : ''}>${v}</option>`;
+  return `<div class="srow">
+    <label>Name <input data-k="name" value="${esc(s.name || '')}"></label>
+    <label>Query <input data-k="query" value="${esc(s.query || '')}"></label>
+    <label>Typo hunt (brand) <input data-k="typoHunt" value="${esc(s.typoHunt || '')}" placeholder="optional"></label>
+    <label>Category ids <input data-k="categoryIds" value="${esc(s.categoryIds || '')}" placeholder="optional"></label>
+    <label>Min £ <input data-k="minPrice" type="number" value="${s.minPrice ?? ''}"></label>
+    <label>Max £ <input data-k="maxPrice" type="number" value="${s.maxPrice ?? ''}"></label>
+    <label>CeX query <input data-k="cexQuery" value="${esc(s.cexQuery || '')}" placeholder="optional"></label>
+    <label>Buying <select data-k="buyingOptions">${opt('FIXED_PRICE')}${opt('FIXED_PRICE|AUCTION')}${opt('AUCTION')}</select></label>
+    <label>&nbsp;<button class="link" onclick="this.closest('.srow').remove()">🗑 remove</button></label>
+  </div>`;
+}
+window.addSearchRow = () => $('#s-searches').insertAdjacentHTML('beforeend', searchRowHtml());
+
+async function loadSettings() {
+  try {
+    const v = await api('/api/settings');
+    const c = v.config;
+    sSet('s-ebay-clientId', c.ebay?.clientId); sSet('s-ebay-marketplaceId', c.ebay?.marketplaceId ?? 'EBAY_GB'); sSet('s-ebay-site', c.ebay?.site ?? 'www.ebay.co.uk');
+    sSet('s-fees-feeRate', c.fees?.feeRate); sSet('s-fees-feeFixed', c.fees?.feeFixed); sSet('s-fees-defaultPostage', c.fees?.defaultPostage);
+    sSet('s-rules-minMarginPct', c.rules?.minMarginPct);
+    sSet('s-alerts-ntfyTopic', c.alerts?.ntfyTopic); sSet('s-alerts-maxPerScan', c.alerts?.maxPerScan ?? 10); sSet('s-alerts-telegramChatId', c.alerts?.telegramChatId);
+    sSet('s-ai-provider', c.ai?.provider ?? 'ollama'); sSet('s-ai-model', c.ai?.model); sSet('s-ai-baseUrl', c.ai?.baseUrl);
+    sSet('s-cex-algoliaAppId', c.cex?.algoliaAppId); sSet('s-cex-algoliaIndex', c.cex?.algoliaIndex ?? 'prod_cex_uk');
+    for (const [id, set] of [['s-ebay-clientSecret', v.secretsSet.ebayClientSecret], ['s-ai-apiKey', v.secretsSet.aiApiKey],
+                             ['s-alerts-telegramBotToken', v.secretsSet.telegramBotToken], ['s-cex-algoliaApiKey', v.secretsSet.cexAlgoliaApiKey]]) {
+      const el = document.getElementById(id); el.value = ''; el.placeholder = set ? SECRET_HINT : '';
+    }
+    $('#s-searches').innerHTML = (c.searches || []).map(searchRowHtml).join('');
+  } catch (err) { $('#settingsOut').innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+}
+
+$('#settingsForm').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target, out = $('#settingsOut');
+  const searches = [...document.querySelectorAll('#s-searches .srow')].map(row => {
+    const g = k => row.querySelector(`[data-k="${k}"]`).value.trim();
+    const s = { name: g('name'), query: g('query'), maxPrice: Number(g('maxPrice')) || 0, cexQuery: g('cexQuery'), buyingOptions: g('buyingOptions') };
+    if (g('typoHunt')) s.typoHunt = g('typoHunt');
+    if (g('categoryIds')) s.categoryIds = g('categoryIds');
+    if (g('minPrice')) s.minPrice = Number(g('minPrice'));
+    return s;
+  }).filter(s => s.name && s.query && s.maxPrice > 0);
+
+  const config = {
+    ebay: { clientId: sVal('s-ebay-clientId'), clientSecret: sVal('s-ebay-clientSecret'), marketplaceId: sVal('s-ebay-marketplaceId'), site: sVal('s-ebay-site') },
+    fees: { feeRate: Number(sVal('s-fees-feeRate')), feeFixed: Number(sVal('s-fees-feeFixed')), defaultPostage: Number(sVal('s-fees-defaultPostage')) },
+    rules: { minMarginPct: Number(sVal('s-rules-minMarginPct')) },
+    alerts: { ntfyTopic: sVal('s-alerts-ntfyTopic'), maxPerScan: Number(sVal('s-alerts-maxPerScan')) || 10, telegramBotToken: sVal('s-alerts-telegramBotToken'), telegramChatId: sVal('s-alerts-telegramChatId') },
+    ai: { provider: sVal('s-ai-provider'), model: sVal('s-ai-model'), baseUrl: sVal('s-ai-baseUrl'), apiKey: sVal('s-ai-apiKey') },
+    cex: { algoliaAppId: sVal('s-cex-algoliaAppId'), algoliaApiKey: sVal('s-cex-algoliaApiKey'), algoliaIndex: sVal('s-cex-algoliaIndex') },
+    searches
+  };
+
+  busy(f, true);
+  try {
+    await api('/api/settings', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ config }) });
+    out.innerHTML = '<p class="ok">Saved. Next scan uses the new settings.</p>';
+    loadSettings();
+  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+  busy(f, false);
 };
 
 /* typos */

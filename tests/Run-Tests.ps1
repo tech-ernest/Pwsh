@@ -146,6 +146,20 @@ $dupErr2 = $null
 try { Add-FlipSearch -Name 'New lane' -Query 'x' -MaxPrice 1 } catch { $dupErr2 = $_ }
 Assert ($null -ne $dupErr2) 'duplicate search name throws'
 
+Write-Host "`n== Settings view/save =="
+$view = Get-FlipSettingsView
+Assert ($view.config.ebay.clientSecret -eq '') 'secret masked in view'
+Assert ($view.secretsSet.ebayClientSecret -eq $true) 'secretsSet flag reports saved secret'
+$patch = $view.config
+$patch.fees.feeRate = 0.15
+Save-FlipSettings -New $patch
+Assert ((Get-FlipConfig).fees.feeRate -eq 0.15) 'edited value saved'
+Assert ((Get-FlipConfig).ebay.clientSecret -eq 'y') 'blank secret kept existing value'
+$nsErr = $null
+$noSearch = [pscustomobject]@{ ebay = $patch.ebay; searches = @() }
+try { Save-FlipSettings -New $noSearch } catch { $nsErr = $_ }
+Assert ($null -ne $nsErr) 'refuses to save empty searches'
+
 Write-Host "`n== Chat system prompt =="
 $prompt = & $module { Get-FlipChatSystemPrompt }
 Assert ($prompt -match 'FlipKit Copilot') 'prompt has persona'

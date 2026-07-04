@@ -21,6 +21,8 @@
         'Get-FlipMarketPulse'
         'Send-FlipAlert'
         'Add-FlipSearch'
+        'Get-FlipSettingsView'
+        'Save-FlipSettings'
         'Get-FlipRecentHits'
         'Set-FlipHitDismissed'
         'Add-FlipLedgerEntry'
