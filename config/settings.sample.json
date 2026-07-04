@@ -73,6 +73,7 @@
     {
       "name": "Garmin faulty/untested",
       "query": "garmin watch (faulty, spares, repairs, untested)",
+      "typoHunt": "garmin",
       "minPrice": 5,
       "maxPrice": 40,
       "cexQuery": "",

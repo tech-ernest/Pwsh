@@ -46,49 +46,69 @@ function Invoke-FlipScan {
         if ($search.PSObject.Properties['minPrice'] -and $search.minPrice) { $findParams.MinPrice = $search.minPrice }
         if ($search.PSObject.Properties['categoryIds'] -and $search.categoryIds) { $findParams.CategoryIds = $search.categoryIds }
 
-        $items = try {
-            Find-EbayDeals @findParams
-        }
-        catch {
-            Write-Warning "Search '$($search.name)' failed: $_"
-            continue
+        # The saved query, plus typo variants when the search opts in with
+        # "typoHunt": "<brand>" — automated misspelled-listing hunting.
+        $queries = @(@{ q = $search.query; typo = $false })
+        if ($search.PSObject.Properties['typoHunt'] -and $search.typoHunt) {
+            foreach ($v in @(New-MisspellingList -Word $search.typoHunt -Top 6)) {
+                $queries += @{ q = $v; typo = $true }
+            }
         }
 
-        foreach ($item in @($items)) {
-            $isNew = if ($DryRun) { -not $seen.Contains($item.ItemId) } else { $seen.Add($item.ItemId) }
-            if (-not $isNew) { continue }
+        foreach ($entry in $queries) {
+            $findParams = @{ Query = $entry.q; MaxPrice = $search.maxPrice; BuyingOptions = $buyingOptions }
+            if ($search.PSObject.Properties['minPrice'] -and $search.minPrice) { $findParams.MinPrice = $search.minPrice }
+            if ($search.PSObject.Properties['categoryIds'] -and $search.categoryIds) { $findParams.CategoryIds = $search.categoryIds }
 
-            $note = ''
-            # Optional CeX floor check per search: flags near-risk-free buys.
-            if ($cexAvailable -and $search.PSObject.Properties['cexQuery'] -and $search.cexQuery) {
-                try {
-                    $cex = @(Get-CexPrice -Query $search.cexQuery -Top 1)
-                    if ($cex -and $item.Price -lt $cex[0].CashBuy) {
-                        $note = 'BELOW CeX cash £{0}!' -f $cex[0].CashBuy
-                    }
-                }
-                catch {
-                    $cexAvailable = $false
-                    Write-Verbose "CeX unreachable — skipping CeX checks for the rest of this scan. ($_)"
-                }
+            $items = try {
+                Find-EbayDeals @findParams
+            }
+            catch {
+                Write-Warning "Search '$($search.name)' ('$($entry.q)') failed: $_"
+                continue
             }
 
-            $hits.Add([pscustomobject]@{
-                Search    = $search.name
-                Title     = $item.Title
-                Price     = $item.Price
-                Condition = $item.Condition
-                Url       = $item.Url
-                Note      = $note
-            })
-        }
+            foreach ($item in @($items)) {
+                $isNew = if ($DryRun) { -not $seen.Contains($item.ItemId) } else { $seen.Add($item.ItemId) }
+                if (-not $isNew) { continue }
 
-        # Small pause between searches — polite pacing, and spreads API quota.
-        Start-Sleep -Seconds 2
+                $note = if ($entry.typo) { "MISSPELLED title ('$($entry.q)') — low visibility, less bidding!" } else { '' }
+                # Optional CeX floor check per search: flags near-risk-free buys.
+                if ($cexAvailable -and $search.PSObject.Properties['cexQuery'] -and $search.cexQuery) {
+                    try {
+                        $cex = @(Get-CexPrice -Query $search.cexQuery -Top 1)
+                        if ($cex -and $item.Price -lt $cex[0].CashBuy) {
+                            $note = ('BELOW CeX cash £{0}! ' -f $cex[0].CashBuy) + $note
+                        }
+                    }
+                    catch {
+                        $cexAvailable = $false
+                        Write-Verbose "CeX unreachable — skipping CeX checks for the rest of this scan. ($_)"
+                    }
+                }
+
+                $hits.Add([pscustomobject]@{
+                    ItemId    = $item.ItemId
+                    Search    = $search.name
+                    Title     = $item.Title
+                    Price     = $item.Price
+                    Condition = $item.Condition
+                    Url       = $item.Url
+                    Note      = $note.Trim()
+                    FoundAt   = (Get-Date).ToString('yyyy-MM-dd HH:mm')
+                })
+            }
+
+            # Small pause between queries — polite pacing, and spreads API quota.
+            Start-Sleep -Seconds 2
+        }
     }
 
     if (-not $DryRun) {
-        if ($hits.Count -gt 0) { Send-FlipRankedAlerts -Hits $hits -Config $cfg }
+        if ($hits.Count -gt 0) {
+            Send-FlipRankedAlerts -Hits $hits -Config $cfg
+            Save-FlipRecentHits -Hits $hits
+        }
 
         # Keep the seen-cache bounded; oldest entries fall off the front.
         $keep = [string[]]@($seen) | Select-Object -Last 5000

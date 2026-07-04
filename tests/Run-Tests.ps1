@@ -132,6 +132,20 @@ Assert ((& $module { $script:AlertCount }) -eq 2) 'live run sends one alert per 
 $live2 = @(Invoke-FlipScan)
 Assert ($live2.Count -eq 0) 'second live run: everything already seen'
 
+Write-Host "`n== Hit history =="
+Assert (@(Get-FlipRecentHits).Count -eq 2) 'live scan persisted hits to history'
+Set-FlipHitDismissed -ItemId 'v1|111|0'
+Assert (@(Get-FlipRecentHits).Count -eq 1) 'dismiss hides a hit'
+Assert (@(Get-FlipRecentHits -IncludeDismissed).Count -eq 2) 'dismissed hit still in raw history'
+
+Write-Host "`n== Add-FlipSearch =="
+$added = Add-FlipSearch -Name 'New lane' -Query 'steam deck (faulty)' -MaxPrice 150 -MinPrice 50
+Assert ($added.name -eq 'New lane') 'returns the added search'
+Assert (@((Get-FlipConfig).searches).Count -eq 2) 'config now has two searches'
+$dupErr2 = $null
+try { Add-FlipSearch -Name 'New lane' -Query 'x' -MaxPrice 1 } catch { $dupErr2 = $_ }
+Assert ($null -ne $dupErr2) 'duplicate search name throws'
+
 Write-Host "`n== Chat system prompt =="
 $prompt = & $module { Get-FlipChatSystemPrompt }
 Assert ($prompt -match 'FlipKit Copilot') 'prompt has persona'

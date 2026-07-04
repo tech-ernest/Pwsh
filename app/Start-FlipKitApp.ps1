@@ -138,6 +138,22 @@ try {
                     Write-Json $res (Get-FlipLedgerStats)
                 }
 
+                '^GET /api/hits$' {
+                    Write-Json $res @(Get-FlipRecentHits)
+                }
+
+                '^POST /api/hits/dismiss$' {
+                    Set-FlipHitDismissed -ItemId "$($body.itemId)"
+                    Write-Json $res @{ ok = $true }
+                }
+
+                '^POST /api/searches/add$' {
+                    $params = @{ Name = $body.name; Query = $body.query; MaxPrice = [double]$body.maxPrice }
+                    if ($body.PSObject.Properties['minPrice'] -and "$($body.minPrice)" -ne '' -and [double]$body.minPrice -gt 0) { $params.MinPrice = [double]$body.minPrice }
+                    if ($body.PSObject.Properties['categoryIds'] -and $body.categoryIds) { $params.CategoryIds = $body.categoryIds }
+                    Write-Json $res (Add-FlipSearch @params)
+                }
+
                 '^POST /api/scan$' {
                     $dry = -not ($body -and $body.PSObject.Properties['live'] -and $body.live)
                     Write-Json $res @(Invoke-FlipScan -DryRun:$dry)

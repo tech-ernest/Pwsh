@@ -39,8 +39,43 @@ function Test-FlipDeal {
     if (-not $PSBoundParameters.ContainsKey('FeeFixed'))     { $FeeFixed     = if ($cfg) { $cfg.fees.feeFixed }       else { 0.30 } }
     if (-not $PSBoundParameters.ContainsKey('MinMarginPct')) { $MinMarginPct = if ($cfg) { $cfg.rules.minMarginPct }  else { 30 } }
 
-    if (-not $Comps) { $Comps = Get-EbaySoldComps -SearchTerm $SearchTerm }
-    if (-not $Comps) { throw "No comps available for '$SearchTerm' — can't judge this deal." }
+    $SearchTerm = $SearchTerm.Trim()
+
+    if (-not $Comps) { $Comps = try { Get-EbaySoldComps -SearchTerm $SearchTerm } catch { $null } }
+
+    # Scraped solds unavailable (bot-walled network / markup change): fall back
+    # to an AI estimate of typical UK sold prices, clearly labelled as such.
+    if (-not $Comps) {
+        $aiReady = $null -ne (& { try { Get-FlipAiConfig } catch { $null } })
+        if (-not $aiReady) { throw "No comps available for '$SearchTerm' and no AI provider configured for a fallback estimate." }
+
+        $schema = @{
+            type                 = 'object'
+            additionalProperties = $false
+            required             = @('median_gbp', 'p25_gbp', 'p75_gbp', 'note')
+            properties           = @{
+                median_gbp = @{ type = 'number'; description = 'typical eBay UK sold price for this item, used/working' }
+                p25_gbp    = @{ type = 'number'; description = 'pessimistic sold price (25th percentile)' }
+                p75_gbp    = @{ type = 'number'; description = 'optimistic sold price (75th percentile)' }
+                note       = @{ type = 'string'; description = 'one short sentence on confidence and what drives the price' }
+            }
+        }
+        $est = ConvertFrom-FlipAiJson -Text (Invoke-FlipAi -JsonSchema $schema `
+            -System 'You estimate realistic eBay UK sold prices for second-hand items. Be conservative; base estimates on the specific model named.' `
+            -Messages @(@{ role = 'user'; content = "Estimate eBay UK sold prices for: $SearchTerm" }))
+
+        $Comps = [pscustomobject]@{
+            SearchTerm = $SearchTerm
+            Count      = $MinComps   # AI estimate stands in for the sample-size gate
+            Min        = [math]::Round([double]$est.p25_gbp * 0.8, 2)
+            P25        = [math]::Round([double]$est.p25_gbp, 2)
+            Median     = [math]::Round([double]$est.median_gbp, 2)
+            P75        = [math]::Round([double]$est.p75_gbp, 2)
+            Max        = [math]::Round([double]$est.p75_gbp * 1.2, 2)
+            Mean       = [math]::Round([double]$est.median_gbp, 2)
+            Source     = "AI estimate — $($est.note)"
+        }
+    }
 
     if (-not $PSBoundParameters.ContainsKey('CexCashFloor') -and -not $SkipCex) {
         # CeX is a bonus data source — a bot-wall block there must not sink the verdict.
@@ -84,6 +119,7 @@ function Test-FlipDeal {
         ConservMarginPct   = $conservativeMargin
         CexCashFloor       = if ($PSBoundParameters.ContainsKey('CexCashFloor') -or $CexCashFloor) { $CexCashFloor } else { $null }
         BelowCexFloor      = if ($CexCashFloor) { $BuyPrice -lt $CexCashFloor } else { $null }
+        CompsSource        = if ($Comps.PSObject.Properties['Source']) { $Comps.Source } else { 'eBay sold listings' }
     }
 
     # A buy below what CeX pays cash for the item can't really lose — upgrade

@@ -161,6 +161,11 @@
     </form>
     <div id="scanOut"></div>
   </div>
+  <div class="card">
+    <h2>Recent hits</h2>
+    <p class="hint">Everything the scanner found lately, scheduled runs included. Mark reviewed items as not interested to clear them.</p>
+    <div id="hitsOut" class="hint">loading…</div>
+  </div>
 </section>
 
 <section id="tab-ledger">
@@ -231,7 +236,8 @@
 <section id="tab-typos">
   <div class="card">
     <h2>Misspelling hunter</h2>
-    <p class="hint">Typo variants of a brand/model — badly listed items sell cheap because nobody finds them. Click a chip to search it on eBay.</p>
+    <p class="hint">Typo variants of a brand/model — badly listed items sell cheap because nobody finds them. Click a chip to search it on eBay.
+    <br><b>Automated version:</b> add <code>"typoHunt": "garmin"</code> to any search in <code>config/settings.json</code> and every scan hunts the top misspellings for you — hits arrive flagged "MISSPELLED" in alerts and Recent hits.</p>
     <form class="row" id="typoForm">
       <label>Word <input name="word" required placeholder="garmin"></label>
       <button class="go">Generate</button>
@@ -263,6 +269,7 @@ function openTab(name) {
   history.replaceState(null, '', '#' + name);
   if (name === 'ledger') loadLedger();
   if (name === 'stats') loadStats();
+  if (name === 'scan') loadHits();
 }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => openTab(b.dataset.tab));
 if (location.hash) openTab(location.hash.slice(1));
@@ -278,7 +285,7 @@ api('/api/status').then(s => {
 $('#checkForm').onsubmit = async e => {
   e.preventDefault();
   const f = e.target, out = $('#checkOut');
-  const payload = { searchTerm: f.searchTerm.value, buyPrice: f.buyPrice.value, postage: f.postage.value };
+  const payload = { searchTerm: f.searchTerm.value.trim(), buyPrice: f.buyPrice.value, postage: f.postage.value };
   busy(f, true); out.innerHTML = '<p class="hint">fetching comps…</p>';
   try {
     const d = await api('/api/deal-check', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
@@ -292,7 +299,8 @@ $('#checkForm').onsubmit = async e => {
         <div>Expected net<b>${gbp(d.ExpectedNet)} (${d.ExpectedMarginPct}%)</b></div>
         <div>Conservative net<b>${gbp(d.ConservativeNet)} (${d.ConservMarginPct}%)</b></div>
         <div>CeX cash floor<b>${d.CexCashFloor ? gbp(d.CexCashFloor) + (d.BelowCexFloor ? ' — you are below it' : '') : '—'}</b></div>
-      </div>`;
+      </div>
+      ${d.CompsSource && d.CompsSource !== 'eBay sold listings' ? `<p class="hint" style="margin-top:8px">⚠ ${esc(d.CompsSource)} — real sold listings unavailable, treat as a guide.</p>` : ''}`;
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
   busy(f, false);
 };
@@ -315,6 +323,26 @@ $('#scanForm').onsubmit = async e => {
         + hits.map(hitHtml).join('');
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
   busy(f, false);
+};
+
+async function loadHits() {
+  const out = $('#hitsOut');
+  try {
+    const hits = await api('/api/hits');
+    out.innerHTML = hits.length === 0
+      ? '<p class="hint">Nothing yet — history builds as live scans run.</p>'
+      : hits.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
+          <div class="meta">${esc(h.FoundAt)} · ${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}
+            ${h.Note ? '· <b>' + esc(h.Note) + '</b> ' : ''}
+            · <button class="link" data-id="${esc(h.ItemId)}" onclick="dismissHit(this.dataset.id)">not interested</button></div></div>`).join('');
+  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+}
+
+window.dismissHit = async id => {
+  try {
+    await api('/api/hits/dismiss', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ itemId: id }) });
+    loadHits();
+  } catch (err) { alert(err.message); }
 };
 
 window.triage = async () => {
@@ -484,13 +512,25 @@ $('#suggestForm').onsubmit = async e => {
   busy(f, true); out.innerHTML = '<p class="hint">Proposing lanes and checking live supply… (can take a minute)</p>';
   try {
     const lanes = await api('/api/suggest', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
-    out.innerHTML = lanes.map(l => `<div class="hit"><b>${esc(l.Name)}</b>
+    window.lastLanes = lanes;
+    out.innerHTML = lanes.map((l, i) => `<div class="hit"><b>${esc(l.Name)}</b>
         <span class="fixtag">${l.LiveListings != null ? l.LiveListings + ' live listings' : 'supply unknown'}</span>
+        · <button class="link" data-i="${i}" onclick="addLane(this)">➕ add to scanner</button>
         <div class="meta">${esc(l.Why)}</div>
-        <div class="meta"><code>{ "name": "${esc(l.Name)}", "query": "${esc(l.Query)}", ${l.CategoryIds ? '"categoryIds": "' + esc(l.CategoryIds) + '", ' : ''}"minPrice": ${Number(l.MinPrice)}, "maxPrice": ${Number(l.MaxPrice)}, "cexQuery": "", "buyingOptions": "FIXED_PRICE" }</code></div>
+        <div class="meta"><code>${esc(l.Query)}</code> · £${Number(l.MinPrice)}–${Number(l.MaxPrice)}${l.CategoryIds ? ' · cat ' + esc(l.CategoryIds) : ''}</div>
       </div>`).join('') || '<p class="hint">No lanes returned.</p>';
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
   busy(f, false);
+};
+
+window.addLane = async btn => {
+  const l = window.lastLanes[Number(btn.dataset.i)];
+  try {
+    await api('/api/searches/add', { method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name: l.Name, query: l.Query, maxPrice: l.MaxPrice, minPrice: l.MinPrice, categoryIds: l.CategoryIds }) });
+    btn.textContent = '✓ added — next scan picks it up';
+    btn.disabled = true;
+  } catch (err) { alert(err.message); }
 };
 
 /* typos */
