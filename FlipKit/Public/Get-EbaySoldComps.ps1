@@ -46,9 +46,19 @@ function Get-EbaySoldComps {
     $items = @(ConvertFrom-EbaySoldHtml -Html $html)
 
     if ($items.Count -eq 0) {
-        Write-Warning "No sold listings parsed for '$SearchTerm'. Either nothing has sold recently or eBay's markup changed (re-run with -DumpHtml to inspect)."
+        # Self-diagnose: record what eBay actually served so the failure is
+        # explainable from the app UI without terminal spelunking.
+        $dump = Join-Path (Get-FlipDataDir) 'last-sold-page.html'
+        Set-Content -Path $dump -Value $html
+        $pageTitle = [regex]::Match($html, '(?s)<title>(.*?)</title>').Groups[1].Value.Trim()
+        $script:CompsDiagnosis = "eBay served '{0}' ({1} chars; s-item:{2} s-card:{3}) — page saved to data/last-sold-page.html" -f
+            $pageTitle, $html.Length,
+            [regex]::Matches($html, 's-item__price').Count,
+            [regex]::Matches($html, 's-card__price').Count
+        Write-Warning "No sold listings parsed for '$SearchTerm'. $script:CompsDiagnosis"
         return
     }
+    $script:CompsDiagnosis = $null
 
     if ($Raw) { return $items }
 

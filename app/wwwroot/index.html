@@ -369,7 +369,9 @@ $('#checkForm').onsubmit = async e => {
         <div>Conservative net<b>${gbp(d.ConservativeNet)} (${d.ConservMarginPct}%)</b></div>
         <div>CeX cash floor<b>${d.CexCashFloor ? gbp(d.CexCashFloor) + (d.BelowCexFloor ? ' — you are below it' : '') : '—'}</b></div>
       </div>
-      ${d.CompsSource && d.CompsSource !== 'eBay sold listings' ? `<p class="hint" style="margin-top:8px">⚠ ${esc(d.CompsSource)} — real sold listings unavailable, treat as a guide.</p>` : ''}`;
+      ${d.CompsSource && d.CompsSource !== 'eBay sold listings' ? `<p class="hint" style="margin-top:8px">⚠ ${esc(d.CompsSource)} — real sold listings unavailable, treat as a guide.</p>` : ''}
+      ${(d.RecentSolds && d.RecentSolds.length) ? '<div class="meta" style="margin-top:12px"><b>Recently sold on eBay:</b></div>'
+        + d.RecentSolds.map(s => `<div class="meta">${gbp(s.Price)} — ${esc(s.Title)}</div>`).join('') : ''}`;
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
   busy(f, false);
 };

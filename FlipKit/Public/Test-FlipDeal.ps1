@@ -41,7 +41,17 @@ function Test-FlipDeal {
 
     $SearchTerm = $SearchTerm.Trim()
 
-    if (-not $Comps) { $Comps = try { Get-EbaySoldComps -SearchTerm $SearchTerm } catch { $null } }
+    $recentSolds = @()
+    if (-not $Comps) {
+        # Fetch raw sold listings once: stats for the verdict, plus the most
+        # recent solds for display.
+        $rawSolds = try { @(Get-EbaySoldComps -SearchTerm $SearchTerm -Raw) } catch { @() }
+        if ($rawSolds.Count -gt 0) {
+            $Comps = Get-PriceStats -Prices $rawSolds.Price
+            $Comps | Add-Member -NotePropertyName SearchTerm -NotePropertyValue $SearchTerm
+            $recentSolds = @($rawSolds | Select-Object -First 8)
+        }
+    }
 
     # Scraped solds unavailable (bot-walled network / markup change): fall back
     # to an AI estimate of typical UK sold prices, clearly labelled as such.
@@ -64,6 +74,7 @@ function Test-FlipDeal {
             -System 'You estimate realistic eBay UK sold prices for second-hand items. Be conservative; base estimates on the specific model named.' `
             -Messages @(@{ role = 'user'; content = "Estimate eBay UK sold prices for: $SearchTerm" }))
 
+        $why = if ($script:CompsDiagnosis) { " [$script:CompsDiagnosis]" } else { '' }
         $Comps = [pscustomobject]@{
             SearchTerm = $SearchTerm
             Count      = $MinComps   # AI estimate stands in for the sample-size gate
@@ -73,7 +84,7 @@ function Test-FlipDeal {
             P75        = [math]::Round([double]$est.p75_gbp, 2)
             Max        = [math]::Round([double]$est.p75_gbp * 1.2, 2)
             Mean       = [math]::Round([double]$est.median_gbp, 2)
-            Source     = "AI estimate — $($est.note)"
+            Source     = "AI estimate — $($est.note)$why"
         }
     }
 
@@ -120,6 +131,7 @@ function Test-FlipDeal {
         CexCashFloor       = if ($PSBoundParameters.ContainsKey('CexCashFloor') -or $CexCashFloor) { $CexCashFloor } else { $null }
         BelowCexFloor      = if ($CexCashFloor) { $BuyPrice -lt $CexCashFloor } else { $null }
         CompsSource        = if ($Comps.PSObject.Properties['Source']) { $Comps.Source } else { 'eBay sold listings' }
+        RecentSolds        = @($recentSolds | ForEach-Object { @{ Title = $_.Title; Price = $_.Price } })
     }
 
     # A buy below what CeX pays cash for the item can't really lose — upgrade
