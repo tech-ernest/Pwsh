@@ -16,7 +16,14 @@
   "alerts": {
     "ntfyTopic": "",
     "telegramBotToken": "",
-    "telegramChatId": ""
+    "telegramChatId": "",
+    "maxPerScan": 10
+  },
+  "cex": {
+    "algoliaAppId": "",
+    "algoliaApiKey": "",
+    "algoliaIndex": "prod_cex_uk",
+    "_note": "Fallback when CeX's main API is Cloudflare-blocked. Grab the two PUBLIC keys from browser dev tools on uk.webuy.com - see README 'Fixing CeX'."
   },
   "ai": {
     "provider": "ollama",

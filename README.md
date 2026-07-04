@@ -85,6 +85,30 @@ Local-model caveat: an 8B model's price estimates in Triage are rougher than a f
 4. Sold? `Complete-FlipLedgerEntry` with the real fees/postage.
 5. Before each sourcing session: `Get-FlipLedgerStats` — categories with slow turns or thin margins lose their capital.
 
+## Ranked alerts
+
+Scheduled scans no longer spam every hit. With an AI provider configured, new
+hits are triaged first: skip-tier junk is silenced and only the top
+`alerts.maxPerScan` (default 10) alert — hot deals at max priority with the
+estimated net profit in the notification title. A low-priority summary tells
+you how many were held back (they're always visible in the app's Scanner tab).
+
+## Fixing CeX (if `Get-CexPrice` is Cloudflare-blocked)
+
+CeX's site search runs on Algolia, which isn't bot-walled. One-time setup:
+
+1. Open [uk.webuy.com](https://uk.webuy.com) in your browser, press **F12** → **Network** tab.
+2. Type anything into the site's search box.
+3. Click the request going to `...algolia.net...` (or `algolianet.com`), open **Headers**.
+4. Copy two request-header values into `config/settings.json` → `cex`:
+   - `x-algolia-application-id` → `algoliaAppId`
+   - `x-algolia-api-key` → `algoliaApiKey` (this is the site's public search key, not a secret)
+5. Check the request URL's `/1/indexes/<name>/query` part — if the index isn't
+   `prod_cex_uk`, put the real name in `algoliaIndex`.
+
+`Get-CexPrice` then falls back to Algolia automatically whenever the primary
+API is blocked.
+
 ## Honest notes
 
 - `Get-EbaySoldComps` reads eBay's **public sold-listings page** because the official sold-data API is approval-gated. Use it per purchase decision (human-speed), not in a loop. eBay tweaks its markup now and then — if it returns nothing, run with `-DumpHtml` and adjust `ConvertFrom-EbaySoldHtml`.

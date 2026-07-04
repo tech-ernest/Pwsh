@@ -16,32 +16,54 @@ function Get-CexPrice {
         [int]$Top = 5
     )
 
-    $uri = 'https://wss2.cex.uk.webuy.io/v3/boxes?q={0}&firstRecord=1&count={1}' -f [uri]::EscapeDataString($Query), $Top
+    $boxes = $null
 
-    # CeX's own site calls this API cross-origin from uk.webuy.com; sending the
-    # same Origin/Referer/Accept is what gets requests past their Cloudflare.
-    $headers = @{
-        Accept  = 'application/json, text/plain, */*'
-        Origin  = 'https://uk.webuy.com'
-        Referer = 'https://uk.webuy.com/'
+    # Primary: CeX's own product API. Cloudflare blocks it on some networks.
+    try {
+        $uri = 'https://wss2.cex.uk.webuy.io/v3/boxes?q={0}&firstRecord=1&count={1}' -f [uri]::EscapeDataString($Query), $Top
+        $headers = @{
+            Accept  = 'application/json, text/plain, */*'
+            Origin  = 'https://uk.webuy.com'
+            Referer = 'https://uk.webuy.com/'
+        }
+        $resp = Invoke-FlipWebRequest -Uri $uri -Headers $headers
+        $boxes = ($resp.Content | ConvertFrom-Json).response.data.boxes
     }
-    $resp = Invoke-FlipWebRequest -Uri $uri -Headers $headers
-    $json = $resp.Content | ConvertFrom-Json
+    catch { $primaryError = $_ }
 
-    $boxes = $json.response.data.boxes
+    # Fallback: the Algolia search index behind uk.webuy.com's own search box.
+    # Algolia isn't bot-walled; it needs the site's two PUBLIC keys in config
+    # (see README "Fixing CeX" for how to copy them from browser dev tools).
+    if ($null -eq $boxes) {
+        $cfg = Get-FlipConfig
+        $cex = if ($cfg.PSObject.Properties['cex']) { $cfg.cex } else { $null }
+        if ($cex -and $cex.algoliaAppId -and $cex.algoliaApiKey) {
+            $index = if ($cex.PSObject.Properties['algoliaIndex'] -and $cex.algoliaIndex) { $cex.algoliaIndex } else { 'prod_cex_uk' }
+            $aUri = 'https://{0}-dsn.algolia.net/1/indexes/{1}/query' -f $cex.algoliaAppId.ToLower(), $index
+            $aResp = Invoke-FlipAiHttpPost -Uri $aUri -Headers @{
+                'X-Algolia-Application-Id' = $cex.algoliaAppId
+                'X-Algolia-API-Key'        = $cex.algoliaApiKey
+            } -BodyJson (@{ params = 'query={0}&hitsPerPage={1}' -f [uri]::EscapeDataString($Query), $Top } | ConvertTo-Json)
+            $boxes = $aResp.hits
+        }
+        elseif ($primaryError) {
+            throw "CeX primary API blocked and no Algolia fallback configured (see README 'Fixing CeX'). Original error: $primaryError"
+        }
+    }
+
     if (-not $boxes) {
         Write-Verbose "CeX: no results for '$Query'."
         return
     }
 
-    foreach ($box in $boxes) {
+    foreach ($box in @($boxes | Select-Object -First $Top)) {
         [pscustomobject]@{
             Name          = $box.boxName
             CexSells      = [double]$box.sellPrice
             CashBuy       = [double]$box.cashPrice
             VoucherBuy    = [double]$box.exchangePrice
-            InStockOnline = -not [bool]$box.outOfEcomStock
-            BoxId         = $box.boxId
+            InStockOnline = if ($box.PSObject.Properties['outOfEcomStock']) { -not [bool]$box.outOfEcomStock } else { $null }
+            BoxId         = if ($box.PSObject.Properties['boxId']) { $box.boxId } else { $null }
         }
     }
 }

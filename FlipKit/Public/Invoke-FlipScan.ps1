@@ -1,11 +1,18 @@
 function Invoke-FlipScan {
     <#
     .SYNOPSIS
-        Runs every saved search from config; returns hits and (optionally) alerts on new ones.
+        Runs every saved search from config; ranks new hits and alerts the best.
     .DESCRIPTION
         The scan engine shared by scripts/Invoke-DealScan.ps1 (scheduled) and the
         FlipKit app's "Scan now" button. Remembers already-seen listings in
         data/seen-items.json so alerts only fire for genuinely new items.
+
+        Alerting is capped and ranked: when an AI provider is configured, new
+        hits are triaged (estimated net profit + fix difficulty), "skip"-tier
+        items are suppressed, and only the top alerts.maxPerScan (default 10)
+        reach your phone - hot deals at max priority with the estimated profit
+        in the title. Without AI, the first maxPerScan hits alert unranked.
+
         Alert-only by design: bots find, you buy.
     .EXAMPLE
         Invoke-FlipScan -DryRun    # returns hits, sends nothing, updates nothing
@@ -66,21 +73,14 @@ function Invoke-FlipScan {
                 }
             }
 
-            $hit = [pscustomobject]@{
+            $hits.Add([pscustomobject]@{
                 Search    = $search.name
                 Title     = $item.Title
                 Price     = $item.Price
                 Condition = $item.Condition
                 Url       = $item.Url
                 Note      = $note
-            }
-            $hits.Add($hit)
-
-            if (-not $DryRun) {
-                $msg = 'Listed at £{0} ({1})' -f $item.Price, $item.Condition
-                if ($note) { $msg += " — $note" }
-                Send-FlipAlert -Title "$($search.name): £$($item.Price)" -Message "$($item.Title)`n$msg" -Url $item.Url
-            }
+            })
         }
 
         # Small pause between searches — polite pacing, and spreads API quota.
@@ -88,10 +88,70 @@ function Invoke-FlipScan {
     }
 
     if (-not $DryRun) {
+        if ($hits.Count -gt 0) { Send-FlipRankedAlerts -Hits $hits -Config $cfg }
+
         # Keep the seen-cache bounded; oldest entries fall off the front.
         $keep = [string[]]@($seen) | Select-Object -Last 5000
         ConvertTo-Json $keep | Set-Content -Path $seenPath
     }
 
     $hits
+}
+
+function Send-FlipRankedAlerts {
+    <#
+        Ranked, capped alerting for a batch of new scan hits.
+        With AI configured: triage -> drop 'skip' tier -> sort by estimated
+        net profit -> alert the top N (hot = max priority). Without AI (or if
+        triage fails): alert the first N unranked. Always ends with a summary
+        line when anything was suppressed.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][array]$Hits,
+        [Parameter(Mandatory)]$Config
+    )
+
+    $max = 10
+    if ($Config.alerts.PSObject.Properties['maxPerScan'] -and "$($Config.alerts.maxPerScan)" -ne '') {
+        $max = [int]$Config.alerts.maxPerScan
+    }
+
+    $aiReady = $null -ne (& { try { Get-FlipAiConfig } catch { $null } })
+
+    $ranked = $null
+    if ($aiReady) {
+        try { $ranked = @(Invoke-FlipTriage -Hits $Hits) }
+        catch { Write-Warning "AI ranking failed, alerting unranked: $_" }
+    }
+
+    if ($ranked) {
+        $worthAlerting = @($ranked | Where-Object { $_.Tier -ne 'skip' } |
+            Sort-Object -Property @{ Expression = { $_.Tier -eq 'hot' }; Descending = $true }, @{ Expression = 'EstNetProfit'; Descending = $true })
+
+        foreach ($h in @($worthAlerting | Select-Object -First $max)) {
+            $tag = if ($h.Tier -eq 'hot') { '🔥 HOT' } else { '👀 Look' }
+            Send-FlipAlert -Priority $(if ($h.Tier -eq 'hot') { 5 } else { 4 }) `
+                -Title "$tag est £$($h.EstNetProfit): asking £$($h.Price)" `
+                -Message "$($h.Title)`nest resale £$($h.EstResale) · fix: $($h.FixDifficulty)`n$($h.Note)" `
+                -Url $h.Url
+        }
+
+        $suppressed = $Hits.Count - [math]::Min(@($worthAlerting).Count, $max)
+        if ($suppressed -gt 0) {
+            Send-FlipAlert -Priority 2 -Title "Scan: $suppressed more hit(s) not alerted" `
+                -Message 'Ranked below the cut or skip-tier — open the FlipKit app Scanner tab to review.'
+        }
+    }
+    else {
+        foreach ($h in @($Hits | Select-Object -First $max)) {
+            $msg = 'Listed at £{0} ({1})' -f $h.Price, $h.Condition
+            if ($h.Note) { $msg += " — $($h.Note)" }
+            Send-FlipAlert -Title "$($h.Search): £$($h.Price)" -Message "$($h.Title)`n$msg" -Url $h.Url
+        }
+        if ($Hits.Count -gt $max) {
+            Send-FlipAlert -Priority 2 -Title "Scan: $($Hits.Count - $max) more hit(s) not alerted" `
+                -Message 'Over the per-scan alert cap — open the FlipKit app Scanner tab to review.'
+        }
+    }
 }

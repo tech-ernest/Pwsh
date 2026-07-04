@@ -352,11 +352,19 @@ async function loadLedger() {
         <td>${esc(r.BuyDate)}</td><td>${gbp(r.BuyPrice)}</td>
         <td>${r.SoldDate ? esc(r.SoldDate) + ' @ ' + gbp(r.SoldPrice) : '<span class="hint">open</span>'}</td>
         <td>${r.Net !== '' ? gbp(r.Net) : '—'}</td><td>${esc(r.DaysToSell) || '—'}</td>
-        <td>${r.SoldDate ? '' : `<button class="link" onclick="sellRow(this,${Number(r.Id)})">mark sold</button>`}</td>
+        <td>${r.SoldDate ? '' : `<button class="link" onclick="sellRow(this,${Number(r.Id)})">mark sold</button> · `}<button class="link" onclick="deleteRow(${Number(r.Id)})">delete</button></td>
       </tr>`).join('')}
     </table></div>`;
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
 }
+
+window.deleteRow = async id => {
+  if (!confirm(`Delete ledger entry #${id}? For a real loss, mark it sold at the lower price instead — stats only tell the truth if losses count.`)) return;
+  try {
+    await api('/api/ledger/delete', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+    loadLedger();
+  } catch (err) { alert(err.message); }
+};
 
 window.sellRow = (btn, id) => {
   const tr = btn.closest('tr');

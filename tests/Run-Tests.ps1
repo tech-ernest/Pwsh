@@ -85,6 +85,14 @@ $dupErr = $null
 try { Complete-FlipLedgerEntry -Id 1 -SoldPrice 1 -Fees 1 -Postage 1 } catch { $dupErr = $_ }
 Assert ($null -ne $dupErr) 'closing twice throws'
 
+$e3 = Add-FlipLedgerEntry -Item 'Typo entry' -Category 'Other' -Source 'ebay' -BuyPrice 1
+Remove-FlipLedgerEntry -Id $e3.Id
+$after = @(Import-Csv (Join-Path $tempRoot 'data/ledger.csv'))
+Assert ($after.Count -eq 2 -and -not ($after.Id -contains "$($e3.Id)")) 'delete removes only the target row'
+$delErr = $null
+try { Remove-FlipLedgerEntry -Id 999 } catch { $delErr = $_ }
+Assert ($null -ne $delErr) 'deleting a missing id throws'
+
 $stats = Get-FlipLedgerStats
 Assert ($stats.Summary.FlipsCompleted -eq 1) 'stats: completed count'
 Assert ($stats.Summary.TotalNetProfit -eq 43.40) 'stats: total net'
@@ -109,7 +117,7 @@ $env:FLIPKIT_CONFIG = $testCfg
     }
     # CeX blocked (the Cloudflare case) must not sink the scan
     function script:Get-CexPrice { param($Query, $Top) throw 'blocked' }
-    function script:Send-FlipAlert { param($Title, $Message, $Url) $script:AlertCount++ }
+    function script:Send-FlipAlert { param($Title, $Message, $Url, $Priority) $script:AlertCount++ }
     $script:AlertCount = 0
 }
 

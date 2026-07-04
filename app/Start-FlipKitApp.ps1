@@ -124,6 +124,11 @@ try {
                     Write-Json $res $entry
                 }
 
+                '^POST /api/ledger/delete$' {
+                    Remove-FlipLedgerEntry -Id ([int]$body.id)
+                    Write-Json $res @{ ok = $true }
+                }
+
                 '^POST /api/ledger/complete$' {
                     $row = Complete-FlipLedgerEntry -Id ([int]$body.id) -SoldPrice ([double]$body.soldPrice) -Fees ([double]$body.fees) -Postage ([double]$body.postage)
                     Write-Json $res $row

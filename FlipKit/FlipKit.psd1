@@ -22,6 +22,7 @@
         'Send-FlipAlert'
         'Add-FlipLedgerEntry'
         'Complete-FlipLedgerEntry'
+        'Remove-FlipLedgerEntry'
         'Get-FlipLedgerStats'
     )
     PrivateData       = @{ PSData = @{ Tags = @('reselling', 'ebay', 'arbitrage') } }
