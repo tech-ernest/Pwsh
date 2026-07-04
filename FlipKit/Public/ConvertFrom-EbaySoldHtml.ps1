@@ -50,6 +50,37 @@ function ConvertFrom-EbaySoldHtml {
             }
         }
 
+        # Strategy 3: eBay's minified/unified markup (unquoted attributes,
+        # Marko components, no s-item/s-card classes). Class-agnostic: split
+        # on the one invariant — each listing links to /itm/<id> — then pull
+        # the first price from each card's block. A card usually yields two
+        # chunks (image link + title link); we keep whichever has the price.
+        if ($results.Count -eq 0) {
+            $done = [System.Collections.Generic.HashSet[string]]::new()
+            $chunks = [regex]::Split($Html, 'href="?https?://www\.ebay\.[a-z.]+/itm/') | Select-Object -Skip 1
+            foreach ($chunk in $chunks) {
+                $idMatch = [regex]::Match($chunk, '^(\d{9,15})')
+                if (-not $idMatch.Success -or $done.Contains($idMatch.Groups[1].Value)) { continue }
+
+                $slice = if ($chunk.Length -gt 4000) { $chunk.Substring(0, 4000) } else { $chunk }
+                $priceMatch = [regex]::Match($slice, '£\s*([\d,]+(?:\.\d{2})?)')
+                if (-not $priceMatch.Success) { continue }
+
+                $title = ''
+                $t = [regex]::Match($slice, 'su-styled-text[^>]*>\s*([^<]{10,150}?)\s*<')
+                if (-not $t.Success) { $t = [regex]::Match($slice, 'alt="([^"]{10,150})"') }
+                if (-not $t.Success) { $t = [regex]::Match($slice, '>\s*([^<>]{15,150}?)\s*</') }
+                if ($t.Success) { $title = [System.Net.WebUtility]::HtmlDecode($t.Groups[1].Value.Trim()) }
+                if ($title -eq 'Shop on eBay') { continue }
+
+                [void]$done.Add($idMatch.Groups[1].Value)
+                $results.Add([pscustomobject]@{
+                    Title = $title
+                    Price = [double]($priceMatch.Groups[1].Value -replace ',', '')
+                })
+            }
+        }
+
         $results
     }
 }

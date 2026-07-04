@@ -51,10 +51,11 @@ function Get-EbaySoldComps {
         $dump = Join-Path (Get-FlipDataDir) 'last-sold-page.html'
         Set-Content -Path $dump -Value $html
         $pageTitle = [regex]::Match($html, '(?s)<title>(.*?)</title>').Groups[1].Value.Trim()
-        $script:CompsDiagnosis = "eBay served '{0}' ({1} chars; s-item:{2} s-card:{3}) — page saved to data/last-sold-page.html" -f
+        $script:CompsDiagnosis = "eBay served '{0}' ({1} chars; s-item:{2} s-card:{3} itm-links:{4}) — page saved to data/last-sold-page.html" -f
             $pageTitle, $html.Length,
             [regex]::Matches($html, 's-item__price').Count,
-            [regex]::Matches($html, 's-card__price').Count
+            [regex]::Matches($html, 's-card__price').Count,
+            [regex]::Matches($html, 'href="?https?://www\.ebay\.[a-z.]+/itm/').Count
         Write-Warning "No sold listings parsed for '$SearchTerm'. $script:CompsDiagnosis"
         return
     }
