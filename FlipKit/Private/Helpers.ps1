@@ -81,11 +81,19 @@ function Invoke-FlipWebRequest {
                 $args = @('-sS', '-4', '--fail-with-body', '--compressed', '--max-time', $TimeoutSec, '-A', $script:BrowserUA)
                 foreach ($k in $Headers.Keys) { $args += @('-H', "${k}: $($Headers[$k])") }
                 if ($CookieJar) { $args += @('-b', $CookieJar, '-c', $CookieJar) }
-                $args += $Uri
 
-                $content = & $curl.Source @args 2>&1 | Out-String
-                if ($LASTEXITCODE -ne 0) { throw "curl failed (exit $LASTEXITCODE): $($content.Substring(0, [math]::Min(300, $content.Length)))" }
-                return [pscustomobject]@{ Content = $content }
+                # Body goes to a temp file, read back as UTF-8. Capturing stdout
+                # through the console decodes it with the console codepage on
+                # Windows, which mangles every non-ASCII char — '£' became '┬ú'
+                # and price parsing silently found nothing.
+                $tmp = [IO.Path]::GetTempFileName()
+                try {
+                    $args += @('-o', $tmp, $Uri)
+                    $stderr = & $curl.Source @args 2>&1 | Out-String
+                    if ($LASTEXITCODE -ne 0) { throw "curl failed (exit $LASTEXITCODE): $($stderr.Substring(0, [math]::Min(300, $stderr.Length)))" }
+                    return [pscustomobject]@{ Content = [IO.File]::ReadAllText($tmp, [Text.Encoding]::UTF8) }
+                }
+                finally { Remove-Item $tmp -ErrorAction SilentlyContinue }
             }
             else {
                 $params = @{ Uri = $Uri; Headers = $Headers; TimeoutSec = $TimeoutSec; ErrorAction = 'Stop' }

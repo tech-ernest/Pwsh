@@ -30,13 +30,17 @@ function Invoke-FlipAiHttpPost {
     $curl = Get-Command curl.exe -ErrorAction SilentlyContinue
     if ($curl) {
         $tmp = [IO.Path]::GetTempFileName()
+        # Response also via temp file: stdout captured through the console gets
+        # decoded with the console codepage on Windows, garbling non-ASCII (£, é…).
+        $outFile = [IO.Path]::GetTempFileName()
         try {
             [IO.File]::WriteAllText($tmp, $BodyJson, [Text.UTF8Encoding]::new($false))
             $args = @('-sS', '--fail-with-body', '--max-time', $TimeoutSec, '-X', 'POST', '-H', 'Content-Type: application/json')
             foreach ($k in $Headers.Keys) { $args += @('-H', "${k}: $($Headers[$k])") }
-            $args += @('--data-binary', "@$tmp", $Uri)
+            $args += @('--data-binary', "@$tmp", '-o', $outFile, $Uri)
 
-            $out = (& $curl.Source @args 2>$null) -join "`n"
+            & $curl.Source @args 2>$null | Out-Null
+            $out = [IO.File]::ReadAllText($outFile, [Text.Encoding]::UTF8)
             if ($LASTEXITCODE -ne 0) {
                 $apiMessage = try { ($out | ConvertFrom-Json).error.message } catch { $null }
                 if ($apiMessage) { throw "AI API error: $apiMessage" }
@@ -44,7 +48,7 @@ function Invoke-FlipAiHttpPost {
             }
             return $out | ConvertFrom-Json
         }
-        finally { Remove-Item $tmp -ErrorAction SilentlyContinue }
+        finally { Remove-Item $tmp, $outFile -ErrorAction SilentlyContinue }
     }
 
     try {
