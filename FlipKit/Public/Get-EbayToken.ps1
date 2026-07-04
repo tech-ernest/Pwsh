@@ -21,10 +21,19 @@ function Get-EbayToken {
 
     $basic = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("$($cfg.ebay.clientId):$($cfg.ebay.clientSecret)"))
 
-    $resp = Invoke-RestMethod -Method Post -Uri 'https://api.ebay.com/identity/v1/oauth2/token' `
-        -Headers @{ Authorization = "Basic $basic" } `
-        -ContentType 'application/x-www-form-urlencoded' `
-        -Body 'grant_type=client_credentials&scope=https%3A%2F%2Fapi.ebay.com%2Foauth%2Fapi_scope'
+    try {
+        $resp = Invoke-RestMethod -Method Post -Uri 'https://api.ebay.com/identity/v1/oauth2/token' `
+            -Headers @{ Authorization = "Basic $basic" } `
+            -ContentType 'application/x-www-form-urlencoded' `
+            -Body 'grant_type=client_credentials&scope=https%3A%2F%2Fapi.ebay.com%2Foauth%2Fapi_scope' `
+            -ErrorAction Stop
+    }
+    catch {
+        if ("$_" -match 'invalid_client') {
+            throw 'eBay rejected the credentials (invalid_client): the clientSecret in config/settings.json does not match the current Cert ID on developer.ebay.com. Copy the Cert ID again (Application Keys -> Show) and re-save.'
+        }
+        throw
+    }
 
     $script:EbayTokenCache = @{
         Token   = $resp.access_token
