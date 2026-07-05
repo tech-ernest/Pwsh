@@ -33,6 +33,67 @@ function Get-PriceStats {
     }
 }
 
+function Test-FlipCompRelevant {
+    <#
+        Decides whether a sold listing's title is a genuine comp for the search
+        term. eBay's sold search is fuzzy: "rtx 3060" returns whole gaming PCs,
+        laptops, Ti variants and replacement fans, all of which poison the
+        price stats. Rules:
+          - every search token must appear in the title (tolerant of spacing:
+            "12GB"/"12 GB", "RTX3060"/"RTX 3060")
+          - a Ti/Super suffix on a number the search didn't ask for is a
+            different product
+          - whole-system, accessory-only and faulty/parts wording disqualifies
+            a title, unless the search itself is in that territory
+            ("gaming pc", "garmin faulty")
+    #>
+    param(
+        [Parameter(Mandatory)][string]$Title,
+        [Parameter(Mandatory)][string]$SearchTerm
+    )
+
+    $t = $Title.ToLowerInvariant()
+    $s = $SearchTerm.ToLowerInvariant()
+    $tokens = @([regex]::Split($s, '[^a-z0-9]+') | Where-Object { $_ })
+
+    foreach ($token in $tokens) {
+        # Split into digit/letter runs joined by optional space or dash, with
+        # type-aware boundaries: '3060' must not match '13060', but may sit
+        # inside 'RTX3060'; 'rtx' must not match 'rtxa'.
+        $runs = @([regex]::Matches($token, '\d+|[a-z]+') | ForEach-Object { [regex]::Escape($_.Value) })
+        $lead  = if ($token[0] -match '\d') { '(?<!\d)' } else { '(?<![a-z])' }
+        $trail = if ($token[-1] -match '\d') { '(?!\d)' } else { '(?![a-z])' }
+        if ($t -notmatch ($lead + ($runs -join '[\s-]*') + $trail)) { return $false }
+    }
+
+    # Variant guard: search said "3060", title says "3060 Ti" — different card.
+    foreach ($token in $tokens) {
+        if ($token -notmatch '^\d{3,}$') { continue }
+        foreach ($variant in 'ti', 'super') {
+            if ($tokens -notcontains $variant -and $t -match "(?<!\d)$token\s*-?\s*$variant(?![a-z])") { return $false }
+        }
+    }
+
+    # Off-item wording, grouped; a group is skipped entirely when the search
+    # itself uses one of its phrases.
+    $groups = @(
+        # whole systems and bundles, when pricing a component
+        @('gaming pc', 'gaming tower', 'pc tower', 'desktop', 'laptop', 'notebook', 'all-in-one', 'all in one', 'bundle', 'system unit', 'full system', 'ryzen', 'core i3', 'core i5', 'core i7', 'core i9', 'i3-', 'i5-', 'i7-', 'i9-'),
+        # accessories and empty boxes masquerading as the item
+        @('fan replacement', 'replacement fan', 'fan only', 'box only', 'empty box', 'shroud', 'backplate', 'waterblock', 'cable only'),
+        # defective units — they sell cheap and drag the median down
+        @('faulty', 'spares', 'repair', 'not working', 'no power', 'for parts', 'parts only', 'broken', 'damaged', 'untested', 'cracked')
+    )
+    foreach ($group in $groups) {
+        if (@($group | Where-Object { $s.Contains($_) }).Count -gt 0) { continue }
+        foreach ($phrase in $group) {
+            if ($t.Contains($phrase)) { return $false }
+        }
+    }
+
+    $true
+}
+
 $script:BrowserUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
 
 function Invoke-FlipWebRequest {

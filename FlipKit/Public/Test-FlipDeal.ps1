@@ -42,6 +42,7 @@ function Test-FlipDeal {
     $SearchTerm = $SearchTerm.Trim()
 
     $recentSolds = @()
+    $compsNote = $null
     if (-not $Comps) {
         # Fetch raw sold listings once: stats for the verdict, plus the most
         # recent solds for display.
@@ -50,6 +51,7 @@ function Test-FlipDeal {
             $Comps = Get-PriceStats -Prices $rawSolds.Price
             $Comps | Add-Member -NotePropertyName SearchTerm -NotePropertyValue $SearchTerm
             $recentSolds = @($rawSolds | Select-Object -First 8)
+            $compsNote = $script:CompsFilterNote
         }
     }
 
@@ -131,6 +133,7 @@ function Test-FlipDeal {
         CexCashFloor       = if ($PSBoundParameters.ContainsKey('CexCashFloor') -or $CexCashFloor) { $CexCashFloor } else { $null }
         BelowCexFloor      = if ($CexCashFloor) { $BuyPrice -lt $CexCashFloor } else { $null }
         CompsSource        = if ($Comps.PSObject.Properties['Source']) { $Comps.Source } else { 'eBay sold listings' }
+        CompsNote          = $compsNote
         RecentSolds        = @($recentSolds | ForEach-Object {
             @{
                 Title = $_.Title

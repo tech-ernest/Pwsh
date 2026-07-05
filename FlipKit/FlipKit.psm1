@@ -3,6 +3,7 @@ Set-StrictMode -Version Latest
 $script:RepoRoot = Split-Path -Parent $PSScriptRoot
 $script:EbayTokenCache = $null
 $script:CompsDiagnosis = $null
+$script:CompsFilterNote = $null
 
 foreach ($scope in 'Private', 'Public') {
     Get-ChildItem -Path (Join-Path $PSScriptRoot $scope) -Filter '*.ps1' -ErrorAction SilentlyContinue |

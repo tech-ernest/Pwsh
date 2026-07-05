@@ -46,6 +46,19 @@ Assert ($items[1].Price -eq 1150.00) 'thousands separators parsed; duplicate lin
 Assert ($items[4].Title -like 'ASUS Dual RTX 3060*') 'walks the whole page, not just the first card'
 Assert ($items[0].Url -eq 'https://www.ebay.co.uk/itm/256111222333') 'builds a clean listing link from the item number'
 
+Write-Host "`n== Comp relevance filter =="
+$rel = { param($title, $term) & $module { param($t, $s) Test-FlipCompRelevant -Title $t -SearchTerm $s } $title $term }
+Assert (& $rel 'NVIDIA GeForce RTX 3060 12GB GPU' 'rtx 3060') 'exact item passes'
+Assert (& $rel 'GIGABYTE RTX3060 GAMING OC 12G rev 2.0' 'rtx 3060') 'tolerates RTX3060 written without a space'
+Assert (-not (& $rel 'Gaming PC, Ryzen 5 5600X, RTX 3060 12GB, 32GB DDR4 3600, 1TB NVMe' 'rtx 3060')) 'whole gaming PC excluded'
+Assert (-not (& $rel 'ROG ZEPHYRUS G14, RTX 3060, AMD Ryzen 9 5900HS' 'rtx 3060')) 'laptop with a CPU in the title excluded'
+Assert (-not (& $rel 'Palit GeForce RTX 3060 Ti Dual 8GB GDDR6 Graphics Card' 'rtx 3060')) 'Ti variant excluded when not asked for'
+Assert (& $rel 'Palit GeForce RTX 3060 Ti Dual 8GB GDDR6 Graphics Card' 'rtx 3060 ti') 'Ti passes when the search asks for Ti'
+Assert (-not (& $rel 'NVIDIA GeForce RTX 3060 Ti / 3070 Founders Edition - GPU Fan Replacement (OEM)' 'rtx 3060')) 'accessory-only listing excluded'
+Assert (-not (& $rel 'MSI RTX 3060 12GB - FAULTY spares or repair' 'rtx 3060')) 'faulty unit excluded for a working-item search'
+Assert (& $rel 'Garmin Forerunner 245 GPS Watch - faulty, spares or repair' 'garmin faulty') 'faulty allowed when the search asks for faulty'
+Assert (-not (& $rel 'Radeon RX 6600 8GB Graphics Card' 'rtx 3060')) 'unrelated model excluded'
+
 Write-Host "`n== Price stats =="
 $stats = & $module { param($p) Get-PriceStats -Prices $p } @(189.99, 195.00, 205.00, 210.50, 220.00, 1150.00)
 Assert ($stats.Count -eq 6) 'stat count'

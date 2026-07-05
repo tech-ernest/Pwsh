@@ -20,6 +20,9 @@ function Get-EbaySoldComps {
         [switch]$Raw,
         # Save the fetched HTML next to the data dir for parser debugging.
         [switch]$DumpHtml,
+        # Keep every parsed listing, including bundles/variants/faulty items
+        # the relevance filter would normally drop.
+        [switch]$NoFilter,
         [string]$Site = 'www.ebay.co.uk'
     )
 
@@ -60,6 +63,22 @@ function Get-EbaySoldComps {
         return
     }
     $script:CompsDiagnosis = $null
+
+    # eBay's sold search is fuzzy — a component search returns whole PCs,
+    # laptops, Ti/Super variants and faulty units. Keep only titles that
+    # genuinely match the term so the stats price the actual item.
+    $script:CompsFilterNote = $null
+    if (-not $NoFilter) {
+        $matched = @($items | Where-Object { Test-FlipCompRelevant -Title $_.Title -SearchTerm $SearchTerm })
+        if ($matched.Count -gt 0 -and $matched.Count -lt $items.Count) {
+            $script:CompsFilterNote = 'Priced from {0} of {1} sold results — {2} off-item listings excluded (bundles, Ti/Super variants, faulty/parts).' -f
+                $matched.Count, $items.Count, ($items.Count - $matched.Count)
+            $items = $matched
+        }
+        elseif ($matched.Count -eq 0) {
+            $script:CompsFilterNote = "Relevance filter matched none of $($items.Count) sold results — using all of them, treat the stats with care."
+        }
+    }
 
     if ($Raw) { return $items }
 
