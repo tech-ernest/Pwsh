@@ -68,12 +68,26 @@ function Get-CexPrice {
     }
 
     foreach ($box in @($boxes | Select-Object -First $Top)) {
+        # Field names differ between the wss2 API (cashPrice/exchangePrice)
+        # and the Algolia records (cashPriceCalculated/exchangePriceCalculated,
+        # with cashBuyPrice/exchangePrice present but zero) — take the first
+        # positive value.
+        $firstPositive = {
+            param($names)
+            foreach ($n in $names) {
+                $p = $box.PSObject.Properties[$n]
+                if ($p -and $p.Value -and [double]$p.Value -gt 0) { return [double]$p.Value }
+            }
+            $null
+        }
         [pscustomobject]@{
             Name          = $box.boxName
-            CexSells      = [double]$box.sellPrice
-            CashBuy       = [double]$box.cashPrice
-            VoucherBuy    = [double]$box.exchangePrice
-            InStockOnline = if ($box.PSObject.Properties['outOfEcomStock']) { -not [bool]$box.outOfEcomStock } else { $null }
+            CexSells      = & $firstPositive @('sellPrice')
+            CashBuy       = & $firstPositive @('cashPrice', 'cashPriceCalculated', 'cashBuyPrice')
+            VoucherBuy    = & $firstPositive @('exchangePrice', 'exchangePriceCalculated')
+            InStockOnline = if ($box.PSObject.Properties['outOfEcomStock']) { -not [bool]$box.outOfEcomStock }
+                            elseif ($box.PSObject.Properties['inStockOnline']) { [bool][int]$box.inStockOnline }
+                            else { $null }
             BoxId         = if ($box.PSObject.Properties['boxId']) { $box.boxId } else { $null }
         }
     }

@@ -184,13 +184,20 @@ $env:FLIPKIT_CONFIG = $cexCfg
     function script:Invoke-FlipWebRequest { throw 'cloudflare 403' }
     function script:Invoke-FlipAiHttpPost { param($Uri, $Headers, $BodyJson)
         $script:CexUri = $Uri; $script:CexBody = $BodyJson
+        # Real Algolia record shape: cashBuyPrice/exchangePrice are decoy
+        # zeros; the live numbers are in the *Calculated fields.
         [pscustomobject]@{ results = @([pscustomobject]@{ hits = @([pscustomobject]@{
-            boxName = 'GeForce RTX 3060 12GB'; sellPrice = 220; cashPrice = 140; exchangePrice = 165; boxId = 'B1' }) })
+            boxName = 'Asus GeForce RTX 3060 Dual OC V2 12GB GDDR6'; sellPrice = 265
+            cashBuyPrice = 0; exchangePrice = 0
+            cashPriceCalculated = 145; exchangePriceCalculated = 177
+            inStockOnline = 1; boxId = 'SGRAASU306012G07' }) })
         }
     }
 }
 $cexRows = @(Get-CexPrice 'rtx 3060')
-Assert ($cexRows.Count -eq 1 -and $cexRows[0].CashBuy -eq 140) 'fallback returns CashBuy from Algolia hits'
+Assert ($cexRows.Count -eq 1 -and $cexRows[0].CashBuy -eq 145) 'CashBuy taken from cashPriceCalculated, not the zero decoys'
+Assert ($cexRows[0].VoucherBuy -eq 177 -and $cexRows[0].CexSells -eq 265) 'voucher/sell prices mapped'
+Assert ($cexRows[0].InStockOnline -eq $true) 'online stock flag mapped from inStockOnline'
 Assert ((& $module { $script:CexUri }) -like 'https://search.webuy.io/1/indexes/*') 'uses the configured search host'
 Assert ((& $module { $script:CexBody }) -like '*"indexName": "realindex"*') 'queries the configured index'
 $env:FLIPKIT_CONFIG = $testCfg
