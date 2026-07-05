@@ -162,6 +162,8 @@
     <form class="row" id="scanForm">
       <label>Mode
         <select name="mode"><option value="dry">Dry run (new hits only)</option><option value="live">Live (alert + mark seen)</option><option value="all">Everything current (include already-seen)</option></select></label>
+      <label>Sort
+        <select id="scanSort" onchange="renderScanHits()"><option value="">as found</option><option value="ending">auction ending soonest</option><option value="price">price low → high</option></select></label>
       <button class="go">Scan now</button>
     </form>
     <div id="scanOut"></div>
@@ -172,6 +174,8 @@
     <form class="row" style="margin-bottom:8px">
       <label>Show deals from
         <select id="scanFilter"><option value="">all searches</option></select></label>
+      <label>Sort
+        <select id="hitsSort" onchange="renderHits()"><option value="">newest found</option><option value="ending">auction ending soonest</option><option value="price">price low → high</option></select></label>
     </form>
     <div id="hitsOut" class="hint">loading…</div>
   </div>
@@ -397,6 +401,26 @@ const auctionMeta = h => {
 const hitHtml = h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
     <div class="meta">${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}${auctionMeta(h)}${h.Seen ? ' · seen before' : ''} ${h.Note ? '· <b>' + esc(h.Note) + '</b>' : ''}</div></div>`;
 
+// 'ending': auctions by soonest end (fixed-price sinks to the bottom);
+// 'price': cheapest first; '': server order.
+const sortHits = (hits, mode) => {
+  const arr = [...hits];
+  if (mode === 'ending') {
+    const t = h => ((h.Buying || '').includes('AUCTION') && h.EndsAt) ? new Date(h.EndsAt).getTime() : Infinity;
+    arr.sort((a, b) => t(a) - t(b));
+  } else if (mode === 'price') {
+    arr.sort((a, b) => a.Price - b.Price);
+  }
+  return arr;
+};
+
+window.renderScanHits = () => {
+  const out = $('#scanOut');
+  if (!lastHits.length) return;
+  out.innerHTML = `<p style="margin:10px 0"><button class="go" onclick="triage()">AI triage — group by profit &amp; fix difficulty</button></p>`
+    + sortHits(lastHits, $('#scanSort').value).map(hitHtml).join('');
+};
+
 $('#scanForm').onsubmit = async e => {
   e.preventDefault();
   const f = e.target, out = $('#scanOut');
@@ -405,10 +429,11 @@ $('#scanForm').onsubmit = async e => {
     const hits = await api('/api/scan', { method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ live: f.mode.value === 'live', includeSeen: f.mode.value === 'all' }) });
     lastHits = hits;
-    out.innerHTML = hits.length === 0
-      ? '<p class="hint">No new hits — everything current has been seen before (switch mode to "Everything current" to re-list those), or searches failed; check the server window.</p>'
-      : `<p style="margin:10px 0"><button class="go" onclick="triage()">AI triage — group by profit &amp; fix difficulty</button></p>`
-        + hits.map(hitHtml).join('');
+    if (hits.length === 0) {
+      out.innerHTML = '<p class="hint">No new hits — everything current has been seen before (switch mode to "Everything current" to re-list those), or searches failed; check the server window.</p>';
+    } else {
+      renderScanHits();
+    }
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
   busy(f, false);
 };
@@ -418,7 +443,7 @@ let allRecentHits = [];
 function renderHits() {
   const out = $('#hitsOut');
   const want = $('#scanFilter').value;
-  const hits = want ? allRecentHits.filter(h => h.Search === want) : allRecentHits;
+  const hits = sortHits(want ? allRecentHits.filter(h => h.Search === want) : allRecentHits, $('#hitsSort').value);
   out.innerHTML = hits.length === 0
     ? '<p class="hint">Nothing here — history builds as live scans run, or try a different filter.</p>'
     : hits.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
