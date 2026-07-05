@@ -162,6 +162,17 @@ Set-FlipHitDismissed -ItemId 'v1|111|0'
 Assert (@(Get-FlipRecentHits).Count -eq 1) 'dismiss hides a hit'
 Assert (@(Get-FlipRecentHits -IncludeDismissed).Count -eq 2) 'dismissed hit still in raw history'
 
+Write-Host "`n== Find-EbayDeals filter construction (mocked HTTP) =="
+& $module {
+    function script:Get-EbayToken { 'fake-token' }
+    function script:Invoke-RestMethod { param($Uri, $Headers) $script:CapturedUri = $Uri; [pscustomobject]@{} }
+}
+Find-EbayDeals -Query 'hp elitebook g8' -MaxPrice 260 -MinPrice 40 -ConditionIds '7000' -CategoryIds '177' | Out-Null
+$uri = & $module { $script:CapturedUri }
+Assert ($uri -like '*conditionIds%3A%7B7000%7D*') 'conditionIds lands in the API filter'
+Assert ($uri -like '*category_ids=177*') 'categoryIds lands in the request'
+Assert ($uri -like '*%5B40..260%5D*') 'min/max price range encoded'
+
 Write-Host "`n== Add-FlipSearch =="
 $added = Add-FlipSearch -Name 'New lane' -Query 'steam deck (faulty)' -MaxPrice 150 -MinPrice 50
 Assert ($added.name -eq 'New lane') 'returns the added search'

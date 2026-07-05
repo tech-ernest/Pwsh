@@ -42,10 +42,6 @@ function Invoke-FlipScan {
 
         $buyingOptions = if ($search.PSObject.Properties['buyingOptions'] -and $search.buyingOptions) { $search.buyingOptions } else { 'FIXED_PRICE' }
 
-        $findParams = @{ Query = $search.query; MaxPrice = $search.maxPrice; BuyingOptions = $buyingOptions }
-        if ($search.PSObject.Properties['minPrice'] -and $search.minPrice) { $findParams.MinPrice = $search.minPrice }
-        if ($search.PSObject.Properties['categoryIds'] -and $search.categoryIds) { $findParams.CategoryIds = $search.categoryIds }
-
         # The saved query, plus typo variants when the search opts in with
         # "typoHunt": "<brand>" — automated misspelled-listing hunting.
         $queries = @(@{ q = $search.query; typo = $false })
@@ -59,6 +55,7 @@ function Invoke-FlipScan {
             $findParams = @{ Query = $entry.q; MaxPrice = $search.maxPrice; BuyingOptions = $buyingOptions }
             if ($search.PSObject.Properties['minPrice'] -and $search.minPrice) { $findParams.MinPrice = $search.minPrice }
             if ($search.PSObject.Properties['categoryIds'] -and $search.categoryIds) { $findParams.CategoryIds = $search.categoryIds }
+            if ($search.PSObject.Properties['conditionIds'] -and $search.conditionIds) { $findParams.ConditionIds = $search.conditionIds }
 
             $items = try {
                 Find-EbayDeals @findParams

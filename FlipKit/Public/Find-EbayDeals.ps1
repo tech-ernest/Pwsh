@@ -21,6 +21,10 @@ function Find-EbayDeals {
         [string]$CategoryIds,
         # FIXED_PRICE, AUCTION, or 'FIXED_PRICE|AUCTION'
         [string]$BuyingOptions = 'FIXED_PRICE',
+        # eBay condition ids, pipe-separated (e.g. '7000' = For parts or not
+        # working) — the reliable way to hunt broken stock, since many sellers
+        # never write "faulty" in the title.
+        [string]$ConditionIds,
         [int]$Limit = 50,
         [string]$MarketplaceId
     )
@@ -30,6 +34,7 @@ function Find-EbayDeals {
 
     $priceRange = if ($MinPrice -gt 0) { '[{0}..{1}]' -f $MinPrice, $MaxPrice } else { '[..{0}]' -f $MaxPrice }
     $filter = 'price:{0},priceCurrency:GBP,buyingOptions:{{{1}}}' -f $priceRange, $BuyingOptions
+    if ($ConditionIds) { $filter += ',conditionIds:{' + $ConditionIds + '}' }
     $uri = 'https://api.ebay.com/buy/browse/v1/item_summary/search?q={0}&filter={1}&sort=newlyListed&limit={2}' -f
         [uri]::EscapeDataString($Query), [uri]::EscapeDataString($filter), $Limit
     if ($CategoryIds) { $uri += '&category_ids=' + [uri]::EscapeDataString($CategoryIds) }

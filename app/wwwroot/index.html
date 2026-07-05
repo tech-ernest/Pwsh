@@ -631,6 +631,7 @@ function searchRowHtml(s = {}) {
     <label>Query <input data-k="query" value="${esc(s.query || '')}"></label>
     <label>Typo hunt (brand) <input data-k="typoHunt" value="${esc(s.typoHunt || '')}" placeholder="optional"></label>
     <label>Category ids <input data-k="categoryIds" value="${esc(s.categoryIds || '')}" placeholder="optional"></label>
+    <label>Condition ids <input data-k="conditionIds" value="${esc(s.conditionIds || '')}" placeholder="7000 = broken"></label>
     <label>Min £ <input data-k="minPrice" type="number" value="${s.minPrice ?? ''}"></label>
     <label>Max £ <input data-k="maxPrice" type="number" value="${s.maxPrice ?? ''}"></label>
     <label>CeX query <input data-k="cexQuery" value="${esc(s.cexQuery || '')}" placeholder="optional"></label>
@@ -666,6 +667,7 @@ $('#settingsForm').onsubmit = async e => {
     const s = { name: g('name'), query: g('query'), maxPrice: Number(g('maxPrice')) || 0, cexQuery: g('cexQuery'), buyingOptions: g('buyingOptions') };
     if (g('typoHunt')) s.typoHunt = g('typoHunt');
     if (g('categoryIds')) s.categoryIds = g('categoryIds');
+    if (g('conditionIds')) s.conditionIds = g('conditionIds');
     if (g('minPrice')) s.minPrice = Number(g('minPrice'));
     return s;
   }).filter(s => s.name && s.query && s.maxPrice > 0);
