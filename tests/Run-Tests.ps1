@@ -173,6 +173,28 @@ Assert ($uri -like '*conditionIds%3A%7B7000%7D*') 'conditionIds lands in the API
 Assert ($uri -like '*category_ids=177*') 'categoryIds lands in the request'
 Assert ($uri -like '*%5B40..260%5D*') 'min/max price range encoded'
 
+Write-Host "`n== Get-CexPrice Algolia fallback (mocked HTTP) =="
+$cexCfg = Join-Path $tempRoot 'settings-cex.json'
+@{
+    ebay = @{ clientId = 'x'; clientSecret = 'y'; marketplaceId = 'EBAY_GB'; site = 'www.ebay.co.uk' }
+    cex  = @{ algoliaAppId = 'APPID'; algoliaApiKey = 'pubkey'; algoliaIndex = 'realindex'; algoliaHost = 'search.webuy.io' }
+} | ConvertTo-Json -Depth 5 | Set-Content $cexCfg
+$env:FLIPKIT_CONFIG = $cexCfg
+& $module {
+    function script:Invoke-FlipWebRequest { throw 'cloudflare 403' }
+    function script:Invoke-FlipAiHttpPost { param($Uri, $Headers, $BodyJson)
+        $script:CexUri = $Uri; $script:CexBody = $BodyJson
+        [pscustomobject]@{ results = @([pscustomobject]@{ hits = @([pscustomobject]@{
+            boxName = 'GeForce RTX 3060 12GB'; sellPrice = 220; cashPrice = 140; exchangePrice = 165; boxId = 'B1' }) })
+        }
+    }
+}
+$cexRows = @(Get-CexPrice 'rtx 3060')
+Assert ($cexRows.Count -eq 1 -and $cexRows[0].CashBuy -eq 140) 'fallback returns CashBuy from Algolia hits'
+Assert ((& $module { $script:CexUri }) -like 'https://search.webuy.io/1/indexes/*') 'uses the configured search host'
+Assert ((& $module { $script:CexBody }) -like '*"indexName": "realindex"*') 'queries the configured index'
+$env:FLIPKIT_CONFIG = $testCfg
+
 Write-Host "`n== Add-FlipSearch =="
 $added = Add-FlipSearch -Name 'New lane' -Query 'steam deck (faulty)' -MaxPrice 150 -MinPrice 50
 Assert ($added.name -eq 'New lane') 'returns the added search'

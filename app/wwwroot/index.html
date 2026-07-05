@@ -299,6 +299,7 @@
       <label>Algolia App Id <input id="s-cex-algoliaAppId"></label>
       <label>Algolia API key <input id="s-cex-algoliaApiKey" type="password" autocomplete="off"></label>
       <label>Index <input id="s-cex-algoliaIndex" placeholder="prod_cex_uk"></label>
+      <label>Search host <input id="s-cex-algoliaHost" placeholder="search.webuy.io"></label>
     </div>
     <p class="hint">See README "Fixing CeX" for where these two public keys come from.</p>
   </div>
@@ -650,7 +651,7 @@ async function loadSettings() {
     sSet('s-rules-minMarginPct', c.rules?.minMarginPct);
     sSet('s-alerts-ntfyTopic', c.alerts?.ntfyTopic); sSet('s-alerts-maxPerScan', c.alerts?.maxPerScan ?? 10); sSet('s-alerts-telegramChatId', c.alerts?.telegramChatId);
     sSet('s-ai-provider', c.ai?.provider ?? 'ollama'); sSet('s-ai-model', c.ai?.model); sSet('s-ai-baseUrl', c.ai?.baseUrl);
-    sSet('s-cex-algoliaAppId', c.cex?.algoliaAppId); sSet('s-cex-algoliaIndex', c.cex?.algoliaIndex ?? 'prod_cex_uk');
+    sSet('s-cex-algoliaAppId', c.cex?.algoliaAppId); sSet('s-cex-algoliaIndex', c.cex?.algoliaIndex ?? 'prod_cex_uk'); sSet('s-cex-algoliaHost', c.cex?.algoliaHost);
     for (const [id, set] of [['s-ebay-clientSecret', v.secretsSet.ebayClientSecret], ['s-ai-apiKey', v.secretsSet.aiApiKey],
                              ['s-alerts-telegramBotToken', v.secretsSet.telegramBotToken], ['s-cex-algoliaApiKey', v.secretsSet.cexAlgoliaApiKey]]) {
       const el = document.getElementById(id); el.value = ''; el.placeholder = set ? SECRET_HINT : '';
@@ -678,7 +679,7 @@ $('#settingsForm').onsubmit = async e => {
     rules: { minMarginPct: Number(sVal('s-rules-minMarginPct')) },
     alerts: { ntfyTopic: sVal('s-alerts-ntfyTopic'), maxPerScan: Number(sVal('s-alerts-maxPerScan')) || 10, telegramBotToken: sVal('s-alerts-telegramBotToken'), telegramChatId: sVal('s-alerts-telegramChatId') },
     ai: { provider: sVal('s-ai-provider'), model: sVal('s-ai-model'), baseUrl: sVal('s-ai-baseUrl'), apiKey: sVal('s-ai-apiKey') },
-    cex: { algoliaAppId: sVal('s-cex-algoliaAppId'), algoliaApiKey: sVal('s-cex-algoliaApiKey'), algoliaIndex: sVal('s-cex-algoliaIndex') },
+    cex: { algoliaAppId: sVal('s-cex-algoliaAppId'), algoliaApiKey: sVal('s-cex-algoliaApiKey'), algoliaIndex: sVal('s-cex-algoliaIndex'), algoliaHost: sVal('s-cex-algoliaHost') },
     searches
   };
 

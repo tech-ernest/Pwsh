@@ -23,7 +23,8 @@
     "algoliaAppId": "",
     "algoliaApiKey": "",
     "algoliaIndex": "prod_cex_uk",
-    "_note": "Fallback when CeX's main API is Cloudflare-blocked. Grab the two PUBLIC keys from browser dev tools on uk.webuy.com - see README 'Fixing CeX'."
+    "algoliaHost": "",
+    "_note": "Fallback when CeX's main API is Cloudflare-blocked. Grab the two PUBLIC keys from browser dev tools on uk.webuy.com - see README 'Fixing CeX'. If the keys are rejected by algolia.net directly, set algoliaHost to search.webuy.io (CeX proxies its search) and algoliaIndex to the indexName from the request payload."
   },
   "ai": {
     "provider": "ollama",

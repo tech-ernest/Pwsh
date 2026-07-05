@@ -39,16 +39,23 @@ function Get-CexPrice {
         $cex = if ($cfg.PSObject.Properties['cex']) { $cfg.cex } else { $null }
         if ($cex -and $cex.algoliaAppId -and $cex.algoliaApiKey) {
             $index = if ($cex.PSObject.Properties['algoliaIndex'] -and $cex.algoliaIndex) { $cex.algoliaIndex } else { 'prod_cex_uk' }
-            $aUri = 'https://{0}-dsn.algolia.net/1/indexes/{1}/query' -f $cex.algoliaAppId.ToLower(), $index
-            # Origin/Referer mimic the CeX site itself, in case the public
-            # search key is referer-restricted.
+            # CeX routes site search through its own domain (search.webuy.io),
+            # which swaps the public key for a real one server-side — the
+            # public key is useless against algolia.net directly. algoliaHost
+            # in config overrides the default Algolia endpoint for that case.
+            $aHost = if ($cex.PSObject.Properties['algoliaHost'] -and $cex.algoliaHost) { $cex.algoliaHost }
+                     else { '{0}-dsn.algolia.net' -f $cex.algoliaAppId.ToLower() }
+            # Same batch-queries call, URL auth and headers as the site itself.
+            $aUri = 'https://{0}/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(5.52.1)%3B%20Browser&x-algolia-api-key={1}&x-algolia-application-id={2}' -f
+                $aHost, $cex.algoliaApiKey, $cex.algoliaAppId
+            $body = ConvertTo-Json -Depth 5 -InputObject @{
+                requests = @(@{ indexName = $index; params = 'query={0}&hitsPerPage={1}' -f [uri]::EscapeDataString($Query), $Top })
+            }
             $aResp = Invoke-FlipAiHttpPost -Uri $aUri -Headers @{
-                'X-Algolia-Application-Id' = $cex.algoliaAppId
-                'X-Algolia-API-Key'        = $cex.algoliaApiKey
-                'Origin'                   = 'https://uk.webuy.com'
-                'Referer'                  = 'https://uk.webuy.com/'
-            } -BodyJson (@{ params = 'query={0}&hitsPerPage={1}' -f [uri]::EscapeDataString($Query), $Top } | ConvertTo-Json)
-            $boxes = $aResp.hits
+                'Origin'  = 'https://uk.webuy.com'
+                'Referer' = 'https://uk.webuy.com/'
+            } -BodyJson $body
+            $boxes = $aResp.results[0].hits
         }
         elseif ($primaryError) {
             throw "CeX primary API blocked and no Algolia fallback configured (see README 'Fixing CeX'). Original error: $primaryError"
