@@ -40,9 +40,13 @@ function Get-CexPrice {
         if ($cex -and $cex.algoliaAppId -and $cex.algoliaApiKey) {
             $index = if ($cex.PSObject.Properties['algoliaIndex'] -and $cex.algoliaIndex) { $cex.algoliaIndex } else { 'prod_cex_uk' }
             $aUri = 'https://{0}-dsn.algolia.net/1/indexes/{1}/query' -f $cex.algoliaAppId.ToLower(), $index
+            # Origin/Referer mimic the CeX site itself, in case the public
+            # search key is referer-restricted.
             $aResp = Invoke-FlipAiHttpPost -Uri $aUri -Headers @{
                 'X-Algolia-Application-Id' = $cex.algoliaAppId
                 'X-Algolia-API-Key'        = $cex.algoliaApiKey
+                'Origin'                   = 'https://uk.webuy.com'
+                'Referer'                  = 'https://uk.webuy.com/'
             } -BodyJson (@{ params = 'query={0}&hitsPerPage={1}' -f [uri]::EscapeDataString($Query), $Top } | ConvertTo-Json)
             $boxes = $aResp.hits
         }
