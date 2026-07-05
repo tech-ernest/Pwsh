@@ -14,6 +14,14 @@ function ConvertFrom-EbaySoldHtml {
     process {
         $results = [System.Collections.Generic.List[object]]::new()
 
+        # Listing URL minus tracking params, so the UI can link each comp for
+        # inspection. Shared by strategies 1 and 2.
+        $urlOf = {
+            param($chunk)
+            $m = [regex]::Match($chunk, 'href="(https?://www\.ebay\.[a-z.]+/itm/\d+)')
+            if ($m.Success) { $m.Groups[1].Value } else { '' }
+        }
+
         # Strategy 1: classic markup — <li class="s-item ..."> blocks.
         $chunks = [regex]::Split($Html, '<li[^>]+class="[^"]*s-item[^"]*"') | Select-Object -Skip 1
         foreach ($chunk in $chunks) {
@@ -28,6 +36,7 @@ function ConvertFrom-EbaySoldHtml {
             $results.Add([pscustomobject]@{
                 Title = $title
                 Price = [double]($priceMatch.Groups[1].Value -replace ',', '')
+                Url   = & $urlOf $chunk
             })
         }
 
@@ -46,6 +55,7 @@ function ConvertFrom-EbaySoldHtml {
                 $results.Add([pscustomobject]@{
                     Title = $title
                     Price = [double]($priceMatch.Groups[1].Value -replace ',', '')
+                    Url   = & $urlOf $chunk
                 })
             }
         }
@@ -57,6 +67,8 @@ function ConvertFrom-EbaySoldHtml {
         # chunks (image link + title link); we keep whichever has the price.
         if ($results.Count -eq 0) {
             $done = [System.Collections.Generic.HashSet[string]]::new()
+            $siteMatch = [regex]::Match($Html, 'href="?https?://(www\.ebay\.[a-z.]+)/itm/')
+            $site = if ($siteMatch.Success) { $siteMatch.Groups[1].Value } else { 'www.ebay.co.uk' }
             $chunks = [regex]::Split($Html, 'href="?https?://www\.ebay\.[a-z.]+/itm/') | Select-Object -Skip 1
             foreach ($chunk in $chunks) {
                 $idMatch = [regex]::Match($chunk, '^(\d{9,15})')
@@ -77,6 +89,7 @@ function ConvertFrom-EbaySoldHtml {
                 $results.Add([pscustomobject]@{
                     Title = $title
                     Price = [double]($priceMatch.Groups[1].Value -replace ',', '')
+                    Url   = ('https://{0}/itm/{1}' -f $site, $idMatch.Groups[1].Value)
                 })
             }
         }

@@ -371,7 +371,9 @@ $('#checkForm').onsubmit = async e => {
       </div>
       ${d.CompsSource && d.CompsSource !== 'eBay sold listings' ? `<p class="hint" style="margin-top:8px">⚠ ${esc(d.CompsSource)} — real sold listings unavailable, treat as a guide.</p>` : ''}
       ${(d.RecentSolds && d.RecentSolds.length) ? '<div class="meta" style="margin-top:12px"><b>Recently sold on eBay:</b></div>'
-        + d.RecentSolds.map(s => `<div class="meta">${gbp(s.Price)} — ${esc(s.Title)}</div>`).join('') : ''}`;
+        + d.RecentSolds.map(s => `<div class="meta">${gbp(s.Price)} — ${s.Url
+            ? `<a href="${esc(s.Url)}" target="_blank" rel="noopener">${esc(s.Title || 'view listing')}</a>`
+            : esc(s.Title)}</div>`).join('') : ''}`;
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
   busy(f, false);
 };

@@ -131,7 +131,13 @@ function Test-FlipDeal {
         CexCashFloor       = if ($PSBoundParameters.ContainsKey('CexCashFloor') -or $CexCashFloor) { $CexCashFloor } else { $null }
         BelowCexFloor      = if ($CexCashFloor) { $BuyPrice -lt $CexCashFloor } else { $null }
         CompsSource        = if ($Comps.PSObject.Properties['Source']) { $Comps.Source } else { 'eBay sold listings' }
-        RecentSolds        = @($recentSolds | ForEach-Object { @{ Title = $_.Title; Price = $_.Price } })
+        RecentSolds        = @($recentSolds | ForEach-Object {
+            @{
+                Title = $_.Title
+                Price = $_.Price
+                Url   = if ($_.PSObject.Properties['Url']) { $_.Url } else { '' }
+            }
+        })
     }
 
     # A buy below what CeX pays cash for the item can't really lose — upgrade

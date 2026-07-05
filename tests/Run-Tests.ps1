@@ -34,6 +34,7 @@ $items = @(ConvertFrom-EbaySoldHtml -Html $html)
 Assert ($items.Count -eq 6) 'parses 6 real listings (placeholder skipped)'
 Assert ($items[0].Title -eq 'NVIDIA RTX 3060 12GB Graphics Card & Box') 'decodes HTML entities in titles'
 Assert ($items[2].Price -eq 1150.00) 'handles thousands separators in prices'
+Assert ($items[0].Url -eq 'https://www.ebay.co.uk/itm/111') 'keeps the listing link for inspection'
 
 Write-Host "`n== ConvertFrom-EbaySoldHtml (minified markup) =="
 $html = Get-Content -Raw (Join-Path $PSScriptRoot 'fixtures/ebay-sold-minified.html')
@@ -43,6 +44,7 @@ Assert ($items[0].Title -eq 'NVIDIA GeForce RTX 3060 12GB GDDR6 Graphics Card & 
 Assert ($items[0].Price -eq 190.00) 'takes the item price, not the postage price that follows it'
 Assert ($items[1].Price -eq 1150.00) 'thousands separators parsed; duplicate links to the same item deduped'
 Assert ($items[4].Title -like 'ASUS Dual RTX 3060*') 'walks the whole page, not just the first card'
+Assert ($items[0].Url -eq 'https://www.ebay.co.uk/itm/256111222333') 'builds a clean listing link from the item number'
 
 Write-Host "`n== Price stats =="
 $stats = & $module { param($p) Get-PriceStats -Prices $p } @(189.99, 195.00, 205.00, 210.50, 220.00, 1150.00)
