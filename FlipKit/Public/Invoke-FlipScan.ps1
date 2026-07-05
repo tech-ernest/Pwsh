@@ -45,6 +45,11 @@ function Invoke-FlipScan {
 
         $buyingOptions = if ($search.PSObject.Properties['buyingOptions'] -and $search.buyingOptions) { $search.buyingOptions } else { 'FIXED_PRICE' }
 
+        # Ending-soon lanes track their own seen-keys, so an auction can alert
+        # once when listed (via a newlyListed lane) and once more when it
+        # enters the final-hours window — the moment that actually matters.
+        $endingLane = $search.PSObject.Properties['endingWithinHours'] -and $search.endingWithinHours -and [double]$search.endingWithinHours -gt 0
+
         # The saved query, plus typo variants when the search opts in with
         # "typoHunt": "<brand>" — automated misspelled-listing hunting.
         $queries = @(@{ q = $search.query; typo = $false })
@@ -59,6 +64,8 @@ function Invoke-FlipScan {
             if ($search.PSObject.Properties['minPrice'] -and $search.minPrice) { $findParams.MinPrice = $search.minPrice }
             if ($search.PSObject.Properties['categoryIds'] -and $search.categoryIds) { $findParams.CategoryIds = $search.categoryIds }
             if ($search.PSObject.Properties['conditionIds'] -and $search.conditionIds) { $findParams.ConditionIds = $search.conditionIds }
+            if ($search.PSObject.Properties['sort'] -and $search.sort) { $findParams.Sort = $search.sort }
+            if ($endingLane) { $findParams.EndingWithinHours = [double]$search.endingWithinHours }
 
             $items = try {
                 Find-EbayDeals @findParams
@@ -69,7 +76,8 @@ function Invoke-FlipScan {
             }
 
             foreach ($item in @($items)) {
-                $isNew = if ($DryRun) { -not $seen.Contains($item.ItemId) } else { $seen.Add($item.ItemId) }
+                $seenKey = if ($endingLane) { "$($item.ItemId)|ending" } else { $item.ItemId }
+                $isNew = if ($DryRun) { -not $seen.Contains($seenKey) } else { $seen.Add($seenKey) }
                 if (-not $isNew -and -not $IncludeSeen) { continue }
 
                 $note = if ($entry.typo) { "MISSPELLED title ('$($entry.q)') — low visibility, less bidding!" } else { '' }

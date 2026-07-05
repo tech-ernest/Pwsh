@@ -73,6 +73,18 @@
       "buyingOptions": "FIXED_PRICE|AUCTION"
     },
     {
+      "name": "HP G8-G12 auctions ending soon",
+      "query": "hp (elitebook, probook, zbook) (g8, g9, g10, g11, g12)",
+      "categoryIds": "177",
+      "conditionIds": "7000",
+      "minPrice": 20,
+      "maxPrice": 200,
+      "sort": "endingSoonest",
+      "endingWithinHours": 6,
+      "cexQuery": "",
+      "buyingOptions": "AUCTION"
+    },
+    {
       "name": "HP G8-G12 faulty-in-title",
       "query": "hp (g8, g9, g10, g11, g12) (faulty, spares, repairs, no power, cracked)",
       "categoryIds": "177",

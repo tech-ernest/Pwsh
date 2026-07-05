@@ -166,6 +166,21 @@ Assert ($rerun.Count -eq 2 -and -not @($rerun | Where-Object { -not $_.Seen })) 
 $rerunLive = @(Invoke-FlipScan -IncludeSeen)
 Assert ($rerunLive.Count -eq 2 -and ((& $module { $script:AlertCount }) -eq $alertsBefore)) 'IncludeSeen live scan does not re-alert seen items'
 
+# An ending-soon lane keeps its own seen-keys: items already alerted by a
+# newlyListed lane surface again when they enter the final-hours window.
+$endCfg = Join-Path $tempRoot 'settings-ending.json'
+@{
+    ebay     = @{ clientId = 'x'; clientSecret = 'y'; marketplaceId = 'EBAY_GB'; site = 'www.ebay.co.uk' }
+    alerts   = @{ ntfyTopic = ''; telegramBotToken = ''; telegramChatId = '' }
+    searches = @(@{ name = 'Ending lane'; query = 'test'; maxPrice = 100; buyingOptions = 'AUCTION'; sort = 'endingSoonest'; endingWithinHours = 6 })
+} | ConvertTo-Json -Depth 5 | Set-Content $endCfg
+$env:FLIPKIT_CONFIG = $endCfg
+$endingRun = @(Invoke-FlipScan)
+Assert ($endingRun.Count -eq 2) 'ending-soon lane re-surfaces already-seen auctions under its own key'
+$endingRun2 = @(Invoke-FlipScan)
+Assert ($endingRun2.Count -eq 0) 'ending-soon lane alerts each auction only once'
+$env:FLIPKIT_CONFIG = $testCfg
+
 Write-Host "`n== Hit history =="
 Assert (@(Get-FlipRecentHits).Count -eq 2) 'live scan persisted hits to history'
 Set-FlipHitDismissed -ItemId 'v1|111|0'
@@ -182,6 +197,26 @@ $uri = & $module { $script:CapturedUri }
 Assert ($uri -like '*conditionIds%3A%7B7000%7D*') 'conditionIds lands in the API filter'
 Assert ($uri -like '*category_ids=177*') 'categoryIds lands in the request'
 Assert ($uri -like '*%5B40..260%5D*') 'min/max price range encoded'
+Assert ($uri -like '*sort=newlyListed*') 'default sort is newlyListed'
+
+& $module {
+    function script:Invoke-RestMethod { param($Uri, $Headers)
+        $script:CapturedUri = $Uri
+        [pscustomobject]@{ itemSummaries = @(
+            [pscustomobject]@{ itemId = 'v1|10|0'; title = 'Soon auction'; currentBidPrice = [pscustomobject]@{ value = '20.0' }
+                condition = 'For parts'; buyingOptions = @('AUCTION'); bidCount = 1; itemWebUrl = 'https://s'
+                itemEndDate = [datetime]::UtcNow.AddHours(2).ToString('yyyy-MM-ddTHH:mm:ss.fffZ') }
+            [pscustomobject]@{ itemId = 'v1|20|0'; title = 'Far auction'; currentBidPrice = [pscustomobject]@{ value = '25.0' }
+                condition = 'For parts'; buyingOptions = @('AUCTION'); bidCount = 0; itemWebUrl = 'https://f'
+                itemEndDate = [datetime]::UtcNow.AddHours(48).ToString('yyyy-MM-ddTHH:mm:ss.fffZ') }
+            [pscustomobject]@{ itemId = 'v1|30|0'; title = 'Fixed price, no end date'; price = [pscustomobject]@{ value = '30.0' }
+                condition = 'Used'; buyingOptions = @('FIXED_PRICE'); itemWebUrl = 'https://b' }
+        ) }
+    }
+}
+$ending = @(Find-EbayDeals -Query 'hp g9' -MaxPrice 200 -Sort endingSoonest -EndingWithinHours 6)
+Assert ((& $module { $script:CapturedUri }) -like '*sort=endingSoonest*') 'endingSoonest sort lands in the request'
+Assert ($ending.Count -eq 1 -and $ending[0].Title -eq 'Soon auction') 'ending window keeps only auctions closing within it'
 
 Write-Host "`n== Get-CexPrice Algolia fallback (mocked HTTP) =="
 $cexCfg = Join-Path $tempRoot 'settings-cex.json'

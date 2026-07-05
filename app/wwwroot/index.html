@@ -650,6 +650,8 @@ function searchRowHtml(s = {}) {
     <label>Max £ <input data-k="maxPrice" type="number" value="${s.maxPrice ?? ''}"></label>
     <label>CeX query <input data-k="cexQuery" value="${esc(s.cexQuery || '')}" placeholder="optional"></label>
     <label>Buying <select data-k="buyingOptions">${opt('FIXED_PRICE')}${opt('FIXED_PRICE|AUCTION')}${opt('AUCTION')}</select></label>
+    <label>Sort <select data-k="sort"><option value="">newly listed</option><option value="endingSoonest" ${s.sort === 'endingSoonest' ? 'selected' : ''}>ending soonest</option></select></label>
+    <label>Ending within (h) <input data-k="endingWithinHours" type="number" value="${s.endingWithinHours ?? ''}" placeholder="e.g. 6"></label>
     <label>&nbsp;<button class="link" onclick="this.closest('.srow').remove()">🗑 remove</button></label>
   </div>`;
 }
@@ -682,6 +684,8 @@ $('#settingsForm').onsubmit = async e => {
     if (g('typoHunt')) s.typoHunt = g('typoHunt');
     if (g('categoryIds')) s.categoryIds = g('categoryIds');
     if (g('conditionIds')) s.conditionIds = g('conditionIds');
+    if (g('sort')) s.sort = g('sort');
+    if (g('endingWithinHours')) s.endingWithinHours = Number(g('endingWithinHours'));
     if (g('minPrice')) s.minPrice = Number(g('minPrice'));
     return s;
   }).filter(s => s.name && s.query && s.maxPrice > 0);

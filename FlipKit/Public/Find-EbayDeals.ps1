@@ -25,6 +25,11 @@ function Find-EbayDeals {
         # working) — the reliable way to hunt broken stock, since many sellers
         # never write "faulty" in the title.
         [string]$ConditionIds,
+        # newlyListed catches fresh mispricings; endingSoonest surfaces
+        # auctions approaching the hammer — snipe-shortlist mode.
+        [ValidateSet('newlyListed', 'endingSoonest')][string]$Sort = 'newlyListed',
+        # Only return auctions ending within this many hours (0 = no window).
+        [double]$EndingWithinHours = 0,
         [int]$Limit = 50,
         [string]$MarketplaceId
     )
@@ -35,8 +40,8 @@ function Find-EbayDeals {
     $priceRange = if ($MinPrice -gt 0) { '[{0}..{1}]' -f $MinPrice, $MaxPrice } else { '[..{0}]' -f $MaxPrice }
     $filter = 'price:{0},priceCurrency:GBP,buyingOptions:{{{1}}}' -f $priceRange, $BuyingOptions
     if ($ConditionIds) { $filter += ',conditionIds:{' + $ConditionIds + '}' }
-    $uri = 'https://api.ebay.com/buy/browse/v1/item_summary/search?q={0}&filter={1}&sort=newlyListed&limit={2}' -f
-        [uri]::EscapeDataString($Query), [uri]::EscapeDataString($filter), $Limit
+    $uri = 'https://api.ebay.com/buy/browse/v1/item_summary/search?q={0}&filter={1}&sort={2}&limit={3}' -f
+        [uri]::EscapeDataString($Query), [uri]::EscapeDataString($filter), $Sort, $Limit
     if ($CategoryIds) { $uri += '&category_ids=' + [uri]::EscapeDataString($CategoryIds) }
 
     $resp = Invoke-RestMethod -Uri $uri -Headers @{
@@ -56,6 +61,20 @@ function Find-EbayDeals {
             elseif ($item.PSObject.Properties['currentBidPrice'] -and $item.currentBidPrice) { [double]$item.currentBidPrice.value }
             else { $null }
         if ($null -eq $priceValue) { continue }
+
+        # Ending-soon window: only items with an end date inside it qualify.
+        if ($EndingWithinHours -gt 0) {
+            $endOk = $false
+            if ($item.PSObject.Properties['itemEndDate'] -and $item.itemEndDate) {
+                try {
+                    $end = [datetime]::Parse($item.itemEndDate, [System.Globalization.CultureInfo]::InvariantCulture,
+                        [System.Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
+                    $endOk = $end -gt [datetime]::UtcNow -and $end -le [datetime]::UtcNow.AddHours($EndingWithinHours)
+                }
+                catch { }
+            }
+            if (-not $endOk) { continue }
+        }
 
         [pscustomobject]@{
             ItemId    = $item.itemId
