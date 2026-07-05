@@ -20,7 +20,10 @@ function Invoke-FlipScan {
     [CmdletBinding()]
     param(
         # Report hits without sending alerts or updating the seen-cache.
-        [switch]$DryRun
+        [switch]$DryRun,
+        # Also return listings the scanner has already seen (each hit carries
+        # a Seen flag). Alerts and history still only fire for new ones.
+        [switch]$IncludeSeen
     )
 
     $cfg = Get-FlipConfig
@@ -67,7 +70,7 @@ function Invoke-FlipScan {
 
             foreach ($item in @($items)) {
                 $isNew = if ($DryRun) { -not $seen.Contains($item.ItemId) } else { $seen.Add($item.ItemId) }
-                if (-not $isNew) { continue }
+                if (-not $isNew -and -not $IncludeSeen) { continue }
 
                 $note = if ($entry.typo) { "MISSPELLED title ('$($entry.q)') — low visibility, less bidding!" } else { '' }
                 # Optional CeX floor check per search: flags near-risk-free buys.
@@ -95,6 +98,7 @@ function Invoke-FlipScan {
                     BidCount  = if ($item.PSObject.Properties['BidCount']) { $item.BidCount } else { $null }
                     Url       = $item.Url
                     Note      = $note.Trim()
+                    Seen      = (-not $isNew)
                     FoundAt   = (Get-Date).ToString('yyyy-MM-dd HH:mm')
                 })
             }
@@ -105,9 +109,12 @@ function Invoke-FlipScan {
     }
 
     if (-not $DryRun) {
-        if ($hits.Count -gt 0) {
-            Send-FlipRankedAlerts -Hits $hits -Config $cfg
-            Save-FlipRecentHits -Hits $hits
+        # Only genuinely new hits alert and enter history, even when the
+        # caller asked to see everything.
+        $newHits = @($hits | Where-Object { -not $_.Seen })
+        if ($newHits.Count -gt 0) {
+            Send-FlipRankedAlerts -Hits $newHits -Config $cfg
+            Save-FlipRecentHits -Hits $newHits
         }
 
         # Keep the seen-cache bounded; oldest entries fall off the front.

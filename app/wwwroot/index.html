@@ -161,7 +161,7 @@
     <p class="hint">Runs every saved search from <code>config/settings.json</code>. Dry run lists hits here; live also pushes alerts and marks them seen. The scheduled task does this every 15 minutes on its own.</p>
     <form class="row" id="scanForm">
       <label>Mode
-        <select name="mode"><option value="dry">Dry run (list only)</option><option value="live">Live (alert + mark seen)</option></select></label>
+        <select name="mode"><option value="dry">Dry run (new hits only)</option><option value="live">Live (alert + mark seen)</option><option value="all">Everything current (include already-seen)</option></select></label>
       <button class="go">Scan now</button>
     </form>
     <div id="scanOut"></div>
@@ -395,17 +395,18 @@ const auctionMeta = h => {
   return ` · <b${style}>⏳ auction ends in ${left}${bids} (${new Date(h.EndsAt).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })})</b>`;
 };
 const hitHtml = h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
-    <div class="meta">${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}${auctionMeta(h)} ${h.Note ? '· <b>' + esc(h.Note) + '</b>' : ''}</div></div>`;
+    <div class="meta">${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}${auctionMeta(h)}${h.Seen ? ' · seen before' : ''} ${h.Note ? '· <b>' + esc(h.Note) + '</b>' : ''}</div></div>`;
 
 $('#scanForm').onsubmit = async e => {
   e.preventDefault();
   const f = e.target, out = $('#scanOut');
   busy(f, true); out.innerHTML = '<p class="hint">scanning all saved searches…</p>';
   try {
-    const hits = await api('/api/scan', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ live: f.mode.value === 'live' }) });
+    const hits = await api('/api/scan', { method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ live: f.mode.value === 'live', includeSeen: f.mode.value === 'all' }) });
     lastHits = hits;
     out.innerHTML = hits.length === 0
-      ? '<p class="hint">No new hits — everything current has been seen before (or searches failed; check the server window).</p>'
+      ? '<p class="hint">No new hits — everything current has been seen before (switch mode to "Everything current" to re-list those), or searches failed; check the server window.</p>'
       : `<p style="margin:10px 0"><button class="go" onclick="triage()">AI triage — group by profit &amp; fix difficulty</button></p>`
         + hits.map(hitHtml).join('');
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }

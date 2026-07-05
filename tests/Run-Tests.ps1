@@ -160,6 +160,11 @@ Assert ($auctionHit.Count -eq 1 -and $auctionHit[0].EndsAt -and $auctionHit[0].B
 Assert (@((& $module { $script:AlertMsgs }) | Where-Object { $_ -match 'AUCTION ends in 2h|AUCTION ends in 3h' }).Count -eq 1) 'alert message includes the auction countdown'
 $live2 = @(Invoke-FlipScan)
 Assert ($live2.Count -eq 0) 'second live run: everything already seen'
+$alertsBefore = & $module { $script:AlertCount }
+$rerun = @(Invoke-FlipScan -DryRun -IncludeSeen)
+Assert ($rerun.Count -eq 2 -and -not @($rerun | Where-Object { -not $_.Seen })) 'IncludeSeen re-lists seen items, flagged'
+$rerunLive = @(Invoke-FlipScan -IncludeSeen)
+Assert ($rerunLive.Count -eq 2 -and ((& $module { $script:AlertCount }) -eq $alertsBefore)) 'IncludeSeen live scan does not re-alert seen items'
 
 Write-Host "`n== Hit history =="
 Assert (@(Get-FlipRecentHits).Count -eq 2) 'live scan persisted hits to history'

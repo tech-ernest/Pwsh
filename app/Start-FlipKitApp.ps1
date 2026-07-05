@@ -165,7 +165,8 @@ try {
 
                 '^POST /api/scan$' {
                     $dry = -not ($body -and $body.PSObject.Properties['live'] -and $body.live)
-                    Write-Json $res @(Invoke-FlipScan -DryRun:$dry)
+                    $all = [bool]($body -and $body.PSObject.Properties['includeSeen'] -and $body.includeSeen)
+                    Write-Json $res @(Invoke-FlipScan -DryRun:$dry -IncludeSeen:$all)
                 }
 
                 default {
