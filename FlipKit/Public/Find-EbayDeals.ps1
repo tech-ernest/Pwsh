@@ -63,6 +63,9 @@ function Find-EbayDeals {
             Price     = $priceValue
             Condition = if ($item.PSObject.Properties['condition']) { $item.condition } else { 'Unknown' }
             BuyingOpt = ($item.buyingOptions -join ',')
+            # Auctions only: ISO end time and bid count, for "ends soon" triage.
+            EndsAt    = if ($item.PSObject.Properties['itemEndDate'] -and $item.itemEndDate) { [string]$item.itemEndDate } else { '' }
+            BidCount  = if ($item.PSObject.Properties['bidCount']) { [int]$item.bidCount } else { $null }
             Url       = $item.itemWebUrl
             Query     = $Query
         }

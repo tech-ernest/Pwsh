@@ -76,6 +76,9 @@ Judge fixability from the fault described in the title (e.g. "battery doesn't ho
                 Condition     = $h.Condition
                 Url           = if ($h.PSObject.Properties['Url']) { $h.Url } else { '' }
                 Search        = if ($h.PSObject.Properties['Search']) { $h.Search } else { '' }
+                Buying        = if ($h.PSObject.Properties['Buying']) { $h.Buying } else { '' }
+                EndsAt        = if ($h.PSObject.Properties['EndsAt']) { $h.EndsAt } else { '' }
+                BidCount      = if ($h.PSObject.Properties['BidCount']) { $h.BidCount } else { $null }
                 Tier          = $t.tier
                 FixDifficulty = $t.fix_difficulty
                 EstResale     = [math]::Round([double]$t.est_resale_gbp, 2)

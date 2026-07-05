@@ -135,14 +135,16 @@ $testCfg = Join-Path $tempRoot 'settings.json'
 $env:FLIPKIT_CONFIG = $testCfg
 
 & $module {
-    function script:Find-EbayDeals { param($Query, $MaxPrice, $BuyingOptions)
-        [pscustomobject]@{ ItemId = 'v1|111|0'; Title = 'GPU A'; Price = 80.0; Condition = 'Used'; BuyingOpt = 'FIXED_PRICE'; Url = 'https://a'; Query = $Query }
-        [pscustomobject]@{ ItemId = 'v1|222|0'; Title = 'GPU B'; Price = 90.0; Condition = 'Used'; BuyingOpt = 'FIXED_PRICE'; Url = 'https://b'; Query = $Query }
+    function script:Find-EbayDeals { param($Query, $MaxPrice, $BuyingOptions, $MinPrice, $CategoryIds, $ConditionIds)
+        [pscustomobject]@{ ItemId = 'v1|111|0'; Title = 'GPU A'; Price = 80.0; Condition = 'Used'; BuyingOpt = 'FIXED_PRICE'; EndsAt = ''; BidCount = $null; Url = 'https://a'; Query = $Query }
+        [pscustomobject]@{ ItemId = 'v1|222|0'; Title = 'GPU B'; Price = 90.0; Condition = 'Used'; BuyingOpt = 'AUCTION'
+            EndsAt = (Get-Date).ToUniversalTime().AddHours(3).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"); BidCount = 3; Url = 'https://b'; Query = $Query }
     }
     # CeX blocked (the Cloudflare case) must not sink the scan
     function script:Get-CexPrice { param($Query, $Top) throw 'blocked' }
-    function script:Send-FlipAlert { param($Title, $Message, $Url, $Priority) $script:AlertCount++ }
+    function script:Send-FlipAlert { param($Title, $Message, $Url, $Priority) $script:AlertCount++; $script:AlertMsgs += @($Message) }
     $script:AlertCount = 0
+    $script:AlertMsgs = @()
 }
 
 $dry = @(Invoke-FlipScan -DryRun)
@@ -153,6 +155,9 @@ Assert ($dry2.Count -eq 2) 'dry run does not mark items seen'
 $live = @(Invoke-FlipScan)
 Assert ($live.Count -eq 2) 'live run returns hits'
 Assert ((& $module { $script:AlertCount }) -eq 2) 'live run sends one alert per hit'
+$auctionHit = @($live | Where-Object { $_.Buying -eq 'AUCTION' })
+Assert ($auctionHit.Count -eq 1 -and $auctionHit[0].EndsAt -and $auctionHit[0].BidCount -eq 3) 'auction hits carry end time and bid count'
+Assert (@((& $module { $script:AlertMsgs }) | Where-Object { $_ -match 'AUCTION ends in 2h|AUCTION ends in 3h' }).Count -eq 1) 'alert message includes the auction countdown'
 $live2 = @(Invoke-FlipScan)
 Assert ($live2.Count -eq 0) 'second live run: everything already seen'
 

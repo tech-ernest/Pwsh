@@ -382,8 +382,20 @@ $('#checkForm').onsubmit = async e => {
 
 /* scanner */
 let lastHits = [];
+const auctionMeta = h => {
+  if (!((h.Buying || '').includes('AUCTION'))) return '';
+  if (!h.EndsAt) return ' · <b>⏳ auction</b>';
+  const ms = new Date(h.EndsAt) - Date.now();
+  if (isNaN(ms)) return ' · <b>⏳ auction</b>';
+  if (ms <= 0) return ' · <b>⏳ auction ended</b>';
+  const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), hh = Math.floor((m % 1440) / 60), mm = m % 60;
+  const left = d > 0 ? `${d}d ${hh}h` : hh > 0 ? `${hh}h ${mm}m` : `${mm}m`;
+  const bids = h.BidCount != null ? `, ${h.BidCount} bid${h.BidCount === 1 ? '' : 's'}` : '';
+  const style = ms < 3600000 ? ' style="color:var(--critical)"' : '';
+  return ` · <b${style}>⏳ auction ends in ${left}${bids} (${new Date(h.EndsAt).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })})</b>`;
+};
 const hitHtml = h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
-    <div class="meta">${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)} ${h.Note ? '· <b>' + esc(h.Note) + '</b>' : ''}</div></div>`;
+    <div class="meta">${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}${auctionMeta(h)} ${h.Note ? '· <b>' + esc(h.Note) + '</b>' : ''}</div></div>`;
 
 $('#scanForm').onsubmit = async e => {
   e.preventDefault();
@@ -409,7 +421,7 @@ function renderHits() {
   out.innerHTML = hits.length === 0
     ? '<p class="hint">Nothing here — history builds as live scans run, or try a different filter.</p>'
     : hits.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
-        <div class="meta">${esc(h.FoundAt)} · ${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}
+        <div class="meta">${esc(h.FoundAt)} · ${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}${auctionMeta(h)}
           ${h.Note ? '· <b>' + esc(h.Note) + '</b> ' : ''}
           · <button class="link" data-id="${esc(h.ItemId)}" onclick="dismissHit(this.dataset.id)">not interested</button></div></div>`).join('');
 }
@@ -448,7 +460,7 @@ window.triage = async () => {
       return `<div class="tier"><span class="dot" style="background:${t.color}"></span>${t.label} (${items.length})</div>`
         + items.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
             <span class="fixtag">fix: ${esc(h.FixDifficulty)}</span>
-            <div class="meta">ask ${gbp(h.Price)} → est resale ${gbp(h.EstResale)} → <b>est net ${gbp(h.EstNetProfit)}</b></div>
+            <div class="meta">ask ${gbp(h.Price)} → est resale ${gbp(h.EstResale)} → <b>est net ${gbp(h.EstNetProfit)}</b>${auctionMeta(h)}</div>
             <div class="meta">${esc(h.Note)}</div></div>`).join('');
     }).join('') || '<p class="hint">Nothing came back from triage.</p>';
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>` + lastHits.map(hitHtml).join(''); }

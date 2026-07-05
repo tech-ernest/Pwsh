@@ -90,6 +90,9 @@ function Invoke-FlipScan {
                     Title     = $item.Title
                     Price     = $item.Price
                     Condition = $item.Condition
+                    Buying    = if ($item.PSObject.Properties['BuyingOpt']) { $item.BuyingOpt } else { '' }
+                    EndsAt    = if ($item.PSObject.Properties['EndsAt']) { $item.EndsAt } else { '' }
+                    BidCount  = if ($item.PSObject.Properties['BidCount']) { $item.BidCount } else { $null }
                     Url       = $item.Url
                     Note      = $note.Trim()
                     FoundAt   = (Get-Date).ToString('yyyy-MM-dd HH:mm')
@@ -134,6 +137,25 @@ function Send-FlipRankedAlerts {
         $max = [int]$Config.alerts.maxPerScan
     }
 
+    # "AUCTION ends in 2h 05m (Sun 17:45), 3 bids" — empty for fixed-price.
+    $auctionLine = {
+        param($h)
+        if (-not ($h.PSObject.Properties['Buying'] -and $h.Buying -match 'AUCTION')) { return '' }
+        if (-not ($h.PSObject.Properties['EndsAt'] -and $h.EndsAt)) { return 'AUCTION' }
+        try {
+            $end = [datetime]::Parse($h.EndsAt, [System.Globalization.CultureInfo]::InvariantCulture,
+                [System.Globalization.DateTimeStyles]::RoundtripKind).ToLocalTime()
+            $left = $end - (Get-Date)
+            $rel = if ($left.TotalMinutes -le 0) { 'ended' }
+                   elseif ($left.TotalHours -ge 24) { 'in {0}d {1}h' -f $left.Days, $left.Hours }
+                   elseif ($left.TotalHours -ge 1) { 'in {0}h {1:mm}m' -f [math]::Floor($left.TotalHours), $left }
+                   else { 'in {0}m' -f [int]$left.TotalMinutes }
+            $bids = if ($h.PSObject.Properties['BidCount'] -and $null -ne $h.BidCount) { ", $($h.BidCount) bids" } else { '' }
+            'AUCTION ends {0} ({1}){2}' -f $rel, $end.ToString('ddd HH:mm'), $bids
+        }
+        catch { 'AUCTION' }
+    }
+
     $aiReady = $null -ne (& { try { Get-FlipAiConfig } catch { $null } })
 
     $ranked = $null
@@ -148,9 +170,13 @@ function Send-FlipRankedAlerts {
 
         foreach ($h in @($worthAlerting | Select-Object -First $max)) {
             $tag = if ($h.Tier -eq 'hot') { '🔥 HOT' } else { '👀 Look' }
+            $auction = & $auctionLine $h
+            $msg = "$($h.Title)`nest resale £$($h.EstResale) · fix: $($h.FixDifficulty)"
+            if ($auction) { $msg += "`n⏳ $auction" }
+            if ($h.Note) { $msg += "`n$($h.Note)" }
             Send-FlipAlert -Priority $(if ($h.Tier -eq 'hot') { 5 } else { 4 }) `
                 -Title "$tag est £$($h.EstNetProfit): asking £$($h.Price)" `
-                -Message "$($h.Title)`nest resale £$($h.EstResale) · fix: $($h.FixDifficulty)`n$($h.Note)" `
+                -Message $msg `
                 -Url $h.Url
         }
 
@@ -163,6 +189,8 @@ function Send-FlipRankedAlerts {
     else {
         foreach ($h in @($Hits | Select-Object -First $max)) {
             $msg = 'Listed at £{0} ({1})' -f $h.Price, $h.Condition
+            $auction = & $auctionLine $h
+            if ($auction) { $msg += "`n⏳ $auction" }
             if ($h.Note) { $msg += " — $($h.Note)" }
             Send-FlipAlert -Title "$($h.Search): £$($h.Price)" -Message "$($h.Title)`n$msg" -Url $h.Url
         }
