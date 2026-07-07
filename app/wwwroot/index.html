@@ -79,6 +79,18 @@
   th { text-align: left; color: var(--muted); font-weight: 500; font-size: 12.5px; border-bottom: 1px solid var(--grid); padding: 6px 8px; }
   td { padding: 7px 8px; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
   tr:last-child td { border-bottom: none; }
+  tbody tr:hover td, table tr:hover td { background: rgba(128, 128, 128, .07); }
+  td.num, th.num { text-align: right; }
+  td.actions { white-space: nowrap; text-align: right; }
+  .muted { color: var(--muted); }
+  .itemname { font-weight: 600; }
+  .itemnote { color: var(--muted); font-size: 12.5px; margin-top: 2px; font-weight: 400; }
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .pill.open { color: var(--warning); border: 1px solid var(--warning); }
+  .pill.sold { color: var(--good); border: 1px solid var(--good); }
+  .pill.cat { color: var(--muted); border: 1px solid var(--grid); font-weight: 500; }
+  .net-pos { color: var(--good); font-weight: 600; }
+  .net-neg { color: var(--critical); font-weight: 600; }
   .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
   .tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
   .tile .v { font-size: 26px; font-weight: 650; }
@@ -598,13 +610,17 @@ async function loadLedger() {
     ledgerRows = Object.fromEntries(rows.map(r => [Number(r.Id), r]));
     if (rows.length === 0) { out.innerHTML = '<p class="hint">Empty — record your first purchase above.</p>'; return; }
     out.innerHTML = `<div style="overflow-x:auto"><table>
-      <tr><th>#</th><th>Item</th><th>Category</th><th>Bought</th><th>Buy £</th><th>Sold</th><th>Net £</th><th>Days</th><th></th></tr>
+      <tr><th>#</th><th>Item</th><th>Category</th><th>Bought</th><th class="num">Buy £</th><th>Status</th><th class="num">Net £</th><th class="num">Days</th><th></th></tr>
       ${rows.map(r => `<tr>
-        <td>${esc(r.Id)}</td><td>${esc(r.Item)}</td><td>${esc(r.Category)}</td>
-        <td>${esc(r.BuyDate)}</td><td>${gbp(r.BuyPrice)}</td>
-        <td>${r.SoldDate ? esc(r.SoldDate) + ' @ ' + gbp(r.SoldPrice) : '<span class="hint">open</span>'}</td>
-        <td>${r.Net !== '' ? gbp(r.Net) : '—'}</td><td>${esc(r.DaysToSell) || '—'}</td>
-        <td>${r.SoldDate ? '' : `<button class="link" onclick="sellRow(this,${Number(r.Id)})">mark sold</button> · <button class="link" onclick="draftListing(${Number(r.Id)})">📝 draft listing</button> · `}<button class="link" onclick="deleteRow(${Number(r.Id)})">delete</button></td>
+        <td class="muted">${esc(r.Id)}</td>
+        <td class="itemname">${esc(r.Item)}${r.Notes ? `<div class="itemnote">${esc(r.Notes)}</div>` : ''}</td>
+        <td><span class="pill cat">${esc(r.Category)}</span></td>
+        <td class="muted">${esc(r.BuyDate)}</td>
+        <td class="num">${gbp(r.BuyPrice)}</td>
+        <td>${r.SoldDate ? `<span class="pill sold">sold ${esc(r.SoldDate)} @ ${gbp(r.SoldPrice)}</span>` : '<span class="pill open">open</span>'}</td>
+        <td class="num">${r.Net !== '' ? `<span class="${Number(r.Net) >= 0 ? 'net-pos' : 'net-neg'}">${gbp(r.Net)}</span>` : '<span class="muted">—</span>'}</td>
+        <td class="num">${esc(r.DaysToSell) || '<span class="muted">—</span>'}</td>
+        <td class="actions">${r.SoldDate ? '' : `<button class="link" onclick="sellRow(this,${Number(r.Id)})">💰 mark sold</button> · <button class="link" onclick="draftListing(${Number(r.Id)})">📝 listing</button> · `}<button class="link" onclick="deleteRow(${Number(r.Id)})">🗑 delete</button></td>
       </tr>`).join('')}
     </table></div><div id="listingOut"></div>`;
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
