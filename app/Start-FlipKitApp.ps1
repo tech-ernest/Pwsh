@@ -3,8 +3,9 @@
     FlipKit's interactive app: a local web dashboard over the module.
 .DESCRIPTION
     Pure PowerShell HTTP server (no dependencies) exposing the FlipKit functions
-    as a JSON API, with a browser UI: deal checker, scanner, ledger, stats, typo
-    generator. Binds to localhost only — it is a personal cockpit, not a website.
+    as a JSON API, with a browser UI: deal checker, scanner, watchlist, ledger,
+    stats, market, chat and settings. Binds to localhost only — it is a
+    personal cockpit, not a website.
 .EXAMPLE
     pwsh -File app/Start-FlipKitApp.ps1
     # then open http://localhost:8321
@@ -119,10 +120,6 @@ try {
                     $params = @{ SearchTerm = $body.searchTerm; BuyPrice = [double]$body.buyPrice }
                     if ($body.PSObject.Properties['postage'] -and "$($body.postage)" -ne '') { $params.Postage = [double]$body.postage }
                     Write-Json $res (Test-FlipDeal @params)
-                }
-
-                '^GET /api/misspell$' {
-                    Write-Json $res @(New-MisspellingList -Word $req.QueryString['word'] -Top 30)
                 }
 
                 '^GET /api/ledger$' {

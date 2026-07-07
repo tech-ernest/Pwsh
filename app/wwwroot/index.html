@@ -133,7 +133,6 @@
   <button data-tab="stats">Stats</button>
   <button data-tab="market">Market</button>
   <button data-tab="chat">Chat</button>
-  <button data-tab="typos">Typos</button>
   <button data-tab="settings">Settings</button>
 </nav>
 <main>
@@ -248,19 +247,6 @@
       <input name="q" placeholder="Is £45 sane for a faulty Forerunner 245?" autocomplete="off">
       <button class="go">Send</button>
     </form>
-  </div>
-</section>
-
-<section id="tab-typos">
-  <div class="card">
-    <h2>Misspelling hunter</h2>
-    <p class="hint">Typo variants of a brand/model — badly listed items sell cheap because nobody finds them. Click a chip to search it on eBay.
-    <br><b>Automated version:</b> add <code>"typoHunt": "garmin"</code> to any search in <code>config/settings.json</code> and every scan hunts the top misspellings for you — hits arrive flagged "MISSPELLED" in alerts and Recent hits.</p>
-    <form class="row" id="typoForm">
-      <label>Word <input name="word" required placeholder="garmin"></label>
-      <button class="go">Generate</button>
-    </form>
-    <div id="typoOut"></div>
   </div>
 </section>
 
@@ -827,18 +813,6 @@ $('#settingsForm').onsubmit = async e => {
   busy(f, false);
 };
 
-/* typos */
-$('#typoForm').onsubmit = async e => {
-  e.preventDefault();
-  const f = e.target, out = $('#typoOut');
-  busy(f, true);
-  try {
-    const words = await api('/api/misspell?word=' + encodeURIComponent(f.word.value));
-    out.innerHTML = words.map(w =>
-      `<span class="chip"><a href="https://www.ebay.co.uk/sch/i.html?_nkw=${encodeURIComponent(w)}" target="_blank" rel="noopener">${esc(w)}</a></span>`).join('');
-  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
-  busy(f, false);
-};
 </script>
 </body>
 </html>
