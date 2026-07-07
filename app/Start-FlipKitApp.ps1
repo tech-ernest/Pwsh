@@ -198,7 +198,13 @@ try {
                 '^POST /api/scan$' {
                     $dry = -not ($body -and $body.PSObject.Properties['live'] -and $body.live)
                     $all = [bool]($body -and $body.PSObject.Properties['includeSeen'] -and $body.includeSeen)
-                    Write-Json $res @(Invoke-FlipScan -DryRun:$dry -IncludeSeen:$all)
+                    # Surface per-search failures to the browser — the server
+                    # window isn't visible from a phone.
+                    $scanHits = @(Invoke-FlipScan -DryRun:$dry -IncludeSeen:$all -WarningVariable scanWarnings -WarningAction SilentlyContinue)
+                    Write-Json $res @{
+                        hits     = $scanHits
+                        warnings = @($scanWarnings | ForEach-Object { "$_" })
+                    }
                 }
 
                 default {

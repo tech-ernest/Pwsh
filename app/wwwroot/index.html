@@ -507,13 +507,16 @@ $('#scanForm').onsubmit = async e => {
   const f = e.target, out = $('#scanOut');
   busy(f, true); out.innerHTML = '<p class="hint">scanning all saved searches…</p>';
   try {
-    const hits = await api('/api/scan', { method: 'POST', headers: {'Content-Type':'application/json'},
+    const r = await api('/api/scan', { method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ live: f.mode.value === 'live', includeSeen: f.mode.value === 'all' }) });
+    const hits = Array.isArray(r) ? r : (r.hits || []);
+    const warns = (Array.isArray(r) ? [] : (r.warnings || [])).map(w => `<p class="err">⚠ ${esc(w)}</p>`).join('');
     lastHits = hits;
     if (hits.length === 0) {
-      out.innerHTML = '<p class="hint">No new hits — everything current has been seen before (switch mode to "Everything current" to re-list those), or searches failed; check the server window.</p>';
+      out.innerHTML = warns || '<p class="hint">No new hits — everything current has been seen before (switch mode to "Everything current" to re-list those).</p>';
     } else {
       renderScanHits();
+      if (warns) out.innerHTML = warns + out.innerHTML;
     }
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
   busy(f, false);
