@@ -39,6 +39,10 @@ function Invoke-FlipScan {
     # Circuit breaker: when CeX is unreachable (bot-walled networks), fail once
     # and skip it for the rest of the run instead of paying retry+backoff per item.
     $cexAvailable = $true
+    # Descriptions cost one API call per item — fetch for new hits only,
+    # bounded per scan. Sellers bury the real fault in the description, so
+    # triage wants it.
+    $descFetched = 0
 
     foreach ($search in $cfg.searches) {
         Write-Verbose "Scanning: $($search.name) — '$($search.query)' under £$($search.maxPrice)"
@@ -95,6 +99,12 @@ function Invoke-FlipScan {
                     }
                 }
 
+                $description = ''
+                if ($isNew -and $descFetched -lt 25) {
+                    $description = try { Get-EbayItemDescription -ItemId $item.ItemId } catch { '' }
+                    $descFetched++
+                }
+
                 $hits.Add([pscustomobject]@{
                     ItemId    = $item.ItemId
                     Search    = $search.name
@@ -106,6 +116,7 @@ function Invoke-FlipScan {
                     BidCount  = if ($item.PSObject.Properties['BidCount']) { $item.BidCount } else { $null }
                     Url       = $item.Url
                     Note      = $note.Trim()
+                    Description = $description
                     Seen      = (-not $isNew)
                     FoundAt   = (Get-Date).ToString('yyyy-MM-dd HH:mm')
                 })
@@ -199,7 +210,8 @@ function Send-FlipRankedAlerts {
         foreach ($h in @($worthAlerting | Select-Object -First $max)) {
             $tag = if ($h.Tier -eq 'hot') { '🔥 HOT' } else { '👀 Look' }
             $auction = & $auctionLine $h
-            $msg = "$($h.Title)`nest resale £$($h.EstResale) · fix: $($h.FixDifficulty)"
+            $parts = if ($h.PSObject.Properties['PartsCost'] -and $h.PartsCost -gt 0) { " · parts ~£$($h.PartsCost)" } else { '' }
+            $msg = "$($h.Title)`nest resale £$($h.EstResale) · fix: $($h.FixDifficulty)$parts"
             if ($auction) { $msg += "`n⏳ $auction" }
             if ($h.Note) { $msg += "`n$($h.Note)" }
             Send-FlipAlert -Priority $(if ($h.Tier -eq 'hot') { 5 } else { 4 }) `

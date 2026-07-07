@@ -14,6 +14,7 @@
         'New-MisspellingList'
         'Get-EbayToken'
         'Find-EbayDeals'
+        'Get-EbayItemDescription'
         'Invoke-FlipScan'
         'Invoke-FlipChat'
         'Invoke-FlipTriage'

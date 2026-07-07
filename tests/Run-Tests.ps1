@@ -143,6 +143,7 @@ $env:FLIPKIT_CONFIG = $testCfg
     }
     # CeX blocked (the Cloudflare case) must not sink the scan
     function script:Get-CexPrice { param($Query, $Top) throw 'blocked' }
+    function script:Get-EbayItemDescription { param($ItemId) "Seller notes for $ItemId" }
     function script:Send-FlipAlert { param($Title, $Message, $Url, $Priority) $script:AlertCount++; $script:AlertMsgs += @($Message) }
     $script:AlertCount = 0
     $script:AlertMsgs = @()
@@ -150,6 +151,7 @@ $env:FLIPKIT_CONFIG = $testCfg
 
 $dry = @(Invoke-FlipScan -DryRun)
 Assert ($dry.Count -eq 2) 'dry run returns hits on first sight'
+Assert ($dry[0].Description -match 'Seller notes for') 'scan attaches seller descriptions to new hits'
 $dry2 = @(Invoke-FlipScan -DryRun)
 Assert ($dry2.Count -eq 2) 'dry run does not mark items seen'
 
@@ -253,6 +255,31 @@ Assert ($uri -like '*sort=newlyListed*') 'default sort is newlyListed'
 $ending = @(Find-EbayDeals -Query 'hp g9' -MaxPrice 200 -Sort endingSoonest -EndingWithinHours 6)
 Assert ((& $module { $script:CapturedUri }) -like '*sort=endingSoonest*') 'endingSoonest sort lands in the request'
 Assert ($ending.Count -eq 1 -and $ending[0].Title -eq 'Soon auction') 'ending window keeps only auctions closing within it'
+
+Write-Host "`n== Get-EbayItemDescription (mocked HTTP) =="
+& $module {
+    function script:Invoke-RestMethod { param($Uri, $Headers)
+        $script:CapturedUri = $Uri
+        [pscustomobject]@{ description = '<div><style>p{color:red}</style><p>Laptop &amp; charger. <b>BIOS locked</b> — sold for spares.</p></div>' }
+    }
+}
+$desc = Get-EbayItemDescription -ItemId 'v1|55|0'
+Assert ($desc -eq 'Laptop & charger. BIOS locked — sold for spares.') 'strips HTML/styles and decodes entities'
+Assert ((& $module { $script:CapturedUri }) -like '*browse/v1/item/v1%7C55%7C0*') 'calls the per-item endpoint'
+
+Write-Host "`n== Invoke-FlipTriage (mocked AI) =="
+& $module {
+    function script:Invoke-FlipAi { param($System, $Messages, $JsonSchema)
+        $script:TriageUserMsg = $Messages[0].content
+        '{"items":[{"index":0,"tier":"hot","fix_difficulty":"moderate","est_resale_gbp":300,"est_parts_cost_gbp":55,"est_net_profit_gbp":95,"note":"screen swap"}]}'
+    }
+}
+$scored = @(Invoke-FlipTriage -Hits @([pscustomobject]@{
+    ItemId = 'v1|9|0'; Title = 'HP EliteBook 840 G9 - cracked screen'; Price = 85; Condition = 'For parts'
+    Url = 'https://x'; Description = 'Powers on, BIOS accessible, screen cracked. No liquid damage.' }))
+Assert ($scored.Count -eq 1 -and $scored[0].PartsCost -eq 55) 'triage returns a parts-cost estimate'
+Assert ((& $module { $script:TriageUserMsg }) -match 'seller description: Powers on') 'triage prompt includes the seller description'
+Assert ($scored[0].Description -match 'BIOS accessible') 'description passes through triage output'
 
 Write-Host "`n== Get-CexPrice Algolia fallback (mocked HTTP) =="
 $cexCfg = Join-Path $tempRoot 'settings-cex.json'

@@ -165,6 +165,10 @@ try {
                     Write-Json $res @{ ok = $true }
                 }
 
+                '^GET /api/description$' {
+                    Write-Json $res @{ description = (Get-EbayItemDescription -ItemId $req.QueryString['itemId']) }
+                }
+
                 '^GET /api/watchlist$' {
                     Write-Json $res @(Get-FlipWatchlist)
                 }

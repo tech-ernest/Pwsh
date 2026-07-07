@@ -396,9 +396,34 @@ const auctionMeta = h => {
 const hitMap = {};
 const regHits = arr => arr.forEach(h => { if (h.ItemId) hitMap[h.ItemId] = h; });
 const hitActions = h => h.ItemId
-  ? ` · <button class="link" onclick="checkHit('${esc(h.ItemId)}')">check margins</button>${(h.Buying || '').includes('AUCTION')
-      ? ` · <button class="link" onclick="watchHit('${esc(h.ItemId)}')">⏱ watch</button>` : ''}`
+  ? ` · <button class="link" onclick="checkHit('${esc(h.ItemId)}')">check margins</button>
+     · <button class="link" onclick="watchHit('${esc(h.ItemId)}')">⏱ watch</button>
+     · <button class="link" onclick="toggleDesc('${esc(h.ItemId)}', this)">description</button>`
   : '';
+
+// Show/hide the seller's description under a hit; fetched on demand when the
+// scan didn't already attach it.
+window.toggleDesc = async (id, btn) => {
+  const h = hitMap[id]; if (!h) return;
+  const card = btn.closest('.hit');
+  const open = card.querySelector('.descbox');
+  if (open) { open.remove(); return; }
+  if (!h.Description) {
+    btn.disabled = true; btn.textContent = 'fetching…';
+    try {
+      h.Description = (await api('/api/description?itemId=' + encodeURIComponent(id))).description || '(seller wrote no description)';
+    } catch (err) {
+      btn.disabled = false; btn.textContent = 'description';
+      alert(err.message); return;
+    }
+    btn.disabled = false; btn.textContent = 'description';
+  }
+  const d = document.createElement('div');
+  d.className = 'meta descbox';
+  d.style.cssText = 'white-space:pre-wrap; margin-top:6px; padding:8px; border-left: 3px solid var(--border, #8884); opacity:.9';
+  d.textContent = h.Description;
+  card.appendChild(d);
+};
 
 const hitHtml = h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
     <div class="meta">${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}${auctionMeta(h)}${h.Seen ? ' · seen before' : ''} ${h.Note ? '· <b>' + esc(h.Note) + '</b>' : ''}${hitActions(h)}</div></div>`;
@@ -424,7 +449,7 @@ window.checkHit = id => {
 
 window.watchHit = async id => {
   const h = hitMap[id]; if (!h) return;
-  const mb = prompt(`Max bid £ for:\n${h.Title}\n\n(currently at ${gbp(h.Price)} — deal-check first, then set the ceiling you'll never cross)`, h.Price);
+  const mb = prompt(`Max ${(h.Buying || '').includes('AUCTION') ? 'bid' : 'price'} £ for:\n${h.Title}\n\n(currently at ${gbp(h.Price)} — deal-check first, then set the ceiling you'll never cross)${h.EndsAt ? '' : '\nNo end time on this one — it will sit on the watchlist without a reminder.'}`, h.Price);
   if (mb === null) return;
   try {
     await api('/api/watchlist/add', { method: 'POST', headers: {'Content-Type':'application/json'},
@@ -542,7 +567,7 @@ window.triage = async () => {
       return `<div class="tier"><span class="dot" style="background:${t.color}"></span>${t.label} (${items.length})</div>`
         + items.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
             <span class="fixtag">fix: ${esc(h.FixDifficulty)}</span>
-            <div class="meta">ask ${gbp(h.Price)} → est resale ${gbp(h.EstResale)} → <b>est net ${gbp(h.EstNetProfit)}</b>${auctionMeta(h)}${hitActions(h)}</div>
+            <div class="meta">ask ${gbp(h.Price)}${h.PartsCost > 0 ? ' + parts ~' + gbp(h.PartsCost) : ''} → est resale ${gbp(h.EstResale)} → <b>est net ${gbp(h.EstNetProfit)}</b>${auctionMeta(h)}${hitActions(h)}</div>
             <div class="meta">${esc(h.Note)}</div></div>`).join('');
     }).join('') || '<p class="hint">Nothing came back from triage.</p>';
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>` + lastHits.map(hitHtml).join(''); }
