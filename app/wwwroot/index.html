@@ -181,6 +181,7 @@
         <select id="scanFilter"><option value="">all searches</option></select></label>
       <label>Sort
         <select id="hitsSort" onchange="renderHits()"><option value="">newest found</option><option value="ending">auction ending soonest</option><option value="price">price low → high</option></select></label>
+      <label>&nbsp;<button type="button" class="link" onclick="clearHits()">🧹 clear shown</button></label>
     </form>
     <div id="hitsOut" class="hint">loading…</div>
   </div>
@@ -547,6 +548,16 @@ async function loadHits() {
   } catch (err) { $('#hitsOut').innerHTML = `<p class="err">${esc(err.message)}</p>`; }
 }
 $('#scanFilter').onchange = renderHits;
+
+window.clearHits = async () => {
+  const want = $('#scanFilter').value;
+  const scope = want ? `all "${want}" hits` : 'ALL recent hits';
+  if (!confirm(`Clear ${scope}? They stay in the raw history but disappear from this list.`)) return;
+  try {
+    await api('/api/hits/clear', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ search: want }) });
+    loadHits();
+  } catch (err) { alert(err.message); }
+};
 
 window.dismissHit = async id => {
   try {

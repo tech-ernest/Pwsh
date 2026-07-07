@@ -165,6 +165,12 @@ try {
                     Write-Json $res @{ ok = $true }
                 }
 
+                '^POST /api/hits/clear$' {
+                    $search = if ($body -and $body.PSObject.Properties['search'] -and $body.search) { "$($body.search)" } else { '' }
+                    $cleared = if ($search) { Clear-FlipRecentHits -Search $search } else { Clear-FlipRecentHits }
+                    Write-Json $res @{ cleared = $cleared }
+                }
+
                 '^GET /api/description$' {
                     Write-Json $res @{ description = (Get-EbayItemDescription -ItemId $req.QueryString['itemId']) }
                 }

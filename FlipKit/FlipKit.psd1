@@ -27,6 +27,7 @@
         'Save-FlipSettings'
         'Get-FlipRecentHits'
         'Set-FlipHitDismissed'
+        'Clear-FlipRecentHits'
         'Add-FlipWatch'
         'Get-FlipWatchlist'
         'Remove-FlipWatch'

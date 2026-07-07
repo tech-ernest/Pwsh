@@ -205,9 +205,20 @@ Assert ($hb.At -and $null -ne $hb.Hits) 'heartbeat carries timestamp and hit cou
 
 Write-Host "`n== Hit history =="
 Assert (@(Get-FlipRecentHits).Count -eq 2) 'live scan persisted hits to history'
+Assert (@(Get-FlipRecentHits | Where-Object { $_.ItemId -eq 'v1|222|0' })[0].Buying -eq 'AUCTION') 'history keeps auction fields'
 Set-FlipHitDismissed -ItemId 'v1|111|0'
 Assert (@(Get-FlipRecentHits).Count -eq 1) 'dismiss hides a hit'
 Assert (@(Get-FlipRecentHits -IncludeDismissed).Count -eq 2) 'dismissed hit still in raw history'
+
+Assert ((Clear-FlipRecentHits) -eq 1 -and @(Get-FlipRecentHits).Count -eq 0) 'clear dismisses everything visible'
+Assert (@(Get-FlipRecentHits -IncludeDismissed).Count -eq 2) 'clear keeps the raw history'
+& $module { param($h) Save-FlipRecentHits -Hits $h } @(
+    [pscustomobject]@{ ItemId = 'c1'; Search = 'Lane A'; Title = 't1'; Price = 1; Condition = 'u'; Url = 'u'; Note = ''; FoundAt = 'now' }
+    [pscustomobject]@{ ItemId = 'c2'; Search = 'Lane B'; Title = 't2'; Price = 1; Condition = 'u'; Url = 'u'; Note = ''; FoundAt = 'now' }
+)
+Clear-FlipRecentHits -Search 'Lane A' | Out-Null
+$visible = @(Get-FlipRecentHits)
+Assert ($visible.Search -notcontains 'Lane A' -and $visible.Search -contains 'Lane B') 'clear can target a single search lane'
 
 Write-Host "`n== Watchlist =="
 & $module { $script:AlertCount = 0; $script:AlertMsgs = @() }

@@ -9,17 +9,22 @@ function Save-FlipRecentHits {
     $path = Join-Path (Get-FlipDataDir) 'recent-hits.json'
     $existing = if (Test-Path $path) { @(Get-Content -Raw $path | ConvertFrom-Json) } else { @() }
 
+    $opt = { param($o, $n, $d) if ($o.PSObject.Properties[$n]) { $o.$n } else { $d } }
     $incoming = foreach ($h in $Hits) {
         [pscustomobject]@{
-            ItemId    = $h.ItemId
-            Search    = $h.Search
-            Title     = $h.Title
-            Price     = $h.Price
-            Condition = $h.Condition
-            Url       = $h.Url
-            Note      = $h.Note
-            FoundAt   = $h.FoundAt
-            Dismissed = $false
+            ItemId      = $h.ItemId
+            Search      = $h.Search
+            Title       = $h.Title
+            Price       = $h.Price
+            Condition   = $h.Condition
+            Buying      = & $opt $h 'Buying' ''
+            EndsAt      = & $opt $h 'EndsAt' ''
+            BidCount    = & $opt $h 'BidCount' $null
+            Description = & $opt $h 'Description' ''
+            Url         = $h.Url
+            Note        = $h.Note
+            FoundAt     = $h.FoundAt
+            Dismissed   = $false
         }
     }
 
@@ -46,6 +51,34 @@ function Get-FlipRecentHits {
     $all = @(Get-Content -Raw $path | ConvertFrom-Json)
     if ($IncludeDismissed) { return $all }
     @($all | Where-Object { -not $_.Dismissed })
+}
+
+function Clear-FlipRecentHits {
+    <#
+    .SYNOPSIS
+        Dismisses every visible hit in the history (optionally one search's).
+    .DESCRIPTION
+        The "clear" behind the app's button: hits stay in the raw history for
+        the record, but stop showing in Recent hits. Returns how many were
+        cleared.
+    #>
+    [CmdletBinding()]
+    param([string]$Search)
+
+    $path = Join-Path (Get-FlipDataDir) 'recent-hits.json'
+    if (-not (Test-Path $path)) { return 0 }
+
+    $all = @(Get-Content -Raw $path | ConvertFrom-Json)
+    $cleared = 0
+    foreach ($h in $all) {
+        if ($h.Dismissed) { continue }
+        if ($Search -and $h.Search -ne $Search) { continue }
+        $h.Dismissed = $true
+        $cleared++
+    }
+
+    ConvertTo-Json $all -Depth 5 | Set-Content -Path $path
+    $cleared
 }
 
 function Set-FlipHitDismissed {
