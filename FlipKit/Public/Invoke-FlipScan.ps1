@@ -135,6 +135,14 @@ function Invoke-FlipScan {
         catch { Write-Warning "Watchlist reminders failed: $_" }
     }
 
+    # Heartbeat: lets the app show whether the scheduled scan is actually
+    # alive — a silent scheduler death otherwise goes unnoticed for days.
+    ConvertTo-Json @{
+        At     = [datetime]::UtcNow.ToString('o')
+        Hits   = $hits.Count
+        DryRun = [bool]$DryRun
+    } | Set-Content -Path (Join-Path (Get-FlipDataDir) 'last-scan.json')
+
     $hits
 }
 

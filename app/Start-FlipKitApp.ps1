@@ -67,12 +67,24 @@ try {
 
                 '^GET /api/status$' {
                     $cfg = try { Get-FlipConfig } catch { $null }
+                    $lastScanMinutes = $null
+                    $hbPath = Join-Path (Split-Path $PSScriptRoot -Parent) 'data/last-scan.json'
+                    if (Test-Path $hbPath) {
+                        try {
+                            $hb = Get-Content -Raw $hbPath | ConvertFrom-Json
+                            $at = [datetime]::Parse($hb.At, [System.Globalization.CultureInfo]::InvariantCulture,
+                                [System.Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
+                            $lastScanMinutes = [int]([datetime]::UtcNow - $at).TotalMinutes
+                        }
+                        catch { }
+                    }
                     Write-Json $res @{
-                        configFound   = [bool]$cfg
-                        ebayKeys      = [bool]($cfg -and $cfg.ebay.clientId -and $cfg.ebay.clientSecret)
-                        alertsChannel = [bool]($cfg -and ($cfg.alerts.ntfyTopic -or $cfg.alerts.telegramBotToken))
-                        ai            = [bool]($cfg -and (($cfg.PSObject.Properties['ai'] -and $cfg.ai.provider) -or ($cfg.PSObject.Properties['anthropic'] -and $cfg.anthropic.apiKey)))
-                        searches      = if ($cfg) { @($cfg.searches).Count } else { 0 }
+                        configFound     = [bool]$cfg
+                        ebayKeys        = [bool]($cfg -and $cfg.ebay.clientId -and $cfg.ebay.clientSecret)
+                        alertsChannel   = [bool]($cfg -and ($cfg.alerts.ntfyTopic -or $cfg.alerts.telegramBotToken))
+                        ai              = [bool]($cfg -and (($cfg.PSObject.Properties['ai'] -and $cfg.ai.provider) -or ($cfg.PSObject.Properties['anthropic'] -and $cfg.anthropic.apiKey)))
+                        searches        = if ($cfg) { @($cfg.searches).Count } else { 0 }
+                        lastScanMinutes = $lastScanMinutes
                     }
                 }
 

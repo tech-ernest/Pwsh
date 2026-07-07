@@ -355,8 +355,12 @@ if (location.hash) openTab(location.hash.slice(1));
 
 /* status */
 api('/api/status').then(s => {
+  const m = s.lastScanMinutes;
+  const scan = m == null ? 'no scans yet'
+    : m > 45 ? `last scan ${m >= 120 ? Math.floor(m / 60) + 'h' : m + 'm'} ago ⚠ scheduled task may be dead`
+    : `last scan ${m}m ago ✓`;
   $('#status').textContent = s.configFound
-    ? `config ok · eBay keys ${s.ebayKeys ? '✓' : 'missing'} · alerts ${s.alertsChannel ? '✓' : 'not set'} · AI ${s.ai ? '✓' : 'not set'} · ${s.searches} saved searches`
+    ? `config ok · eBay keys ${s.ebayKeys ? '✓' : 'missing'} · alerts ${s.alertsChannel ? '✓' : 'not set'} · AI ${s.ai ? '✓' : 'not set'} · ${s.searches} saved searches · ${scan}`
     : 'no config/settings.json yet — copy the sample and fill it in';
 }).catch(() => $('#status').textContent = 'status unavailable');
 

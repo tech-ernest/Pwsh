@@ -182,6 +182,11 @@ $endingRun2 = @(Invoke-FlipScan)
 Assert ($endingRun2.Count -eq 0) 'ending-soon lane alerts each auction only once'
 $env:FLIPKIT_CONFIG = $testCfg
 
+$hbFile = Join-Path $tempRoot 'data/last-scan.json'
+Assert (Test-Path $hbFile) 'scan writes a heartbeat file'
+$hb = Get-Content -Raw $hbFile | ConvertFrom-Json
+Assert ($hb.At -and $null -ne $hb.Hits) 'heartbeat carries timestamp and hit count'
+
 Write-Host "`n== Hit history =="
 Assert (@(Get-FlipRecentHits).Count -eq 2) 'live scan persisted hits to history'
 Set-FlipHitDismissed -ItemId 'v1|111|0'

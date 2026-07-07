@@ -5,5 +5,8 @@ config/settings.json
 data/*
 !data/.gitkeep
 
+# Backups (contain the ledger and config secrets)
+backups/
+
 # Scratch
 *.log
