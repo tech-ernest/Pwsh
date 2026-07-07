@@ -36,8 +36,20 @@ function Get-FlipLedgerStats {
         }
     } | Sort-Object NetProfit -Descending)
 
+    # Same cut by Source (which search lane / venue the buy came from) — this
+    # is what decides where next month's capital goes.
+    $bySource = @($closed | Group-Object Source | ForEach-Object {
+        [pscustomobject]@{
+            Source        = $_.Name
+            Flips         = $_.Count
+            NetProfit     = [math]::Round((($_.Group.Net | Measure-Object -Sum).Sum), 2)
+            AvgDaysToSell = [math]::Round((($_.Group.DaysToSell | Measure-Object -Average).Average), 1)
+        }
+    } | Sort-Object NetProfit -Descending)
+
     [pscustomobject]@{
         Summary    = $summary
         ByCategory = $byCategory
+        BySource   = $bySource
     }
 }

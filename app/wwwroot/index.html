@@ -169,6 +169,11 @@
     <div id="scanOut"></div>
   </div>
   <div class="card">
+    <h2>Watchlist — planned snipes</h2>
+    <p class="hint">Watched auctions and your max bid. Your phone gets a reminder ~15–20 minutes before each one ends (needs live scans running — the scheduled task counts). Bid once, in the final minute, never above your max.</p>
+    <div id="watchOut" class="hint">loading…</div>
+  </div>
+  <div class="card">
     <h2>Recent hits</h2>
     <p class="hint">Everything the scanner found lately, scheduled runs included. Mark reviewed items as not interested to clear them.</p>
     <form class="row" style="margin-bottom:8px">
@@ -342,7 +347,7 @@ function openTab(name) {
   history.replaceState(null, '', '#' + name);
   if (name === 'ledger') loadLedger();
   if (name === 'stats') loadStats();
-  if (name === 'scan') loadHits();
+  if (name === 'scan') { loadHits(); loadWatchlist(); }
   if (name === 'settings') loadSettings();
 }
 document.querySelectorAll('nav button').forEach(b => b.onclick = () => openTab(b.dataset.tab));
@@ -398,8 +403,66 @@ const auctionMeta = h => {
   const style = ms < 3600000 ? ' style="color:var(--critical)"' : '';
   return ` · <b${style}>⏳ auction ends in ${left}${bids} (${new Date(h.EndsAt).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })})</b>`;
 };
+const hitMap = {};
+const regHits = arr => arr.forEach(h => { if (h.ItemId) hitMap[h.ItemId] = h; });
+const hitActions = h => h.ItemId
+  ? ` · <button class="link" onclick="checkHit('${esc(h.ItemId)}')">check margins</button>${(h.Buying || '').includes('AUCTION')
+      ? ` · <button class="link" onclick="watchHit('${esc(h.ItemId)}')">⏱ watch</button>` : ''}`
+  : '';
+
 const hitHtml = h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
-    <div class="meta">${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}${auctionMeta(h)}${h.Seen ? ' · seen before' : ''} ${h.Note ? '· <b>' + esc(h.Note) + '</b>' : ''}</div></div>`;
+    <div class="meta">${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}${auctionMeta(h)}${h.Seen ? ' · seen before' : ''} ${h.Note ? '· <b>' + esc(h.Note) + '</b>' : ''}${hitActions(h)}</div></div>`;
+
+// Strip listing-noise from a title so it works as a comps search term:
+// keep brand + model-ish tokens, drop filler words.
+function cleanModel(title) {
+  const brands = /^(hp|dell|lenovo|asus|acer|msi|gigabyte|zotac|palit|evga|pny|nvidia|amd|intel|garmin|apple|samsung|sony|elitebook|probook|zbook|thinkpad|ideapad|latitude|inspiron|pavilion|geforce|rtx|gtx|radeon|rx|ryzen|core|forerunner|fenix|venu|vivoactive|instinct|firefly)$/;
+  const modelish = /^([a-z]*\d{2,}[a-z0-9-]*|g\d{1,2}|i[3579])$/;
+  const toks = title.toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').split(/\s+/).filter(Boolean);
+  const kept = toks.filter(t => brands.test(t) || modelish.test(t)).slice(0, 6);
+  return kept.length >= 2 ? kept.join(' ') : title;
+}
+
+window.checkHit = id => {
+  const h = hitMap[id]; if (!h) return;
+  openTab('check');
+  const f = $('#checkForm');
+  f.searchTerm.value = cleanModel(h.Title);
+  f.buyPrice.value = h.Price;
+  f.requestSubmit();
+};
+
+window.watchHit = async id => {
+  const h = hitMap[id]; if (!h) return;
+  const mb = prompt(`Max bid £ for:\n${h.Title}\n\n(currently at ${gbp(h.Price)} — deal-check first, then set the ceiling you'll never cross)`, h.Price);
+  if (mb === null) return;
+  try {
+    await api('/api/watchlist/add', { method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ itemId: h.ItemId, title: h.Title, url: h.Url, endsAt: h.EndsAt || '', maxBid: Number(mb) || 0, price: h.Price }) });
+    loadWatchlist();
+  } catch (err) { alert(err.message); }
+};
+
+async function loadWatchlist() {
+  const out = $('#watchOut');
+  try {
+    const list = await api('/api/watchlist');
+    out.innerHTML = list.length === 0
+      ? '<p class="hint">Nothing watched — hit "⏱ watch" on any auction below.</p>'
+      : list.map(w => `<div class="hit"><a href="${esc(w.Url)}" target="_blank" rel="noopener">${esc(w.Title)}</a>
+          <div class="meta">${auctionMeta({ Buying: 'AUCTION', EndsAt: w.EndsAt }) .replace(/^ · /, '')}
+            · last seen ${gbp(w.Price)} · <b>max bid ${w.MaxBid > 0 ? gbp(w.MaxBid) : 'not set'}</b>
+            ${w.Notified ? ' · reminded' : ''}
+            · <button class="link" data-id="${esc(w.ItemId)}" onclick="removeWatch(this.dataset.id)">remove</button></div></div>`).join('');
+  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+}
+
+window.removeWatch = async id => {
+  try {
+    await api('/api/watchlist/remove', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ itemId: id }) });
+    loadWatchlist();
+  } catch (err) { alert(err.message); }
+};
 
 // 'ending': auctions by soonest end (fixed-price sinks to the bottom);
 // 'price': cheapest first; '': server order.
@@ -417,6 +480,7 @@ const sortHits = (hits, mode) => {
 window.renderScanHits = () => {
   const out = $('#scanOut');
   if (!lastHits.length) return;
+  regHits(lastHits);
   out.innerHTML = `<p style="margin:10px 0"><button class="go" onclick="triage()">AI triage — group by profit &amp; fix difficulty</button></p>`
     + sortHits(lastHits, $('#scanSort').value).map(hitHtml).join('');
 };
@@ -444,11 +508,12 @@ function renderHits() {
   const out = $('#hitsOut');
   const want = $('#scanFilter').value;
   const hits = sortHits(want ? allRecentHits.filter(h => h.Search === want) : allRecentHits, $('#hitsSort').value);
+  regHits(hits);
   out.innerHTML = hits.length === 0
     ? '<p class="hint">Nothing here — history builds as live scans run, or try a different filter.</p>'
     : hits.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
         <div class="meta">${esc(h.FoundAt)} · ${h.Search ? esc(h.Search) + ' · ' : ''}${gbp(h.Price)} · ${esc(h.Condition)}${auctionMeta(h)}
-          ${h.Note ? '· <b>' + esc(h.Note) + '</b> ' : ''}
+          ${h.Note ? '· <b>' + esc(h.Note) + '</b> ' : ''}${hitActions(h)}
           · <button class="link" data-id="${esc(h.ItemId)}" onclick="dismissHit(this.dataset.id)">not interested</button></div></div>`).join('');
 }
 
@@ -475,6 +540,7 @@ window.triage = async () => {
   out.innerHTML = '<p class="hint">The AI is scoring ' + Math.min(lastHits.length, 40) + ' listings for resale value and repair difficulty… (can take a minute on local models)</p>';
   try {
     const scored = await api('/api/triage', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ hits: lastHits }) });
+    regHits(scored);
     const tiers = [
       { key: 'hot',          label: 'Hot — buy-grade margin, easy or no fix', color: 'var(--good)' },
       { key: 'worth_a_look', label: 'Worth a look — decent margin, more effort or uncertainty', color: 'var(--warning)' },
@@ -486,17 +552,19 @@ window.triage = async () => {
       return `<div class="tier"><span class="dot" style="background:${t.color}"></span>${t.label} (${items.length})</div>`
         + items.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
             <span class="fixtag">fix: ${esc(h.FixDifficulty)}</span>
-            <div class="meta">ask ${gbp(h.Price)} → est resale ${gbp(h.EstResale)} → <b>est net ${gbp(h.EstNetProfit)}</b>${auctionMeta(h)}</div>
+            <div class="meta">ask ${gbp(h.Price)} → est resale ${gbp(h.EstResale)} → <b>est net ${gbp(h.EstNetProfit)}</b>${auctionMeta(h)}${hitActions(h)}</div>
             <div class="meta">${esc(h.Note)}</div></div>`).join('');
     }).join('') || '<p class="hint">Nothing came back from triage.</p>';
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>` + lastHits.map(hitHtml).join(''); }
 };
 
 /* ledger */
+let ledgerRows = {};
 async function loadLedger() {
   const out = $('#ledgerOut');
   try {
     const rows = await api('/api/ledger');
+    ledgerRows = Object.fromEntries(rows.map(r => [Number(r.Id), r]));
     if (rows.length === 0) { out.innerHTML = '<p class="hint">Empty — record your first purchase above.</p>'; return; }
     out.innerHTML = `<div style="overflow-x:auto"><table>
       <tr><th>#</th><th>Item</th><th>Category</th><th>Bought</th><th>Buy £</th><th>Sold</th><th>Net £</th><th>Days</th><th></th></tr>
@@ -505,11 +573,27 @@ async function loadLedger() {
         <td>${esc(r.BuyDate)}</td><td>${gbp(r.BuyPrice)}</td>
         <td>${r.SoldDate ? esc(r.SoldDate) + ' @ ' + gbp(r.SoldPrice) : '<span class="hint">open</span>'}</td>
         <td>${r.Net !== '' ? gbp(r.Net) : '—'}</td><td>${esc(r.DaysToSell) || '—'}</td>
-        <td>${r.SoldDate ? '' : `<button class="link" onclick="sellRow(this,${Number(r.Id)})">mark sold</button> · `}<button class="link" onclick="deleteRow(${Number(r.Id)})">delete</button></td>
+        <td>${r.SoldDate ? '' : `<button class="link" onclick="sellRow(this,${Number(r.Id)})">mark sold</button> · <button class="link" onclick="draftListing(${Number(r.Id)})">📝 draft listing</button> · `}<button class="link" onclick="deleteRow(${Number(r.Id)})">delete</button></td>
       </tr>`).join('')}
-    </table></div>`;
+    </table></div><div id="listingOut"></div>`;
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
 }
+
+window.draftListing = async id => {
+  const r = ledgerRows[id]; if (!r) return;
+  const out = $('#listingOut');
+  out.innerHTML = `<p class="hint">Drafting a listing for "${esc(r.Item)}" — pulling sold prices and writing copy… (can take ~30s)</p>`;
+  try {
+    const d = await api('/api/listing', { method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ item: r.Item, notes: r.Notes || '' }) });
+    out.innerHTML = `
+      <h3 style="margin-top:16px">Listing draft — ${esc(r.Item)}</h3>
+      <p class="hint">${esc(d.CompsNote)} Suggested Buy It Now <b>${gbp(d.BinPrice)}</b>, accept offers down to <b>${gbp(d.FloorPrice)}</b>.</p>
+      <label>Title (${d.Title.length}/80 chars) <input value="${esc(d.Title)}" onclick="this.select()" readonly></label>
+      <label>Description <textarea rows="10" onclick="this.select()" readonly>${esc(d.Description)}</textarea></label>
+      <p class="hint">Keywords buyers search: ${d.Keywords.map(esc).join(', ')} — click a field to select it for copying.</p>`;
+  } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>`; }
+};
 
 window.deleteRow = async id => {
   if (!confirm(`Delete ledger entry #${id}? For a real loss, mark it sold at the lower price instead — stats only tell the truth if losses count.`)) return;
@@ -573,10 +657,15 @@ async function loadStats() {
         <span><span class="track" style="width:${Math.max(2, 100 * Math.abs(c.NetProfit) / max)}%; display:block"></span></span>
         <span class="val">${gbp(c.NetProfit)}</span>
       </div>`).join('');
+    const srcs = s.BySource || [];
     $('#statsTable').innerHTML = `<table>
       <tr><th>Category</th><th>Flips</th><th>Net profit</th><th>Avg days to sell</th></tr>
       ${cats.map(c => `<tr><td>${esc(c.Category)}</td><td>${c.Flips}</td><td>${gbp(c.NetProfit)}</td><td>${c.AvgDaysToSell}</td></tr>`).join('')}
-    </table>`;
+    </table>`
+    + (srcs.length ? `<h3 style="margin-top:16px">Where the money comes from (by source)</h3><table>
+      <tr><th>Source</th><th>Flips</th><th>Net profit</th><th>Avg days to sell</th></tr>
+      ${srcs.map(c => `<tr><td>${esc(c.Source)}</td><td>${c.Flips}</td><td>${gbp(c.NetProfit)}</td><td>${c.AvgDaysToSell}</td></tr>`).join('')}
+    </table>` : '');
   } catch (err) {
     $('#statsTiles').innerHTML = '';
     $('#statsBars').innerHTML = `<p class="hint">${esc(err.message)}</p>`;

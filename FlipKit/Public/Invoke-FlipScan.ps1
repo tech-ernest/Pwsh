@@ -128,6 +128,11 @@ function Invoke-FlipScan {
         # Keep the seen-cache bounded; oldest entries fall off the front.
         $keep = [string[]]@($seen) | Select-Object -Last 5000
         ConvertTo-Json $keep | Set-Content -Path $seenPath
+
+        # Watched auctions entering their final minutes get their reminder on
+        # the back of every live scan.
+        try { Send-FlipWatchReminders | Out-Null }
+        catch { Write-Warning "Watchlist reminders failed: $_" }
     }
 
     $hits

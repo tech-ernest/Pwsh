@@ -156,6 +156,25 @@ try {
                     Write-Json $res @{ ok = $true }
                 }
 
+                '^GET /api/watchlist$' {
+                    Write-Json $res @(Get-FlipWatchlist)
+                }
+
+                '^POST /api/watchlist/add$' {
+                    $w = Add-FlipWatch -ItemId "$($body.itemId)" -Title "$($body.title)" -Url "$($body.url)" `
+                        -EndsAt "$($body.endsAt)" -MaxBid ([double]"0$($body.maxBid)") -Price ([double]"0$($body.price)")
+                    Write-Json $res $w
+                }
+
+                '^POST /api/watchlist/remove$' {
+                    Remove-FlipWatch -ItemId "$($body.itemId)"
+                    Write-Json $res @{ ok = $true }
+                }
+
+                '^POST /api/listing$' {
+                    Write-Json $res (New-FlipListing -Item "$($body.item)" -Notes "$($body.notes)")
+                }
+
                 '^POST /api/searches/add$' {
                     $params = @{ Name = $body.name; Query = $body.query; MaxPrice = [double]$body.maxPrice }
                     if ($body.PSObject.Properties['minPrice'] -and "$($body.minPrice)" -ne '' -and [double]$body.minPrice -gt 0) { $params.MinPrice = [double]$body.minPrice }

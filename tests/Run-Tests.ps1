@@ -122,6 +122,7 @@ Assert ($stats.Summary.FlipsCompleted -eq 1) 'stats: completed count'
 Assert ($stats.Summary.TotalNetProfit -eq 43.40) 'stats: total net'
 Assert ($stats.Summary.OpenItems -eq 1 -and $stats.Summary.CapitalDeployed -eq 38) 'stats: open capital'
 Assert ($stats.ByCategory[0].Category -eq 'PC hardware') 'stats: category breakdown'
+Assert ($stats.BySource[0].Source -eq 'ebay' -and $stats.BySource[0].NetProfit -eq 43.40) 'stats: source (lane) breakdown'
 
 Write-Host "`n== Invoke-FlipScan (mocked network) =="
 $testCfg = Join-Path $tempRoot 'settings.json'
@@ -186,6 +187,36 @@ Assert (@(Get-FlipRecentHits).Count -eq 2) 'live scan persisted hits to history'
 Set-FlipHitDismissed -ItemId 'v1|111|0'
 Assert (@(Get-FlipRecentHits).Count -eq 1) 'dismiss hides a hit'
 Assert (@(Get-FlipRecentHits -IncludeDismissed).Count -eq 2) 'dismissed hit still in raw history'
+
+Write-Host "`n== Watchlist =="
+& $module { $script:AlertCount = 0; $script:AlertMsgs = @() }
+$soonIso = [datetime]::UtcNow.AddMinutes(10).ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+$oldIso  = [datetime]::UtcNow.AddHours(-3).ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+Add-FlipWatch -ItemId 'w1' -Title 'ZBook G9 cracked screen' -Url 'https://w1' -EndsAt $soonIso -MaxBid 110 -Price 80 | Out-Null
+Add-FlipWatch -ItemId 'w2' -Title 'EliteBook 840 G8' -Url 'https://w2' -EndsAt $oldIso -MaxBid 60 -Price 50 | Out-Null
+$watch = @(Get-FlipWatchlist)
+Assert ($watch.Count -eq 1 -and $watch[0].ItemId -eq 'w1') 'watchlist lists live watches, hides long-ended ones'
+Assert ($watch[0].MinutesLeft -ge 8 -and $watch[0].MinutesLeft -le 10) 'minutes-left computed'
+$sent = Send-FlipWatchReminders
+Assert ($sent -eq 1 -and (& $module { $script:AlertCount }) -eq 1) 'reminder fires for auction inside the window'
+Assert (@(& $module { $script:AlertMsgs })[-1] -match 'final minute') 'reminder message has bidding guidance'
+Assert ((Send-FlipWatchReminders) -eq 0) 'reminder fires only once per watch'
+Assert (@(Get-FlipWatchlist -IncludeEnded).Count -eq 1) 'long-ended watches pruned on reminder pass'
+Remove-FlipWatch -ItemId 'w1'
+Assert (@(Get-FlipWatchlist).Count -eq 0) 'remove clears the watch'
+
+Write-Host "`n== New-FlipListing (mocked AI) =="
+& $module {
+    function script:Get-EbaySoldComps { throw 'offline' }
+    function script:Invoke-FlipAi { param($System, $Messages, $JsonSchema)
+        '{"title":"HP EliteBook 840 G9 14in i5-1235U 16GB 512GB Win11 Laptop","description":"Fully working. New screen fitted.","bin_price_gbp":289.99,"floor_price_gbp":255,"keywords":["elitebook 840 g9","hp laptop 16gb"]}'
+    }
+}
+$draft = New-FlipListing -Item 'HP EliteBook 840 G9' -Notes 'new screen'
+Assert ($draft.Title -like 'HP EliteBook 840 G9*') 'listing draft returns a title'
+Assert ($draft.BinPrice -eq 289.99 -and $draft.FloorPrice -eq 255) 'listing draft returns pricing'
+Assert (@($draft.Keywords).Count -eq 2) 'listing draft returns keywords'
+Assert ($draft.CompsNote -match 'No live sold stats') 'comps failure is labelled, not fatal'
 
 Write-Host "`n== Find-EbayDeals filter construction (mocked HTTP) =="
 & $module {

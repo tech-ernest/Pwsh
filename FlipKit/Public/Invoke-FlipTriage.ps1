@@ -71,6 +71,7 @@ Judge fixability from the fault described in the title (e.g. "battery doesn't ho
             if ($t.index -lt 0 -or $t.index -ge $batch.Count) { continue }
             $h = $batch[$t.index]
             [pscustomobject]@{
+                ItemId        = if ($h.PSObject.Properties['ItemId']) { $h.ItemId } else { '' }
                 Title         = $h.Title
                 Price         = $h.Price
                 Condition     = $h.Condition
