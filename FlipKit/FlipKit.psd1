@@ -15,6 +15,7 @@
         'Get-EbayToken'
         'Find-EbayDeals'
         'Get-EbayItemDescription'
+        'Get-EbayQuota'
         'Invoke-FlipScan'
         'Invoke-FlipChat'
         'Invoke-FlipTriage'

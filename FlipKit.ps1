@@ -22,6 +22,14 @@ function Show-Health {
     try { Get-EbayToken | Out-Null; Write-Host '  eBay API:      OK' -ForegroundColor Green }
     catch { Write-Host "  eBay API:      FAILED — $_" -ForegroundColor Red }
 
+    try {
+        foreach ($q in @(Get-EbayQuota)) {
+            $colour = if ($q.UsedPct -ge 80) { 'Yellow' } else { 'Gray' }
+            Write-Host "  eBay quota:    $($q.Resource): $($q.Used)/$($q.Limit) used ($($q.UsedPct)%) — resets $($q.ResetsAt)" -ForegroundColor $colour
+        }
+    }
+    catch { Write-Host "  eBay quota:    unavailable ($_)" -ForegroundColor Gray }
+
     $hbPath = 'data/last-scan.json'
     if (Test-Path $hbPath) {
         try {

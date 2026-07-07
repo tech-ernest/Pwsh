@@ -281,6 +281,21 @@ $desc = Get-EbayItemDescription -ItemId 'v1|55|0'
 Assert ($desc -eq 'Laptop & charger. BIOS locked — sold for spares.') 'strips HTML/styles and decodes entities'
 Assert ((& $module { $script:CapturedUri }) -like '*browse/v1/item/v1%7C55%7C0*') 'calls the per-item endpoint'
 
+Write-Host "`n== Get-EbayQuota (mocked HTTP) =="
+& $module {
+    function script:Invoke-RestMethod { param($Uri, $Headers)
+        [pscustomobject]@{ rateLimits = @(
+            [pscustomobject]@{ apiContext = 'buy'; apiName = 'Browse'; resources = @(
+                [pscustomobject]@{ name = 'buy.browse'; rates = @(
+                    [pscustomobject]@{ limit = 5000; remaining = 3200; reset = '2026-07-08T00:00:00.000Z'; timeWindow = 86400 } ) } ) }
+            [pscustomobject]@{ apiContext = 'sell'; apiName = 'Feed'; resources = @() }
+        ) }
+    }
+}
+$quota = @(Get-EbayQuota)
+Assert ($quota.Count -eq 1 -and $quota[0].Used -eq 1800) 'quota reports used calls for the Browse API'
+Assert ($quota[0].UsedPct -eq 36) 'quota computes percentage'
+
 Write-Host "`n== Invoke-FlipTriage (mocked AI) =="
 & $module {
     function script:Invoke-FlipAi { param($System, $Messages, $JsonSchema)
