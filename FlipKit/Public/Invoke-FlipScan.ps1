@@ -182,8 +182,7 @@ function Send-FlipRankedAlerts {
         if (-not ($h.PSObject.Properties['Buying'] -and $h.Buying -match 'AUCTION')) { return '' }
         if (-not ($h.PSObject.Properties['EndsAt'] -and $h.EndsAt)) { return 'AUCTION' }
         try {
-            $end = [datetime]::Parse($h.EndsAt, [System.Globalization.CultureInfo]::InvariantCulture,
-                [System.Globalization.DateTimeStyles]::RoundtripKind).ToLocalTime()
+            $end = (ConvertTo-FlipUtcDate -Value $h.EndsAt).ToLocalTime()
             $left = $end - (Get-Date)
             $rel = if ($left.TotalMinutes -le 0) { 'ended' }
                    elseif ($left.TotalHours -ge 24) { 'in {0}d {1}h' -f $left.Days, $left.Hours }

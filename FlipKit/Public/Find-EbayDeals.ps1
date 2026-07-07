@@ -62,17 +62,11 @@ function Find-EbayDeals {
             else { $null }
         if ($null -eq $priceValue) { continue }
 
+        $endDateUtc = if ($item.PSObject.Properties['itemEndDate']) { ConvertTo-FlipUtcDate -Value $item.itemEndDate } else { $null }
+
         # Ending-soon window: only items with an end date inside it qualify.
         if ($EndingWithinHours -gt 0) {
-            $endOk = $false
-            if ($item.PSObject.Properties['itemEndDate'] -and $item.itemEndDate) {
-                try {
-                    $end = [datetime]::Parse($item.itemEndDate, [System.Globalization.CultureInfo]::InvariantCulture,
-                        [System.Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
-                    $endOk = $end -gt [datetime]::UtcNow -and $end -le [datetime]::UtcNow.AddHours($EndingWithinHours)
-                }
-                catch { }
-            }
+            $endOk = $endDateUtc -and $endDateUtc -gt [datetime]::UtcNow -and $endDateUtc -le [datetime]::UtcNow.AddHours($EndingWithinHours)
             if (-not $endOk) { continue }
         }
 
@@ -82,8 +76,8 @@ function Find-EbayDeals {
             Price     = $priceValue
             Condition = if ($item.PSObject.Properties['condition']) { $item.condition } else { 'Unknown' }
             BuyingOpt = ($item.buyingOptions -join ',')
-            # Auctions only: ISO end time and bid count, for "ends soon" triage.
-            EndsAt    = if ($item.PSObject.Properties['itemEndDate'] -and $item.itemEndDate) { [string]$item.itemEndDate } else { '' }
+            # Auctions only: round-trippable ('o' format, keeps the UTC marker) end time and bid count.
+            EndsAt    = if ($endDateUtc) { $endDateUtc.ToString('o') } else { '' }
             BidCount  = if ($item.PSObject.Properties['bidCount']) { [int]$item.bidCount } else { $null }
             Url       = $item.itemWebUrl
             Query     = $Query

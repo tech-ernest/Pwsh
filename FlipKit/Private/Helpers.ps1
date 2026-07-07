@@ -4,6 +4,30 @@ function Get-FlipDataDir {
     $dir
 }
 
+function ConvertTo-FlipUtcDate {
+    <#
+        Normalizes an eBay end-date value (already a [datetime], or an ISO-ish
+        string) to a Kind=Utc [datetime], without ever treating an unmarked
+        value as local time. eBay's itemEndDate is always UTC; PowerShell's
+        JSON round-tripping sometimes hands it back as a string, sometimes
+        auto-converts it to a [datetime] — and [datetime]::Parse on a non-string
+        argument implicitly stringifies it via a culture-formatted ToString()
+        that drops the Kind marker, so a later ToUniversalTime() wrongly
+        re-shifts it by the local UTC/BST offset. This pins the Kind explicitly
+        at every step instead of trusting whatever Kind survived the last hop.
+    #>
+    param($Value)
+    if ($null -eq $Value -or $Value -eq '') { return $null }
+    try {
+        $dt = if ($Value -is [datetime]) { $Value } else {
+            [datetime]::Parse([string]$Value, [System.Globalization.CultureInfo]::InvariantCulture,
+                [System.Globalization.DateTimeStyles]::RoundtripKind)
+        }
+        if ($dt.Kind -eq [System.DateTimeKind]::Utc) { $dt } else { [datetime]::SpecifyKind($dt, [System.DateTimeKind]::Utc) }
+    }
+    catch { $null }
+}
+
 function Get-PriceStats {
     <#
         Computes summary stats over a list of prices. Shared by comps and anything

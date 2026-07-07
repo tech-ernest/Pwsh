@@ -18,7 +18,7 @@ function Get-FlipLedgerStats {
 
     $summary = [pscustomobject]@{
         FlipsCompleted   = $closed.Count
-        TotalNetProfit   = [math]::Round((($closed.Net | Measure-Object -Sum).Sum), 2)
+        TotalNetProfit   = if ($closed) { [math]::Round((($closed.Net | Measure-Object -Sum).Sum), 2) } else { 0 }
         AvgNetPerFlip    = if ($closed) { [math]::Round((($closed.Net | Measure-Object -Average).Average), 2) } else { 0 }
         AvgMarginPct     = if ($closed) { [math]::Round(100 * ($closed | ForEach-Object { [double]$_.Net / [double]$_.BuyPrice } | Measure-Object -Average).Average, 1) } else { 0 }
         AvgDaysToSell    = if ($closed) { [math]::Round((($closed.DaysToSell | Measure-Object -Average).Average), 1) } else { 0 }

@@ -54,14 +54,8 @@ function Get-FlipWatchlist {
 
     $items = foreach ($w in @(Get-Content -Raw $path | ConvertFrom-Json)) {
         $minutesLeft = $null
-        if ($w.EndsAt) {
-            try {
-                $end = [datetime]::Parse($w.EndsAt, [System.Globalization.CultureInfo]::InvariantCulture,
-                    [System.Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
-                $minutesLeft = [int][math]::Floor(($end - $now).TotalMinutes)
-            }
-            catch { }
-        }
+        $end = ConvertTo-FlipUtcDate -Value $w.EndsAt
+        if ($end) { $minutesLeft = [int][math]::Floor(($end - $now).TotalMinutes) }
         if (-not $IncludeEnded -and $null -ne $minutesLeft -and $minutesLeft -lt -60) { continue }
         $w | Add-Member -NotePropertyName MinutesLeft -NotePropertyValue $minutesLeft -Force -PassThru
     }
@@ -105,14 +99,8 @@ function Send-FlipWatchReminders {
 
     foreach ($w in $list) {
         $minutesLeft = $null
-        if ($w.EndsAt) {
-            try {
-                $end = [datetime]::Parse($w.EndsAt, [System.Globalization.CultureInfo]::InvariantCulture,
-                    [System.Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
-                $minutesLeft = ($end - $now).TotalMinutes
-            }
-            catch { }
-        }
+        $end = ConvertTo-FlipUtcDate -Value $w.EndsAt
+        if ($end) { $minutesLeft = ($end - $now).TotalMinutes }
 
         # Prune auctions that ended over 2 hours ago.
         if ($null -ne $minutesLeft -and $minutesLeft -lt -120) { continue }
