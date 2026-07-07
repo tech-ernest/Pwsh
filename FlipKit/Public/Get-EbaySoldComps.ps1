@@ -69,14 +69,18 @@ function Get-EbaySoldComps {
     # genuinely match the term so the stats price the actual item.
     $script:CompsFilterNote = $null
     if (-not $NoFilter) {
-        $matched = @($items | Where-Object { Test-FlipCompRelevant -Title $_.Title -SearchTerm $SearchTerm })
-        if ($matched.Count -gt 0 -and $matched.Count -lt $items.Count) {
-            $script:CompsFilterNote = 'Priced from {0} of {1} sold results — {2} off-item listings excluded (bundles, Ti/Super variants, faulty/parts).' -f
-                $matched.Count, $items.Count, ($items.Count - $matched.Count)
-            $items = $matched
+        $sel = Select-FlipRelevantSolds -Items $items -SearchTerm $SearchTerm
+        $extra = if ($sel.Note) { " ($($sel.Note))" } else { '' }
+        if ($sel.Items.Count -gt 0 -and $sel.Items.Count -lt $items.Count) {
+            $script:CompsFilterNote = 'Priced from {0} of {1} sold results — {2} off-item listings excluded (bundles, variants, faulty/parts){3}.' -f
+                $sel.Items.Count, $items.Count, ($items.Count - $sel.Items.Count), $extra
+            $items = $sel.Items
         }
-        elseif ($matched.Count -eq 0) {
-            $script:CompsFilterNote = "Relevance filter matched none of $($items.Count) sold results — using all of them, treat the stats with care."
+        elseif ($sel.Items.Count -eq 0) {
+            $script:CompsFilterNote = "Relevance filter matched none of $($items.Count) sold results — using all of them, treat the stats with care$extra."
+        }
+        elseif ($sel.Note) {
+            $script:CompsFilterNote = "All $($items.Count) sold results kept$extra."
         }
     }
 

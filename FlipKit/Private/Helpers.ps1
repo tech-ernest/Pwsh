@@ -33,6 +33,51 @@ function Get-PriceStats {
     }
 }
 
+function Get-FlipTokenPattern {
+    <#
+        Regex for one search token. Digit/letter runs joined by optional
+        space or dash, with type-aware boundaries: '3060' must not match
+        '13060', but may sit inside 'RTX3060'; 'rtx' must not match 'rtxa'.
+    #>
+    param([Parameter(Mandatory)][string]$Token)
+    $runs = @([regex]::Matches($Token, '\d+|[a-z]+') | ForEach-Object { [regex]::Escape($_.Value) })
+    $lead  = if ($Token[0] -match '\d') { '(?<!\d)' } else { '(?<![a-z])' }
+    $trail = if ($Token[-1] -match '\d') { '(?!\d)' } else { '(?![a-z])' }
+    $lead + ($runs -join '[\s-]*') + $trail
+}
+
+function Select-FlipRelevantSolds {
+    <#
+        Filters parsed sold listings down to genuine comps for the term.
+        A token that matches nothing in ANY title (a seller-specific suffix
+        like "sl50") is noise — drop it and filter on the rest, instead of
+        letting one junk token disable the whole filter and poison the stats
+        with off-model results.
+    #>
+    param(
+        [Parameter(Mandatory)][array]$Items,
+        [Parameter(Mandatory)][string]$SearchTerm
+    )
+
+    $note = $null
+    $term = $SearchTerm.ToLowerInvariant()
+    $tokens = @([regex]::Split($term, '[^a-z0-9]+') | Where-Object { $_ })
+    $dead = @($tokens | Where-Object {
+        $p = Get-FlipTokenPattern $_
+        -not @($Items | Where-Object { $_.Title -match $p })
+    })
+    if ($dead.Count -gt 0 -and $dead.Count -lt $tokens.Count) {
+        $term = @($tokens | Where-Object { $dead -notcontains $_ }) -join ' '
+        $note = "ignored '{0}' — matched no sold titles" -f ($dead -join "', '")
+    }
+
+    [pscustomobject]@{
+        Items = @($Items | Where-Object { Test-FlipCompRelevant -Title $_.Title -SearchTerm $term })
+        Term  = $term
+        Note  = $note
+    }
+}
+
 function Test-FlipCompRelevant {
     <#
         Decides whether a sold listing's title is a genuine comp for the search
@@ -57,13 +102,7 @@ function Test-FlipCompRelevant {
     $tokens = @([regex]::Split($s, '[^a-z0-9]+') | Where-Object { $_ })
 
     foreach ($token in $tokens) {
-        # Split into digit/letter runs joined by optional space or dash, with
-        # type-aware boundaries: '3060' must not match '13060', but may sit
-        # inside 'RTX3060'; 'rtx' must not match 'rtxa'.
-        $runs = @([regex]::Matches($token, '\d+|[a-z]+') | ForEach-Object { [regex]::Escape($_.Value) })
-        $lead  = if ($token[0] -match '\d') { '(?<!\d)' } else { '(?<![a-z])' }
-        $trail = if ($token[-1] -match '\d') { '(?!\d)' } else { '(?![a-z])' }
-        if ($t -notmatch ($lead + ($runs -join '[\s-]*') + $trail)) { return $false }
+        if ($t -notmatch (Get-FlipTokenPattern $token)) { return $false }
     }
 
     # Variant guard: search said "3060", title says "3060 Ti" — different card.
@@ -84,7 +123,14 @@ function Test-FlipCompRelevant {
         # defective units — they sell cheap and drag the median down
         @('faulty', 'spares', 'repair', 'not working', 'no power', 'for parts', 'parts only', 'broken', 'damaged', 'untested', 'cracked')
     )
+    # The whole-systems group exists to keep gaming PCs and laptops out of
+    # *component* searches; when the search itself targets a machine
+    # (EliteBook, ThinkPad, "laptop"...), those words are expected in titles.
+    $systemish = 'elitebook|probook|zbook|thinkpad|latitude|precision|macbook|chromebook|ideapad|vivobook|pavilion|inspiron|aspire|laptop|notebook|desktop|tower|imac|nuc'
+
     foreach ($group in $groups) {
+        $isSystemsGroup = $group -contains 'laptop'
+        if ($isSystemsGroup -and $s -match $systemish) { continue }
         if (@($group | Where-Object { $s.Contains($_) }).Count -gt 0) { continue }
         foreach ($phrase in $group) {
             if ($t.Contains($phrase)) { return $false }

@@ -59,6 +59,20 @@ Assert (-not (& $rel 'MSI RTX 3060 12GB - FAULTY spares or repair' 'rtx 3060')) 
 Assert (& $rel 'Garmin Forerunner 245 GPS Watch - faulty, spares or repair' 'garmin faulty') 'faulty allowed when the search asks for faulty'
 Assert (-not (& $rel 'Radeon RX 6600 8GB Graphics Card' 'rtx 3060')) 'unrelated model excluded'
 
+Write-Host "`n== Noise-token relaxation (Select-FlipRelevantSolds) =="
+$soldSet = @(
+    [pscustomobject]@{ Title = 'HP Laptop ProBook 440 G8 14" i5 11th Gen 256GB SSD'; Price = 73.49 }
+    [pscustomobject]@{ Title = 'HP PROBOOK 440 G7 14" FHD 10TH GEN i5-10210u 8GB 512GB'; Price = 149.99 }
+    [pscustomobject]@{ Title = 'HP 14" PROBOOK 440 G9 Intel core i5-1235U 8GB 256GB'; Price = 149.95 }
+    [pscustomobject]@{ Title = 'HP ProBook 440 G8 14in Core i5-1135G7 8GB 256GB NVMe'; Price = 109.99 }
+)
+$sel = & $module { param($i, $s) Select-FlipRelevantSolds -Items $i -SearchTerm $s } $soldSet 'hp probook 440 g8 14 sl50'
+Assert ($sel.Note -match "sl50") 'junk token identified and reported'
+Assert (@($sel.Items).Count -eq 2) 'filter still applies after dropping the junk token (G7/G9 excluded)'
+Assert (-not (@($sel.Items).Title -match '440 G7|440 G9')) 'only the searched generation survives'
+$sel2 = & $module { param($i, $s) Select-FlipRelevantSolds -Items $i -SearchTerm $s } $soldSet 'hp probook 440 g8'
+Assert ($null -eq $sel2.Note -and @($sel2.Items).Count -eq 2) 'clean terms pass through without a note'
+
 Write-Host "`n== Price stats =="
 $stats = & $module { param($p) Get-PriceStats -Prices $p } @(189.99, 195.00, 205.00, 210.50, 220.00, 1150.00)
 Assert ($stats.Count -eq 6) 'stat count'

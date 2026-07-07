@@ -49,7 +49,9 @@ function Get-CexPrice {
             $aUri = 'https://{0}/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(5.52.1)%3B%20Browser&x-algolia-api-key={1}&x-algolia-application-id={2}' -f
                 $aHost, $cex.algoliaApiKey, $cex.algoliaAppId
             $body = ConvertTo-Json -Depth 5 -InputObject @{
-                requests = @(@{ indexName = $index; params = 'query={0}&hitsPerPage={1}' -f [uri]::EscapeDataString($Query), $Top })
+                # removeWordsIfNoResults: over-specific queries ("probook 440
+                # g8 14 sl50") relax automatically instead of returning nothing.
+                requests = @(@{ indexName = $index; params = 'query={0}&hitsPerPage={1}&removeWordsIfNoResults=allOptional' -f [uri]::EscapeDataString($Query), $Top })
             }
             $aResp = Invoke-FlipAiHttpPost -Uri $aUri -Headers @{
                 'Origin'  = 'https://uk.webuy.com'

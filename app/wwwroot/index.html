@@ -98,6 +98,7 @@
   .hit { padding: 10px 0; border-bottom: 1px solid var(--grid); }
   .hit:last-child { border-bottom: none; }
   .hit a { color: var(--series-1); text-decoration: none; font-weight: 600; }
+  a { color: var(--series-1); }
   .hit .meta { font-size: 13px; color: var(--ink-2); }
   .err { color: var(--critical); font-size: 14px; margin-top: 10px; }
   .ok { color: var(--good-text); font-size: 14px; margin-top: 10px; }
@@ -371,6 +372,7 @@ $('#checkForm').onsubmit = async e => {
       </div>
       ${d.CompsSource && d.CompsSource !== 'eBay sold listings' ? `<p class="hint" style="margin-top:8px">⚠ ${esc(d.CompsSource)} — real sold listings unavailable, treat as a guide.</p>` : ''}
       ${d.CompsNote ? `<p class="hint" style="margin-top:8px">${esc(d.CompsNote)}</p>` : ''}
+      ${!d.CexCashFloor && d.CexNote ? `<p class="hint" style="margin-top:8px">CeX: ${esc(d.CexNote)}</p>` : ''}
       ${(d.RecentSolds && d.RecentSolds.length) ? '<div class="meta" style="margin-top:12px"><b>Recently sold on eBay:</b></div>'
         + d.RecentSolds.map(s => `<div class="meta">${gbp(s.Price)} — ${s.Url
             ? `<a href="${esc(s.Url)}" target="_blank" rel="noopener">${esc(s.Title || 'view listing')}</a>`

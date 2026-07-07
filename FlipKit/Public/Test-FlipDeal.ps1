@@ -90,13 +90,22 @@ function Test-FlipDeal {
         }
     }
 
+    $cexNote = $null
     if (-not $PSBoundParameters.ContainsKey('CexCashFloor') -and -not $SkipCex) {
-        # CeX is a bonus data source — a bot-wall block there must not sink the verdict.
+        # CeX is a bonus data source — a bot-wall block there must not sink the
+        # verdict, but the reason for a missing floor should reach the UI.
         try {
             $cex = @(Get-CexPrice -Query $SearchTerm -Top 1)
-            if ($cex) { $CexCashFloor = $cex[0].CashBuy }
+            if (-not $cex) { $cexNote = 'no CeX product matched this search' }
+            elseif (-not $cex[0].CashBuy) { $cexNote = "closest CeX match '$($cex[0].Name)' has no cash-buy price" }
+            else { $CexCashFloor = $cex[0].CashBuy }
         }
-        catch { Write-Verbose "CeX floor unavailable: $_" }
+        catch {
+            $msg = "$($_.Exception.Message)"
+            if ($msg.Length -gt 160) { $msg = $msg.Substring(0, 160) + '…' }
+            $cexNote = "CeX lookup failed: $msg"
+            Write-Verbose "CeX floor unavailable: $_"
+        }
     }
 
     $net = {
@@ -134,6 +143,7 @@ function Test-FlipDeal {
         BelowCexFloor      = if ($CexCashFloor) { $BuyPrice -lt $CexCashFloor } else { $null }
         CompsSource        = if ($Comps.PSObject.Properties['Source']) { $Comps.Source } else { 'eBay sold listings' }
         CompsNote          = $compsNote
+        CexNote            = $cexNote
         RecentSolds        = @($recentSolds | ForEach-Object {
             @{
                 Title = $_.Title
