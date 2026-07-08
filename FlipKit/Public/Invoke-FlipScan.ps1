@@ -60,10 +60,17 @@ function Invoke-FlipScan {
 
         # The saved query, plus typo variants when the search opts in with
         # "typoHunt": "<brand>" — automated misspelled-listing hunting.
+        # The variant is substituted INTO the original query (not used bare):
+        # a bare misspelling like "armin" (from "garmin") is also a common
+        # first name and floods results with unrelated books/CDs. Keeping
+        # the rest of the query's context (e.g. "watch (faulty, spares...)")
+        # naturally excludes that noise the same way the real word does.
         $queries = @(@{ q = $search.query; typo = $false })
         if ($search.PSObject.Properties['typoHunt'] -and $search.typoHunt) {
+            $wordPattern = '(?i)\b{0}\b' -f [regex]::Escape($search.typoHunt)
             foreach ($v in @(New-MisspellingList -Word $search.typoHunt -Top 6)) {
-                $queries += @{ q = $v; typo = $true }
+                $typoQuery = $search.query -replace $wordPattern, $v
+                $queries += @{ q = $typoQuery; typo = $true }
             }
         }
 
