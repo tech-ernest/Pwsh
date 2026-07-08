@@ -35,7 +35,10 @@ function Get-PriceStats {
     #>
     param([Parameter(Mandatory)][double[]]$Prices)
 
-    $sorted = $Prices | Sort-Object
+    # @() guards against PowerShell unwrapping a lone pipeline result to a
+    # bare scalar — a single-price comp set would otherwise lose .Count under
+    # Set-StrictMode (same class of bug as the ledger-stats crash).
+    $sorted = @($Prices | Sort-Object)
     $n = $sorted.Count
 
     $pct = {
@@ -166,6 +169,12 @@ function Test-FlipCompRelevant {
         @('gaming pc', 'gaming tower', 'pc tower', 'desktop', 'laptop', 'notebook', 'all-in-one', 'all in one', 'bundle', 'system unit', 'full system', 'ryzen', 'core i3', 'core i5', 'core i7', 'core i9', 'i3-', 'i5-', 'i7-', 'i9-'),
         # accessories, empty boxes and part-bundles masquerading as the item
         @('fan replacement', 'replacement fan', 'fan only', 'box only', 'empty box', 'shroud', 'backplate', 'waterblock', 'cable only', 'motherboard', 'mobo', 'combo'),
+        # wearable accessories that cross-list every compatible model in the
+        # title (a strap for "235 230 620 630 735XT" genuinely contains the
+        # search token "630", so the token-match test alone can't catch it) —
+        # phrased narrowly so a real watch listing that merely mentions "with
+        # strap" doesn't get excluded
+        @('silicone strap', 'silicone band', 'silcone strap', 'silcone band', 'nylon strap', 'watch strap', 'wrist strap', 'band strap', 'strap watch band', 'watch band', 'replacement strap', 'replacement band', 'strap only', 'band only', 'strap replacement', 'lugs', 'screwdriver', 'charging cable', 'charging charger', 'data cable', 'usb charging', 'charger', 'power adapter only'),
         # defective units — they sell cheap and drag the median down
         @('faulty', 'spares', 'repair', 'not working', 'no power', 'for parts', 'parts only', 'broken', 'damaged', 'untested', 'cracked')
     )
