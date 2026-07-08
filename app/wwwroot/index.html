@@ -187,7 +187,7 @@
   </div>
   <div class="card">
     <h2>Recent hits</h2>
-    <p class="hint">Everything the scanner found lately, scheduled runs included. Mark reviewed items as not interested to clear them.</p>
+    <p class="hint">Everything the scanner found lately, scheduled runs included. <b>not interested</b> is permanent — that item never alerts or resurfaces again (ending-soon re-alerts included). 🧹 clear just tidies the list.</p>
     <form class="row" style="margin-bottom:8px">
       <label>Show deals from
         <select id="scanFilter"><option value="">all searches</option></select></label>
@@ -596,6 +596,7 @@ window.triage = async () => {
         + items.map(h => `<div class="hit"><a href="${esc(h.Url)}" target="_blank" rel="noopener">${esc(h.Title)}</a>
             <span class="fixtag">fix: ${esc(h.FixDifficulty)}</span>
             <div class="meta">ask ${gbp(h.Price)}${h.PartsCost > 0 ? ' + parts ~' + gbp(h.PartsCost) : ''} → est resale ${gbp(h.EstResale)} → <b>est net ${gbp(h.EstNetProfit)}</b>${auctionMeta(h)}${hitActions(h)}</div>
+            ${h.CompsMedian ? `<div class="meta">✔ real solds ("${esc(h.CompsTerm)}"): median ${gbp(h.CompsMedian)} across ${h.CompsCount} → <b>net ~${gbp(h.GroundedNet)}</b></div>` : ''}
             <div class="meta">${esc(h.Note)}</div></div>`).join('');
     }).join('') || '<p class="hint">Nothing came back from triage.</p>';
   } catch (err) { out.innerHTML = `<p class="err">${esc(err.message)}</p>` + lastHits.map(hitHtml).join(''); }
@@ -810,6 +811,7 @@ function searchRowHtml(s = {}) {
     <label>Min £ <input data-k="minPrice" type="number" value="${s.minPrice ?? ''}"></label>
     <label>Max £ <input data-k="maxPrice" type="number" value="${s.maxPrice ?? ''}"></label>
     <label>CeX query <input data-k="cexQuery" value="${esc(s.cexQuery || '')}" placeholder="optional"></label>
+    <label>Postage £ <input data-k="postage" type="number" step="0.01" value="${s.postage ?? ''}" placeholder="default"></label>
     <label>Buying <select data-k="buyingOptions">${opt('FIXED_PRICE')}${opt('FIXED_PRICE|AUCTION')}${opt('AUCTION')}</select></label>
     <label>Sort <select data-k="sort"><option value="">newly listed</option><option value="endingSoonest" ${s.sort === 'endingSoonest' ? 'selected' : ''}>ending soonest</option></select></label>
     <label>Ending within (h) <input data-k="endingWithinHours" type="number" value="${s.endingWithinHours ?? ''}" placeholder="e.g. 6"></label>
@@ -847,6 +849,7 @@ $('#settingsForm').onsubmit = async e => {
     if (g('conditionIds')) s.conditionIds = g('conditionIds');
     if (g('sort')) s.sort = g('sort');
     if (g('endingWithinHours')) s.endingWithinHours = Number(g('endingWithinHours'));
+    if (g('postage')) s.postage = Number(g('postage'));
     if (g('minPrice')) s.minPrice = Number(g('minPrice'));
     return s;
   }).filter(s => s.name && s.query && s.maxPrice > 0);

@@ -35,6 +35,10 @@ function Invoke-FlipScan {
         foreach ($id in @(Get-Content -Raw $seenPath | ConvertFrom-Json)) { [void]$seen.Add([string]$id) }
     }
 
+    # Items the user marked "not interested" never come back — not via
+    # ending-soon re-alerts, not via IncludeSeen.
+    $noInterest = Get-FlipNotInterestedSet
+
     $hits = [System.Collections.Generic.List[object]]::new()
     # Circuit breaker: when CeX is unreachable (bot-walled networks), fail once
     # and skip it for the rest of the run instead of paying retry+backoff per item.
@@ -80,6 +84,7 @@ function Invoke-FlipScan {
             }
 
             foreach ($item in @($items)) {
+                if ($noInterest.Contains([string]$item.ItemId)) { continue }
                 $seenKey = if ($endingLane) { "$($item.ItemId)|ending" } else { $item.ItemId }
                 $isNew = if ($DryRun) { -not $seen.Contains($seenKey) } else { $seen.Add($seenKey) }
                 if (-not $isNew -and -not $IncludeSeen) { continue }
@@ -116,6 +121,7 @@ function Invoke-FlipScan {
                     BidCount  = if ($item.PSObject.Properties['BidCount']) { $item.BidCount } else { $null }
                     Url       = $item.Url
                     Note      = $note.Trim()
+                    Postage   = if ($search.PSObject.Properties['postage'] -and $search.postage) { [double]$search.postage } else { $null }
                     Description = $description
                     Seen      = (-not $isNew)
                     FoundAt   = (Get-Date).ToString('yyyy-MM-dd HH:mm')
@@ -203,14 +209,19 @@ function Send-FlipRankedAlerts {
     }
 
     if ($ranked) {
+        # Real-comps-grounded net outranks the AI's flat guess when we have it.
+        $bestNet = { param($h) if ($h.PSObject.Properties['GroundedNet'] -and $null -ne $h.GroundedNet) { $h.GroundedNet } else { $h.EstNetProfit } }
         $worthAlerting = @($ranked | Where-Object { $_.Tier -ne 'skip' } |
-            Sort-Object -Property @{ Expression = { $_.Tier -eq 'hot' }; Descending = $true }, @{ Expression = 'EstNetProfit'; Descending = $true })
+            Sort-Object -Property @{ Expression = { $_.Tier -eq 'hot' }; Descending = $true }, @{ Expression = { & $bestNet $_ }; Descending = $true })
 
         foreach ($h in @($worthAlerting | Select-Object -First $max)) {
             $tag = if ($h.Tier -eq 'hot') { '🔥 HOT' } else { '👀 Look' }
             $auction = & $auctionLine $h
             $parts = if ($h.PSObject.Properties['PartsCost'] -and $h.PartsCost -gt 0) { " · parts ~£$($h.PartsCost)" } else { '' }
             $msg = "$($h.Title)`nest resale £$($h.EstResale) · fix: $($h.FixDifficulty)$parts"
+            if ($h.PSObject.Properties['CompsMedian'] -and $h.CompsMedian) {
+                $msg += "`nreal solds: median £$($h.CompsMedian) ($($h.CompsCount) sales) → net ~£$($h.GroundedNet)"
+            }
             if ($auction) { $msg += "`n⏳ $auction" }
             if ($h.Note) { $msg += "`n$($h.Note)" }
             Send-FlipAlert -Priority $(if ($h.Tier -eq 'hot') { 5 } else { 4 }) `

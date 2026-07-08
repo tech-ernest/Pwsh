@@ -70,6 +70,23 @@ function Get-FlipTokenPattern {
     $lead + ($runs -join '[\s-]*') + $trail
 }
 
+function Get-FlipModelTerm {
+    <#
+        Extracts a comps-friendly search term (brand + model tokens) from a
+        listing title — "Alienware 17 R3 i7-6820HK GTX 980M (thermal shutdown
+        fault)" becomes "alienware 17 r3 i7 6820hk gtx 980m". Falls back to
+        the full title when too little survives.
+    #>
+    param([Parameter(Mandatory)][string]$Title)
+
+    $brands = '^(hp|dell|lenovo|asus|acer|msi|gigabyte|zotac|palit|evga|pny|nvidia|amd|intel|garmin|apple|samsung|sony|alienware|razer|corsair|elitebook|probook|zbook|thinkpad|thinkcentre|ideapad|latitude|inspiron|precision|optiplex|pavilion|omen|victus|legion|yoga|vostro|toughbook|geforce|rtx|gtx|radeon|rx|arc|ryzen|threadripper|core|xeon|pentium|celeron|forerunner|fenix|venu|vivoactive|instinct|epix|firefly|aspire|nitro|predator|swift|macbook|imac|surface|gen)$'
+    $modelish = '^([a-z]*\d{2,}[a-z0-9]*|g\d{1,2}|i[3579]|r\d|m\d{1,2}|x\d{1,3}[a-z]?|t\d{2,3}[a-z]?|p\d{2,3}[a-z]?|\d)$'
+
+    $toks = @([regex]::Split($Title.ToLowerInvariant(), '[^a-z0-9]+') | Where-Object { $_ })
+    $kept = @($toks | Where-Object { $_ -match $brands -or $_ -match $modelish } | Select-Object -First 7)
+    if ($kept.Count -ge 2) { $kept -join ' ' } else { $Title }
+}
+
 function Select-FlipRelevantSolds {
     <#
         Filters parsed sold listings down to genuine comps for the term.
@@ -90,7 +107,12 @@ function Select-FlipRelevantSolds {
         $p = Get-FlipTokenPattern $_
         -not @($Items | Where-Object { $_.Title -match $p })
     })
-    if ($dead.Count -gt 0 -and $dead.Count -lt $tokens.Count) {
+    # Only drop dead tokens while at least one digit-bearing token (the model
+    # identity) still has coverage. If the MODEL number itself matches nothing
+    # (VG258QR when only VG259QR sold), dropping it would price the item off
+    # sibling models — worse than no comps at all.
+    $liveModelTokens = @($tokens | Where-Object { $_ -match '\d' -and $dead -notcontains $_ })
+    if ($dead.Count -gt 0 -and $dead.Count -lt $tokens.Count -and $liveModelTokens.Count -gt 0) {
         $term = @($tokens | Where-Object { $dead -notcontains $_ }) -join ' '
         $note = "ignored '{0}' — matched no sold titles" -f ($dead -join "', '")
     }
@@ -142,8 +164,8 @@ function Test-FlipCompRelevant {
     $groups = @(
         # whole systems and bundles, when pricing a component
         @('gaming pc', 'gaming tower', 'pc tower', 'desktop', 'laptop', 'notebook', 'all-in-one', 'all in one', 'bundle', 'system unit', 'full system', 'ryzen', 'core i3', 'core i5', 'core i7', 'core i9', 'i3-', 'i5-', 'i7-', 'i9-'),
-        # accessories and empty boxes masquerading as the item
-        @('fan replacement', 'replacement fan', 'fan only', 'box only', 'empty box', 'shroud', 'backplate', 'waterblock', 'cable only'),
+        # accessories, empty boxes and part-bundles masquerading as the item
+        @('fan replacement', 'replacement fan', 'fan only', 'box only', 'empty box', 'shroud', 'backplate', 'waterblock', 'cable only', 'motherboard', 'mobo', 'combo'),
         # defective units — they sell cheap and drag the median down
         @('faulty', 'spares', 'repair', 'not working', 'no power', 'for parts', 'parts only', 'broken', 'damaged', 'untested', 'cracked')
     )

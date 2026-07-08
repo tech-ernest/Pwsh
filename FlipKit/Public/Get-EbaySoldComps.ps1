@@ -77,7 +77,11 @@ function Get-EbaySoldComps {
             $items = $sel.Items
         }
         elseif ($sel.Items.Count -eq 0) {
-            $script:CompsFilterNote = "Relevance filter matched none of $($items.Count) sold results — using all of them, treat the stats with care$extra."
+            # Refuse to price off sibling models: no close matches means no
+            # comps, not contaminated comps.
+            $script:CompsFilterNote = "No sold listings matched '$SearchTerm' closely enough — refusing to price off sibling models$extra. Use -NoFilter to see everything."
+            Write-Warning $script:CompsFilterNote
+            return
         }
         elseif ($sel.Note) {
             $script:CompsFilterNote = "All $($items.Count) sold results kept$extra."

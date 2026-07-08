@@ -72,6 +72,18 @@ Assert (@($sel.Items).Count -eq 2) 'filter still applies after dropping the junk
 Assert (-not (@($sel.Items).Title -match '440 G7|440 G9')) 'only the searched generation survives'
 $sel2 = & $module { param($i, $s) Select-FlipRelevantSolds -Items $i -SearchTerm $s } $soldSet 'hp probook 440 g8'
 Assert ($null -eq $sel2.Note -and @($sel2.Items).Count -eq 2) 'clean terms pass through without a note'
+$monitors = @(
+    [pscustomobject]@{ Title = 'ASUS VG259QR 24.5in 165Hz Gaming Monitor'; Price = 90 }
+    [pscustomobject]@{ Title = 'ASUS VG278QR 27in 165Hz Gaming Monitor'; Price = 110 }
+)
+$selM = & $module { param($i, $s) Select-FlipRelevantSolds -Items $i -SearchTerm $s } $monitors 'asus vg258qr'
+Assert (@($selM.Items).Count -eq 0) 'model number with no coverage is never dropped — sibling models stay out'
+
+Write-Host "`n== Get-FlipModelTerm =="
+$mt = & $module { param($t) Get-FlipModelTerm -Title $t } 'Alienware 17 R3 i7-6820HK GTX 980M (thermal shutdown fault)'
+Assert ($mt -match 'alienware' -and $mt -match '980m' -and $mt -notmatch 'thermal') 'keeps brand+model tokens, drops fault words'
+$mt2 = & $module { param($t) Get-FlipModelTerm -Title $t } 'lovely bundle of things'
+Assert ($mt2 -eq 'lovely bundle of things') 'falls back to the full title when nothing model-ish survives'
 
 Write-Host "`n== Price stats =="
 $stats = & $module { param($p) Get-PriceStats -Prices $p } @(189.99, 195.00, 205.00, 210.50, 220.00, 1150.00)
@@ -145,7 +157,7 @@ $testCfg = Join-Path $tempRoot 'settings.json'
     fees     = @{ feeRate = 0.13; feeFixed = 0.3; defaultPostage = 3.35 }
     rules    = @{ minMarginPct = 30 }
     alerts   = @{ ntfyTopic = ''; telegramBotToken = ''; telegramChatId = '' }
-    searches = @(@{ name = 'Test search'; query = 'test'; maxPrice = 100; cexQuery = 'test'; buyingOptions = 'FIXED_PRICE' })
+    searches = @(@{ name = 'Test search'; query = 'test'; maxPrice = 100; cexQuery = 'test'; buyingOptions = 'FIXED_PRICE'; postage = 7.5 })
 } | ConvertTo-Json -Depth 5 | Set-Content $testCfg
 $env:FLIPKIT_CONFIG = $testCfg
 
@@ -166,6 +178,7 @@ $env:FLIPKIT_CONFIG = $testCfg
 $dry = @(Invoke-FlipScan -DryRun)
 Assert ($dry.Count -eq 2) 'dry run returns hits on first sight'
 Assert ($dry[0].Description -match 'Seller notes for') 'scan attaches seller descriptions to new hits'
+Assert ($dry[0].Postage -eq 7.5) 'per-lane postage rides along on hits'
 $dry2 = @(Invoke-FlipScan -DryRun)
 Assert ($dry2.Count -eq 2) 'dry run does not mark items seen'
 
@@ -209,6 +222,8 @@ Assert (@(Get-FlipRecentHits | Where-Object { $_.ItemId -eq 'v1|222|0' })[0].Buy
 Set-FlipHitDismissed -ItemId 'v1|111|0'
 Assert (@(Get-FlipRecentHits).Count -eq 1) 'dismiss hides a hit'
 Assert (@(Get-FlipRecentHits -IncludeDismissed).Count -eq 2) 'dismissed hit still in raw history'
+$afterBlacklist = @(Invoke-FlipScan -DryRun -IncludeSeen)
+Assert ($afterBlacklist.Count -eq 1 -and $afterBlacklist[0].ItemId -eq 'v1|222|0') 'not-interested is permanent: blacklisted item never returns'
 
 Assert ((Clear-FlipRecentHits) -eq 1 -and @(Get-FlipRecentHits).Count -eq 0) 'clear dismisses everything visible'
 Assert (@(Get-FlipRecentHits -IncludeDismissed).Count -eq 2) 'clear keeps the raw history'
@@ -307,11 +322,15 @@ $quota = @(Get-EbayQuota)
 Assert ($quota.Count -eq 1 -and $quota[0].Used -eq 1800) 'quota reports used calls for the Browse API'
 Assert ($quota[0].UsedPct -eq 36) 'quota computes percentage'
 
-Write-Host "`n== Invoke-FlipTriage (mocked AI) =="
+Write-Host "`n== Invoke-FlipTriage (mocked AI + comps grounding) =="
 & $module {
     function script:Invoke-FlipAi { param($System, $Messages, $JsonSchema)
         $script:TriageUserMsg = $Messages[0].content
         '{"items":[{"index":0,"tier":"hot","fix_difficulty":"moderate","est_resale_gbp":300,"est_parts_cost_gbp":55,"est_net_profit_gbp":95,"note":"screen swap"}]}'
+    }
+    function script:Get-EbaySoldComps { param($SearchTerm)
+        $script:GroundingTerm = $SearchTerm
+        [pscustomobject]@{ Count = 12; Median = 250.0; P25 = 220.0; P75 = 280.0; Min = 180.0; Max = 320.0; Mean = 251.0 }
     }
 }
 $scored = @(Invoke-FlipTriage -Hits @([pscustomobject]@{
@@ -319,7 +338,11 @@ $scored = @(Invoke-FlipTriage -Hits @([pscustomobject]@{
     Url = 'https://x'; Description = 'Powers on, BIOS accessible, screen cracked. No liquid damage.' }))
 Assert ($scored.Count -eq 1 -and $scored[0].PartsCost -eq 55) 'triage returns a parts-cost estimate'
 Assert ((& $module { $script:TriageUserMsg }) -match 'seller description: Powers on') 'triage prompt includes the seller description'
+Assert ((& $module { $script:TriageUserMsg }) -match 'postage GBP 3.35') 'triage prompt states per-item postage'
 Assert ($scored[0].Description -match 'BIOS accessible') 'description passes through triage output'
+Assert ($scored[0].CompsMedian -eq 250 -and $scored[0].CompsCount -eq 12) 'triage grounds estimates in real sold comps'
+Assert ((& $module { $script:GroundingTerm }) -match '840') 'grounding searches an extracted model term'
+Assert ($scored[0].GroundedNet -eq 73.85) 'grounded net = median minus fees, postage, price and parts'
 
 Write-Host "`n== Get-CexPrice Algolia fallback (mocked HTTP) =="
 $cexCfg = Join-Path $tempRoot 'settings-cex.json'

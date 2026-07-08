@@ -53,6 +53,30 @@ function Get-FlipRecentHits {
     @($all | Where-Object { -not $_.Dismissed })
 }
 
+function Get-FlipNotInterestedSet {
+    <#
+        The permanent opt-out list: ItemIds the user has decided against.
+        The scanner skips these entirely — no alerts, no ending-soon
+        re-alerts, no IncludeSeen resurrection.
+    #>
+    $set = [System.Collections.Generic.HashSet[string]]::new()
+    $path = Join-Path (Get-FlipDataDir) 'not-interested.json'
+    if (Test-Path $path) {
+        foreach ($id in @(Get-Content -Raw $path | ConvertFrom-Json)) { [void]$set.Add([string]$id) }
+    }
+    # Comma keeps the set intact — an empty HashSet sent down the pipeline
+    # enumerates away to $null.
+    , $set
+}
+
+function Add-FlipNotInterested {
+    param([Parameter(Mandatory)][string]$ItemId)
+    $set = Get-FlipNotInterestedSet
+    [void]$set.Add($ItemId)
+    $keep = [string[]]@($set) | Select-Object -Last 2000
+    ConvertTo-Json $keep | Set-Content -Path (Join-Path (Get-FlipDataDir) 'not-interested.json')
+}
+
 function Clear-FlipRecentHits {
     <#
     .SYNOPSIS
@@ -98,4 +122,8 @@ function Set-FlipHitDismissed {
     foreach ($t in @($target)) { $t.Dismissed = $true }
 
     ConvertTo-Json $all -Depth 5 | Set-Content -Path $path
+
+    # "Not interested" is a decision, not a tidy-up: remember it permanently
+    # so the item never alerts or resurfaces again.
+    Add-FlipNotInterested -ItemId $ItemId
 }

@@ -47,11 +47,11 @@ function Test-FlipDeal {
         # Fetch raw sold listings once: stats for the verdict, plus the most
         # recent solds for display.
         $rawSolds = try { @(Get-EbaySoldComps -SearchTerm $SearchTerm -Raw) } catch { @() }
+        $compsNote = $script:CompsFilterNote
         if ($rawSolds.Count -gt 0) {
             $Comps = Get-PriceStats -Prices $rawSolds.Price
             $Comps | Add-Member -NotePropertyName SearchTerm -NotePropertyValue $SearchTerm
             $recentSolds = @($rawSolds | Select-Object -First 8)
-            $compsNote = $script:CompsFilterNote
         }
     }
 

@@ -23,9 +23,18 @@ function Invoke-FlipTriage {
         $batch = @($all | Select-Object -First 40)
         if ($batch.Count -eq 0) { return }
 
+        $cfg = try { Get-FlipConfig } catch { $null }
+        $feeRate    = if ($cfg) { [double]$cfg.fees.feeRate }        else { 0.13 }
+        $feeFixed   = if ($cfg) { [double]$cfg.fees.feeFixed }       else { 0.30 }
+        $defPostage = if ($cfg) { [double]$cfg.fees.defaultPostage } else { 3.35 }
+        $postOf = {
+            param($h)
+            if ($h.PSObject.Properties['Postage'] -and $h.Postage) { [double]$h.Postage } else { $defPostage }
+        }
+
         $itemLines = for ($i = 0; $i -lt $batch.Count; $i++) {
             $h = $batch[$i]
-            $line = "[$i] $($h.Title) | asking GBP $($h.Price) | condition: $($h.Condition)"
+            $line = "[$i] $($h.Title) | asking GBP $($h.Price) | condition: $($h.Condition) | postage GBP $(& $postOf $h)"
             # The seller's own words — the real fault usually lives here.
             if ($h.PSObject.Properties['Description'] -and $h.Description) {
                 $snippet = "$($h.Description)"
@@ -66,7 +75,7 @@ function Invoke-FlipTriage {
 Task: triage the numbered listings below for this reseller. For each item estimate:
 - est_resale_gbp: realistic eBay UK sold price for the item once working (or parted out), based on the model in the title. Be conservative.
 - est_parts_cost_gbp: likely cost of parts for the fix, UK prices (laptop screen 40-70, laptop battery 20-40, laptop keyboard/palmrest 15-30, GPU fan set 10-20, SSD 20-40, watch strap 5-10, thermal paste/pads 5; 0 when nothing is needed).
-- est_net_profit_gbp: est_resale minus 13% + GBP 0.30 eBay fees, GBP 3.35 postage, the asking price, and est_parts_cost_gbp.
+- est_net_profit_gbp: est_resale minus 13% + GBP 0.30 eBay fees, the item's stated postage, the asking price, and est_parts_cost_gbp.
 - fix_difficulty: none (works / cosmetic), easy (battery swap, reseat RAM, clear CMOS, new strap, basic solder-free fix), moderate (fan swap, screen replacement, minor soldering), hard (BGA/GPU core work, water damage, unknown-cause dead boards), unknown (too little information to judge).
 - tier: hot = clears the 30% margin rule with an easy-or-none fix; worth_a_look = decent margin but moderate difficulty or uncertainty; skip = thin margin, hard fix, accessories/box-only junk, or scam-pattern listings.
 Judge fixability from the fault described ("battery doesn't hold charge" = easy; "no display" on a GPU = moderate-to-hard; "artefacting" = hard). When a seller description is provided, trust it over the title — sellers bury the real fault there ("BIOS locked", "liquid damage", "no power"). BIOS/administrator-locked or activation-locked machines are skip. Box-only, cables, brackets and other accessories are skip unless genuinely profitable as accessories.
@@ -76,10 +85,11 @@ Judge fixability from the fault described ("battery doesn't hold charge" = easy;
             -Messages @(@{ role = 'user'; content = ($itemLines -join "`n") })
         $parsed = ConvertFrom-FlipAiJson -Text $text
 
+        $out = [System.Collections.Generic.List[object]]::new()
         foreach ($t in $parsed.items) {
             if ($t.index -lt 0 -or $t.index -ge $batch.Count) { continue }
             $h = $batch[$t.index]
-            [pscustomobject]@{
+            $out.Add([pscustomobject]@{
                 ItemId        = if ($h.PSObject.Properties['ItemId']) { $h.ItemId } else { '' }
                 Title         = $h.Title
                 Price         = $h.Price
@@ -90,13 +100,40 @@ Judge fixability from the fault described ("battery doesn't hold charge" = easy;
                 EndsAt        = if ($h.PSObject.Properties['EndsAt']) { $h.EndsAt } else { '' }
                 BidCount      = if ($h.PSObject.Properties['BidCount']) { $h.BidCount } else { $null }
                 Description   = if ($h.PSObject.Properties['Description']) { $h.Description } else { '' }
+                Postage       = & $postOf $h
                 Tier          = $t.tier
                 FixDifficulty = $t.fix_difficulty
                 EstResale     = [math]::Round([double]$t.est_resale_gbp, 2)
                 PartsCost     = [math]::Round([double]$t.est_parts_cost_gbp, 2)
                 EstNetProfit  = [math]::Round([double]$t.est_net_profit_gbp, 2)
                 Note          = $t.note
-            }
+                CompsTerm     = ''
+                CompsMedian   = $null
+                CompsCount    = $null
+                GroundedNet   = $null
+            })
         }
+
+        # Ground the best AI estimates in real sold prices — the model's flat
+        # guesses drift from the market. Bounded (scraping) and deduped by
+        # extracted model term; failures leave the AI estimate standing.
+        $compsCache = @{}
+        $lookups = 0
+        foreach ($o in @($out | Where-Object { $_.Tier -ne 'skip' } | Sort-Object EstNetProfit -Descending)) {
+            if ($lookups -ge 6) { break }
+            $term = Get-FlipModelTerm -Title $o.Title
+            if (-not $compsCache.ContainsKey($term)) {
+                $lookups++
+                $compsCache[$term] = try { Get-EbaySoldComps -SearchTerm $term } catch { $null }
+            }
+            $stats = $compsCache[$term]
+            if (-not $stats) { continue }
+            $o.CompsTerm   = $term
+            $o.CompsMedian = $stats.Median
+            $o.CompsCount  = $stats.Count
+            $o.GroundedNet = [math]::Round($stats.Median * (1 - $feeRate) - $feeFixed - [double]$o.Postage - [double]$o.Price - [double]$o.PartsCost, 2)
+        }
+
+        $out
     }
 }

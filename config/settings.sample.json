@@ -33,7 +33,7 @@
     "apiKey": "",
     "_providers": "ollama = free, local (install from ollama.com, then: ollama pull llama3.1:8b). openai = any OpenAI-compatible API incl. free tiers: Groq (baseUrl https://api.groq.com/openai, model llama-3.3-70b-versatile), Gemini (baseUrl https://generativelanguage.googleapis.com/v1beta/openai, model gemini-2.5-flash), OpenRouter free models. anthropic = Claude API, paid, best quality (apiKey from console.anthropic.com, model claude-opus-4-8)."
   },
-  "_comment": "categoryIds (UK): 27386 graphics cards, 164 CPUs, 1244 motherboards, 179 desktop PCs, 177 laptops. minPrice filters out box-only/accessory noise. conditionIds: 7000 = 'For parts or not working' — the reliable broken-stock filter (sellers often don't write 'faulty' in titles); pipe-separate for several (3000 = Used).",
+  "_comment": "categoryIds (UK): 27386 graphics cards, 164 CPUs, 1244 motherboards, 179 desktop PCs, 177 laptops. minPrice filters out box-only/accessory noise. conditionIds: 7000 = 'For parts or not working' — the reliable broken-stock filter (sellers often don't write 'faulty' in titles); pipe-separate for several (3000 = Used). Per-search 'postage' overrides fees.defaultPostage for that lane's margin maths (small item ~3.35, laptop ~7.50, monitor/tower ~12).",
   "searches": [
     {
       "name": "Faulty/untested GPUs (whole category)",
@@ -69,6 +69,7 @@
       "conditionIds": "7000",
       "minPrice": 40,
       "maxPrice": 260,
+      "postage": 7.5,
       "cexQuery": "",
       "buyingOptions": "FIXED_PRICE|AUCTION"
     },
@@ -79,6 +80,7 @@
       "conditionIds": "7000",
       "minPrice": 20,
       "maxPrice": 200,
+      "postage": 7.5,
       "sort": "endingSoonest",
       "endingWithinHours": 6,
       "cexQuery": "",
@@ -90,6 +92,7 @@
       "categoryIds": "177",
       "minPrice": 40,
       "maxPrice": 260,
+      "postage": 7.5,
       "cexQuery": "",
       "buyingOptions": "FIXED_PRICE|AUCTION"
     },
