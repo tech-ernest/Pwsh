@@ -29,7 +29,7 @@ was taken from the Facebook page and is the thing being flagged, not a confirmed
 | Hero mosaic | `patio-pergola-decking.jpg`, `drive-block-paving-wide.jpg`, `groundworks-excavator.jpg` |
 | Gallery | all 23, filtered by the `data-cat` attribute on each `.shot` button |
 
-Gallery categories: `driveways` (6), `gardens` (4), `groundworks` (6), `roofing` (4), `bathrooms` (4).
+Gallery categories: `driveways` (6), `gardens` (4), `groundworks` (5), `roofing` (4), `bathrooms` (4).
 
 ## Processing applied
 

@@ -124,6 +124,8 @@
   .shot:hover img,.shot:focus-visible img{transform:scale(1.06)}
   .shot:hover::after,.shot:focus-visible::after{opacity:1}
   .shot:focus-visible{outline:3px solid var(--brand-dark);outline-offset:2px}
+  /* must come after .shot's display:block, which otherwise overrides the UA [hidden] rule */
+  .shot[hidden]{display:none}
   .shot-label{
     position:absolute;left:.75rem;right:.75rem;bottom:.6rem;z-index:2;text-align:left;
     color:#fff;font-size:.82rem;font-weight:700;opacity:0;transform:translateY(6px);
@@ -515,11 +517,6 @@
         Every job starts with a free, no-obligation quote. Ring us, drop us an email, or send
         a message and we'll come out and take a look.
       </p>
-      <p class="tbc">
-        OPTIONAL — ask Bruce for: how long he's been trading, team size, any qualifications
-        or trade memberships (CPCS/NPORS tickets, CHAS, TrustMark, FMB), and insurance cover
-        amount. Concrete numbers here beat adjectives every time.
-      </p>
     </div>
   </section>
 
@@ -614,8 +611,8 @@
           <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
           <button class="btn btn-primary" type="submit">Send enquiry</button>
           <p class="form-note">
-            We'll only use your details to reply to this enquiry.
-            <span class="tbc">Link the privacy notice here — required under UK GDPR.</span>
+            We'll only use your details to reply to this enquiry &mdash; see our
+            <a href="privacy.html">privacy notice</a>.
           </p>
         </form>
       </div>
@@ -639,6 +636,10 @@
         <strong>Find us</strong><br>
         <a href="https://www.facebook.com/share/1DWqdMNwaY/" target="_blank" rel="noopener">Facebook</a><br>
         <span class="tbc">Add the Google Business Profile link here once it exists</span>
+      </div>
+      <div>
+        <strong>Legal</strong><br>
+        <a href="privacy.html">Privacy notice</a>
       </div>
     </div>
     <div class="foot-legal">

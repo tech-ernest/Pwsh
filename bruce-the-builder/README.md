@@ -9,6 +9,7 @@ onto Netlify / Cloudflare Pages / GitHub Pages.
 ```
 bruce-the-builder/
 ├── index.html      ← the whole site (HTML + CSS + JS + schema markup)
+├── privacy.html    ← UK GDPR privacy notice, self-contained
 ├── images/         ← 23 site photos + source/ with all 54 originals
 └── README.md
 ```
@@ -116,7 +117,7 @@ price of a domain), the step-by-step launch order, and ongoing upkeep.
 | Facebook link | ✅ Wired in — footer, reviews strip and contact list all point at the page. |
 | Photo gallery | ✅ Built — 23 photos, filterable by trade, with a lightbox. Still needs his customers' permission for identifiable property shots before it goes live. |
 | Google Business Profile | He has none. For a local trade this drives more calls than a website will. Free, ~20 minutes. Do it alongside launch. |
-| Privacy notice | UK GDPR — the form collects personal data, so a privacy notice must exist and be linked. |
+| Privacy notice | ✅ Written — `privacy.html`, linked from the form and the footer. Three placeholders left: the service address, the form provider's name, and the host's name. Fill them when those are decided. |
 | Footer trading disclosure | Name done (Raitis Uzuls). Street + postcode still needed — "Peterborough" alone is not a serviceable address. |
 | Favicon | None yet. The hard-hat character from the business card would work. |
 | Cookie banner | Only needed if analytics gets added. Skipping analytics avoids it entirely. |
