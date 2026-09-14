@@ -8,11 +8,12 @@ Prices checked September 2026. All ex-VAT unless stated.
 
 | # | Item | Why it blocks |
 |---|---|---|
-| 1 | **Full name + address for service of documents** | Legally required in the footer (Companies Act 2006 ss.1202–1204). Can be a home address. Two `.tbc` placeholders are waiting for it. |
+| 1 | ~~Full name~~ → **street + postcode still needed** | Name done: Raitis Uzuls. "Peterborough" alone won't do — s.1204 needs an address where documents can be *effectively served*, so house/street and postcode are required. |
 | 2 | **Decision on "Ltd"** | Not registered at Companies House. Card, invoices, signage and the Facebook page name all need the "Ltd" removing — or he incorporates. See §5. |
 | 3 | **Insurance evidence** | The hero says "fully licensed & insured" (his own wording). Need insurer + public liability cover amount, and what "licensed" refers to. No evidence = claim comes off. |
 | 4 | **Domain name choice** | Everything else depends on it. |
 | 5 | **8–10 job photos, full resolution** | Not strictly blocking, but launching a groundworks site with no photos wastes the launch. |
+| 6 | **Does he answer to "Bruce"?** | The proprietor is Raitis Uzuls; "Bruce" is a trading persona. The mobile call bar says "Call Bruce". One-word fix either way. |
 
 Nice to have, not blocking: years trading, team size, CPCS/NPORS tickets, trade memberships.
 

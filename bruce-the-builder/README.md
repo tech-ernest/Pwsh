@@ -18,6 +18,7 @@ bruce-the-builder/
 | | |
 |---|---|
 | Trading name | Bruce the Builder UK (**not** a limited company — see below) |
+| Proprietor | Raitis Uzuls |
 | Strapline | Home and Garden Improvements |
 | Base | Bourne, Lincolnshire |
 | Phone | 07770 064663 |
@@ -60,29 +61,46 @@ once they're all resolved.
      surname)? If so, that company's details are what belong in the footer.
    - Was a company registered and since dissolved? Dissolved still means he can't use "Ltd".
 
-2. **Sole trader disclosure is now legally required in the footer.** Under
-   **Companies Act 2006 ss.1202-1204**, trading under a business name that isn't his own
-   personal name means his **full name** and an **address for service of documents** must
-   appear on the website, letterheads and invoices. Two placeholders are in the footer for
-   these. It can be a home address — there is no exemption, and no way to omit it.
-   If he objects to publishing a home address, the fix is a cheap registered-office /
-   mail-forwarding service, not leaving it off.
+2. **Sole trader disclosure — name done, address incomplete.**
+   Footer now reads "Raitis Uzuls trading as Bruce the Builder UK" (Companies Act 2006
+   ss.1202-1204).
 
-3. **A cleaner Facebook URL (optional).** The share link `facebook.com/share/1DWqdMNwaY/`
+   **"Peterborough" on its own is not enough.** The requirement is an address at which
+   documents can be *effectively served* — that means house/street and postcode.
+   A town name would not let anyone serve a claim, so it does not satisfy s.1204.
+   Two placeholders remain either side of "Peterborough" in the footer.
+
+   It can be his home address. If he doesn't want that public, a mail-forwarding
+   service is ~£30-50/year and gives a serviceable address that isn't his house.
+
+3. **"Bruce" is a trading persona, not his name.** The proprietor is Raitis Uzuls.
+   The sticky mobile bar currently says **"Call Bruce"**, which is warm, effective copy —
+   *if* he actually answers to Bruce in business. If he doesn't, a customer ringing and
+   asking for Bruce is an awkward first thirty seconds. Ask him which he prefers;
+   changing it to "Call us" is a one-word edit.
+
+4. **A cleaner Facebook URL (optional).** The share link `facebook.com/share/1DWqdMNwaY/`
    is wired in and works, but it's an opaque redirect. If the page has a vanity URL
    (`facebook.com/BruceTheBuilderUK` or similar), grab it from the browser address bar
    and swap it in — better for the `sameAs` structured data and less likely to rot.
-4. **Bourne or Spalding?** The card says Bourne, the Facebook location field says Spalding,
+5. **Bourne, Spalding or Peterborough?** Three locations now in play: the business card
+   says Bourne, the Facebook location field says Spalding, and the proprietor's address is
+   Peterborough. These can legitimately differ — trading base, page setting and home
+   address are three different things — but the site says "Based in Bourne", so confirm
+   that's the right one to lead with. Peterborough is ~25 miles from Bourne and outside
+   the nine towns he lists as his service area.
+
+   (Original note: Bourne or Spalding?) The card says Bourne, the Facebook location field says Spalding,
    and both are in his service area. Page is written Bourne-first to match the card.
    Confirm which is the trading base.
-5. **Domain name** — `canonical` and `og:url` still point at `example.co.uk`.
-6. **Verify "fully licensed & insured" before it stays on the page.** It's his own
+6. **Domain name** — `canonical` and `og:url` still point at `example.co.uk`.
+7. **Verify "fully licensed & insured" before it stays on the page.** It's his own
    public claim, reused verbatim in the hero. Given the Ltd discrepancy, it's worth
    confirming: public liability insurer and cover amount, and what "licensed" refers to
    (UK builders aren't licensed as such — it usually means CPCS/NPORS plant tickets or a
    waste carrier licence, which he'd need for muck-away). If he can't evidence it, the
    claim comes off — an unsubstantiated one breaches the CPRs.
-7. Optional but worth having: years trading, team size, CPCS/NPORS tickets, insurance
+8. Optional but worth having: years trading, team size, CPCS/NPORS tickets, insurance
    cover amount, trade memberships (CHAS, TrustMark, FMB).
 
 ## Launch, costs and upkeep
@@ -100,7 +118,7 @@ price of a domain), the step-by-step launch order, and ongoing upkeep.
 | Photo gallery | Not built yet. A before/after grid is the single highest-value addition for a groundworks firm — the work is visual and he already has the content. Needs his customers' permission for property shots. |
 | Google Business Profile | He has none. For a local trade this drives more calls than a website will. Free, ~20 minutes. Do it alongside launch. |
 | Privacy notice | UK GDPR — the form collects personal data, so a privacy notice must exist and be linked. |
-| Footer trading disclosure | Two `.tbc` placeholders — his full name and an address for service. Legally required, see above. |
+| Footer trading disclosure | Name done (Raitis Uzuls). Street + postcode still needed — "Peterborough" alone is not a serviceable address. |
 | Favicon | None yet. The hard-hat character from the business card would work. |
 | Cookie banner | Only needed if analytics gets added. Skipping analytics avoids it entirely. |
 | HTTPS | Free on any of the hosts above. Non-negotiable with a form on the page. |
