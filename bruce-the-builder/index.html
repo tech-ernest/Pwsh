@@ -58,22 +58,96 @@
   /* ---- header ---- */
   header{position:sticky;top:0;z-index:50;background:var(--ink);color:#fff;border-bottom:3px solid var(--brand)}
   .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-block:.9rem}
-  .logo{font-weight:800;font-size:1.1rem;letter-spacing:-.02em;text-decoration:none;display:flex;align-items:center;gap:.55rem}
+  .logo{font-weight:800;font-size:1.1rem;letter-spacing:-.02em;text-decoration:none;display:flex;align-items:center;gap:.55rem;white-space:nowrap}
   .logo span{color:var(--brand)}
   .nav-links{display:flex;gap:1.4rem;align-items:center}
   .nav-links a{text-decoration:none;font-weight:600;font-size:.95rem;opacity:.9}
   .nav-links a:hover{opacity:1;color:var(--brand)}
   .nav-call{white-space:nowrap}
   @media (max-width:880px){ .nav-links a:not(.nav-call){display:none} }
+  /* below 700px the sticky bottom call bar takes over, so the header button is redundant */
+  @media (max-width:700px){ .nav-call{display:none} .logo{font-size:1rem} }
 
   /* ---- hero ---- */
-  .hero{
+  /* No full-bleed background photo: the source images are 590px on the long edge,
+     and stretching one across a 1400px viewport turns it to mush. The mosaic shows
+     them at a size they can actually fill. */
+  .hero{position:relative;background:var(--ink);color:#fff;padding-block:clamp(3rem,7vw,5rem);overflow:hidden}
+  .hero::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
     background:
-      linear-gradient(rgba(20,24,29,.80),rgba(20,24,29,.90)),
-      url("images/hero.jpg") center/cover no-repeat, var(--ink-2);
-    color:#fff;padding-block:clamp(3.5rem,9vw,6.5rem);
+      radial-gradient(900px 420px at 12% -15%, rgba(242,192,20,.17), transparent 62%),
+      radial-gradient(760px 520px at 105% 115%, rgba(242,192,20,.09), transparent 60%);
   }
-  .hero-inner{max-width:770px}
+  .hero-grid{
+    position:relative;display:grid;align-items:center;
+    grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(2rem,5vw,3.6rem);
+  }
+  @media (max-width:940px){ .hero-grid{grid-template-columns:1fr;gap:2.6rem} }
+  .hero-copy{max-width:36rem}
+
+  .mosaic{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;position:relative}
+  .mosaic figure{margin:0;border-radius:var(--radius);overflow:hidden;background:var(--ink-2);box-shadow:0 16px 38px rgba(0,0,0,.45)}
+  .mosaic img{width:100%;height:100%;object-fit:cover}
+  .mosaic .lg{grid-column:1 / -1;aspect-ratio:16/10}
+  .mosaic .sm{aspect-ratio:4/3}
+  .mosaic-badge{
+    position:absolute;left:12px;top:12px;z-index:2;background:var(--brand);color:var(--brand-ink);
+    border-radius:8px;padding:.55rem .8rem;font-weight:800;line-height:1.2;font-size:.88rem;
+    box-shadow:0 8px 22px rgba(0,0,0,.45);
+  }
+  .mosaic-badge small{display:block;font-weight:700;font-size:.72rem;opacity:.72;letter-spacing:.02em}
+
+  /* ---- gallery ---- */
+  .filters{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem}
+  .filter{
+    border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:100px;
+    padding:.45rem 1rem;font:inherit;font-size:.9rem;font-weight:700;cursor:pointer;
+    transition:background .15s ease,border-color .15s ease,color .15s ease;
+  }
+  .filter:hover{border-color:var(--brand-dark)}
+  .filter[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .filter:focus-visible{outline:3px solid var(--brand-dark);outline-offset:2px}
+
+  .gallery{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(225px,1fr))}
+  /* two-up on phones: one column turns 23 photos into an endless scroll */
+  @media (max-width:560px){ .gallery{grid-template-columns:1fr 1fr;gap:.6rem} .shot-label{font-size:.72rem;left:.5rem;right:.5rem} }
+  .shot{
+    position:relative;display:block;padding:0;border:0;overflow:hidden;cursor:zoom-in;
+    border-radius:var(--radius);background:var(--ink-2);aspect-ratio:4/3;
+  }
+  .shot img{width:100%;height:100%;object-fit:cover;transition:transform .45s ease}
+  .shot::after{
+    content:"";position:absolute;inset:0;opacity:0;transition:opacity .25s ease;
+    background:linear-gradient(to top,rgba(20,24,29,.78),transparent 58%);
+  }
+  .shot:hover img,.shot:focus-visible img{transform:scale(1.06)}
+  .shot:hover::after,.shot:focus-visible::after{opacity:1}
+  .shot:focus-visible{outline:3px solid var(--brand-dark);outline-offset:2px}
+  .shot-label{
+    position:absolute;left:.75rem;right:.75rem;bottom:.6rem;z-index:2;text-align:left;
+    color:#fff;font-size:.82rem;font-weight:700;opacity:0;transform:translateY(6px);
+    transition:opacity .25s ease,transform .25s ease;
+  }
+  .shot:hover .shot-label,.shot:focus-visible .shot-label{opacity:1;transform:none}
+  @media (hover:none){ .shot::after{opacity:1} .shot-label{opacity:1;transform:none} }
+
+  /* ---- lightbox ---- */
+  .lb{border:0;padding:0;background:transparent;max-width:min(94vw,920px);width:fit-content}
+  .lb::backdrop{background:rgba(10,12,15,.9)}
+  .lb-fig{margin:0;background:var(--ink);border-radius:var(--radius);overflow:hidden;position:relative}
+  /* never enlarge past the original: these are 590px phone photos and upscaling shows */
+  .lb-fig img{display:block;width:auto;max-width:100%;max-height:72vh;margin-inline:auto;background:#0a0c0f}
+  .lb-cap{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;justify-content:space-between;color:#fff;padding:.85rem 1rem}
+  .lb-cap p{margin:0;font-size:.92rem;opacity:.9}
+  .lb-nav{display:flex;gap:.4rem;flex:none}
+  .lb-btn{
+    background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:8px;
+    width:38px;height:38px;font-size:1.05rem;cursor:pointer;line-height:1;
+  }
+  .lb-btn:hover{background:var(--brand);color:var(--brand-ink)}
+  .lb-btn:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+  .lb-count{font-size:.8rem;opacity:.6;font-weight:700;white-space:nowrap}
   .eyebrow{
     display:inline-block;background:var(--brand);color:var(--brand-ink);
     font-weight:700;font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;
@@ -82,14 +156,16 @@
   .hero p.lead{font-size:clamp(1.05rem,2.2vw,1.25rem);opacity:.93;max-width:60ch}
   .hero-cta{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.6rem}
   .hero-trust{
-    display:flex;flex-wrap:wrap;gap:1.2rem 2rem;margin-top:2.4rem;
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem 1.6rem;margin-top:2.2rem;
     padding-top:1.6rem;border-top:1px solid rgba(255,255,255,.18);
     font-size:.9rem;font-weight:600;opacity:.92;
   }
+  @media (max-width:520px){ .hero-trust{grid-template-columns:1fr} }
   .hero-trust div::before{content:"✓";color:var(--brand);font-weight:800;margin-right:.45rem}
 
   /* ---- sections ---- */
   section{padding-block:clamp(3rem,7vw,4.75rem)}
+  section[id]{scroll-margin-top:5.5rem}   /* clears the sticky header on anchor jumps */
   .alt{background:var(--bg-2);border-block:1px solid var(--line)}
   .section-head{max-width:62ch;margin-bottom:2.4rem}
   .section-head p{color:var(--muted);margin-bottom:0}
@@ -169,6 +245,7 @@
     <a class="logo" href="#top">🧱 Bruce the <span>Builder UK</span></a>
     <nav class="nav-links">
       <a href="#services">Services</a>
+      <a href="#work">Our work</a>
       <a href="#areas">Areas covered</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
@@ -181,23 +258,38 @@
 
   <!-- ============ HERO ============ -->
   <section class="hero">
-    <div class="wrap hero-inner">
-      <span class="eyebrow">Bourne, Lincolnshire · Home &amp; Garden Improvements</span>
-      <h1>Groundworks done right, from the ground up.</h1>
-      <p class="lead">
-        Excavation, foundations, drainage, driveways and landscaping for homes and businesses
-        across South Lincolnshire. Reliable team, transparent pricing, and attention to detail
-        on every project — so you can focus on building your dream.
-      </p>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="tel:+447770064663">Call 07770 064663</a>
-        <a class="btn btn-ghost" href="#contact">Get a free quote</a>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">Bourne, Lincolnshire &middot; Home &amp; Garden Improvements</span>
+        <h1>Groundworks done right, from the ground up.</h1>
+        <p class="lead">
+          Excavation, foundations, drainage, driveways and landscaping for homes and businesses
+          across South Lincolnshire. Reliable team, transparent pricing, and attention to detail
+          on every project &mdash; so you can focus on building your dream.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="tel:+447770064663">Call 07770 064663</a>
+          <a class="btn btn-ghost" href="#work">See our work</a>
+        </div>
+        <div class="hero-trust">
+          <div>Groundworks specialists</div>
+          <div>Free, no-obligation quotes</div>
+          <div>Fully licensed &amp; insured</div>
+          <div>Residential &amp; commercial</div>
+        </div>
       </div>
-      <div class="hero-trust">
-        <div>100% recommended on Facebook</div>
-        <div>Free, no-obligation quotes</div>
-        <div>Fully licensed &amp; insured</div>
-        <div>Residential &amp; commercial</div>
+
+      <div class="mosaic">
+        <figure class="lg">
+          <img src="images/patio-pergola-decking.jpg" width="590" height="385" alt="Porcelain patio and hardwood decking under a steel pergola with festoon lighting">
+        </figure>
+        <figure class="sm">
+          <img src="images/drive-block-paving-wide.jpg" width="590" height="443" alt="Wide block-paved driveway with drainage channel, finished to the kerb">
+        </figure>
+        <figure class="sm">
+          <img src="images/groundworks-excavator.jpg" width="590" height="443" alt="Tracked excavator digging out a rear garden behind a new retaining wall">
+        </figure>
+        <div class="mosaic-badge">100% recommended<small>11 reviews on Facebook</small></div>
       </div>
     </div>
   </section>
@@ -243,6 +335,137 @@
       </div>
     </div>
   </section>
+
+
+  <!-- ============ OUR WORK ============ -->
+  <section id="work" class="alt">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Recent work</h2>
+        <p>Every photo here is a real job, taken on site. Tap any of them for a closer look.</p>
+      </div>
+
+      <div class="filters" role="group" aria-label="Filter work by type">
+        <button class="filter" type="button" data-filter="all" aria-pressed="true">Everything</button>
+        <button class="filter" type="button" data-filter="driveways" aria-pressed="false">Driveways &amp; paving</button>
+        <button class="filter" type="button" data-filter="gardens" aria-pressed="false">Patios &amp; gardens</button>
+        <button class="filter" type="button" data-filter="groundworks" aria-pressed="false">Groundworks</button>
+        <button class="filter" type="button" data-filter="roofing" aria-pressed="false">Roofing &amp; solar</button>
+        <button class="filter" type="button" data-filter="bathrooms" aria-pressed="false">Bathrooms</button>
+      </div>
+
+      <div class="gallery" id="gallery">
+        <button class="shot" type="button" data-cat="gardens">
+          <img src="images/patio-pergola-decking.jpg" width="590" height="385" loading="lazy" decoding="async" alt="Porcelain patio and hardwood decking under a steel pergola with festoon lighting">
+          <span class="shot-label">Patios &amp; gardens</span>
+        </button>
+        <button class="shot" type="button" data-cat="driveways">
+          <img src="images/drive-block-paving-wide.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Wide block-paved driveway with drainage channel, finished to the kerb">
+          <span class="shot-label">Driveways &amp; paving</span>
+        </button>
+        <button class="shot" type="button" data-cat="groundworks">
+          <img src="images/groundworks-excavator.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Tracked excavator digging out a rear garden behind a new retaining wall">
+          <span class="shot-label">Groundworks</span>
+        </button>
+        <button class="shot" type="button" data-cat="gardens">
+          <img src="images/garden-lawn-turf.jpg" width="704" height="528" loading="lazy" decoding="async" alt="Freshly laid striped lawn with a raised patio and retaining wall">
+          <span class="shot-label">Patios &amp; gardens</span>
+        </button>
+        <button class="shot" type="button" data-cat="driveways">
+          <img src="images/drive-gravel-garage.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Gravel driveway with timber edging, new fencing and a garage">
+          <span class="shot-label">Driveways &amp; paving</span>
+        </button>
+        <button class="shot" type="button" data-cat="roofing">
+          <img src="images/roofing-solar-install.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Fitting solar panels on a pitched tiled roof">
+          <span class="shot-label">Roofing &amp; solar</span>
+        </button>
+        <button class="shot" type="button" data-cat="bathrooms">
+          <img src="images/bathroom-corner-bath.jpg" width="437" height="519" loading="lazy" decoding="async" alt="Corner whirlpool bath with marble-effect tiling and lit display niches">
+          <span class="shot-label">Bathrooms</span>
+        </button>
+        <button class="shot" type="button" data-cat="driveways">
+          <img src="images/drive-gravel-semi.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Wide gravel driveway laid across the full frontage of a semi-detached house">
+          <span class="shot-label">Driveways &amp; paving</span>
+        </button>
+        <button class="shot" type="button" data-cat="gardens">
+          <img src="images/patio-pergola-wide.jpg" width="590" height="385" loading="lazy" decoding="async" alt="Rear garden with decking, porcelain paving, pergola and new fencing">
+          <span class="shot-label">Patios &amp; gardens</span>
+        </button>
+        <button class="shot" type="button" data-cat="groundworks">
+          <img src="images/groundworks-concrete-slab.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Screeding a freshly poured concrete base">
+          <span class="shot-label">Groundworks</span>
+        </button>
+        <button class="shot" type="button" data-cat="roofing">
+          <img src="images/roofing-dormers.jpg" width="590" height="443" loading="lazy" decoding="async" alt="New fascias, soffits and guttering across a dormer roof">
+          <span class="shot-label">Roofing &amp; solar</span>
+        </button>
+        <button class="shot" type="button" data-cat="gardens">
+          <img src="images/garden-porcelain-patio.jpg" width="443" height="590" loading="lazy" decoding="async" alt="Porcelain paving path beside a new build with artificial lawn">
+          <span class="shot-label">Patios &amp; gardens</span>
+        </button>
+        <button class="shot" type="button" data-cat="driveways">
+          <img src="images/drive-block-paving-van.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Newly laid block paving with contrasting kerb edging, company van on the drive">
+          <span class="shot-label">Driveways &amp; paving</span>
+        </button>
+        <button class="shot" type="button" data-cat="bathrooms">
+          <img src="images/bathroom-marble-vanity.jpg" width="437" height="519" loading="lazy" decoding="async" alt="Marble-effect bathroom with fitted vanity unit and chrome towel radiator">
+          <span class="shot-label">Bathrooms</span>
+        </button>
+        <button class="shot" type="button" data-cat="roofing">
+          <img src="images/exterior-detached-house.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Detached house with gravel driveway and garage, exterior work complete">
+          <span class="shot-label">Roofing &amp; solar</span>
+        </button>
+        <button class="shot" type="button" data-cat="groundworks">
+          <img src="images/groundworks-site-clearance.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Site cleared and levelled ready for the base to go down">
+          <span class="shot-label">Groundworks</span>
+        </button>
+        <button class="shot" type="button" data-cat="driveways">
+          <img src="images/drive-block-paving-house.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Block-paved driveway and parking for three cars in front of a detached house">
+          <span class="shot-label">Driveways &amp; paving</span>
+        </button>
+        <button class="shot" type="button" data-cat="roofing">
+          <img src="images/roofing-solar-newbuild.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Completed solar panel installation on a new build">
+          <span class="shot-label">Roofing &amp; solar</span>
+        </button>
+        <button class="shot" type="button" data-cat="bathrooms">
+          <img src="images/bathroom-loft-ensuite.jpg" width="443" height="590" loading="lazy" decoding="async" alt="Loft shower room with walk-in enclosure under a pitched ceiling">
+          <span class="shot-label">Bathrooms</span>
+        </button>
+        <button class="shot" type="button" data-cat="driveways">
+          <img src="images/drive-gravel-car.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Gravel driveway and turning area leading to a garage">
+          <span class="shot-label">Driveways &amp; paving</span>
+        </button>
+        <button class="shot" type="button" data-cat="groundworks">
+          <img src="images/team-bruce-onsite.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Bruce on site during a front garden clearance">
+          <span class="shot-label">Groundworks</span>
+        </button>
+        <button class="shot" type="button" data-cat="groundworks">
+          <img src="images/groundworks-concrete-pour.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Concrete delivery on site for a new driveway base">
+          <span class="shot-label">Groundworks</span>
+        </button>
+        <button class="shot" type="button" data-cat="bathrooms">
+          <img src="images/bathroom-tiled-shower.jpg" width="443" height="590" loading="lazy" decoding="async" alt="Bath with tiled shower surround and herringbone flooring">
+          <span class="shot-label">Bathrooms</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- lightbox -->
+  <dialog class="lb" id="lightbox" aria-label="Photo viewer">
+    <figure class="lb-fig">
+      <img id="lb-img" alt="">
+      <figcaption class="lb-cap">
+        <p id="lb-cap-text"></p>
+        <span class="lb-count" id="lb-count"></span>
+        <span class="lb-nav">
+          <button class="lb-btn" type="button" id="lb-prev" aria-label="Previous photo">&#8592;</button>
+          <button class="lb-btn" type="button" id="lb-next" aria-label="Next photo">&#8594;</button>
+          <button class="lb-btn" type="button" id="lb-close" aria-label="Close viewer">&#10005;</button>
+        </span>
+      </figcaption>
+    </figure>
+  </dialog>
 
   <!-- ============ REVIEWS ============ -->
   <section class="review-strip">
@@ -438,6 +661,64 @@
 
 <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
 
+<script>
+/* Gallery filtering + lightbox. No dependencies. */
+(function () {
+  var gallery = document.getElementById('gallery');
+  var dlg = document.getElementById('lightbox');
+  if (!gallery || !dlg) return;
+
+  var shots   = Array.prototype.slice.call(gallery.querySelectorAll('.shot'));
+  var filters = Array.prototype.slice.call(document.querySelectorAll('.filter'));
+  var lbImg   = document.getElementById('lb-img');
+  var lbCap   = document.getElementById('lb-cap-text');
+  var lbCount = document.getElementById('lb-count');
+  var visible = shots.slice();
+  var index   = 0;
+
+  filters.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var cat = btn.dataset.filter;
+      filters.forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
+      shots.forEach(function (s) { s.hidden = !(cat === 'all' || s.dataset.cat === cat); });
+      visible = shots.filter(function (s) { return !s.hidden; });
+    });
+  });
+
+  function show(n) {
+    if (!visible.length) return;
+    index = (n + visible.length) % visible.length;
+    var img = visible[index].querySelector('img');
+    lbImg.src = img.src;
+    lbImg.alt = img.alt;
+    lbCap.textContent = img.alt;
+    lbCount.textContent = (index + 1) + ' / ' + visible.length;
+  }
+
+  shots.forEach(function (s) {
+    s.addEventListener('click', function () {
+      visible = shots.filter(function (x) { return !x.hidden; });
+      show(visible.indexOf(s));
+      if (dlg.showModal) { dlg.showModal(); } else { dlg.setAttribute('open', ''); }
+    });
+  });
+
+  document.getElementById('lb-prev').addEventListener('click', function () { show(index - 1); });
+  document.getElementById('lb-next').addEventListener('click', function () { show(index + 1); });
+  document.getElementById('lb-close').addEventListener('click', function () { dlg.close(); });
+
+  /* click the backdrop to dismiss */
+  dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
+
+  document.addEventListener('keydown', function (e) {
+    if (!dlg.open) return;
+    if (e.key === 'ArrowLeft')  { show(index - 1); }
+    if (e.key === 'ArrowRight') { show(index + 1); }
+  });
+})();
+</script>
+
+
 <!--
   Local SEO: this is what feeds Google's map pack.
   All values below are taken from the Facebook page and business card.
@@ -454,6 +735,12 @@
   "email": "brucethebuilderuk@gmail.com",
   "priceRange": "££",
   "sameAs": [ "https://www.facebook.com/share/1DWqdMNwaY/" ],
+  "image": [
+    "images/patio-pergola-decking.jpg",
+    "images/drive-block-paving-wide.jpg",
+    "images/groundworks-excavator.jpg",
+    "images/garden-lawn-turf.jpg"
+  ],
   "address": {
     "@type": "PostalAddress",
     "addressLocality": "Bourne",

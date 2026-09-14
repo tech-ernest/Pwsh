@@ -1,55 +1,58 @@
-# Bruce the Builder UK — website image selection
+# Site images
 
-Source: https://www.facebook.com/brucethebuilderuk (page feed, scraped 2026-09-14)
+Photos from the Bruce the Builder UK Facebook page, sorted for use on the site.
 
-## Business details found on the page
-- **Bruce the Builder UK Ltd** — "Home and Garden Improvements"
-- Bourne, Lincolnshire
-- +44 7770 064663
-- Brucethebuilderuk@gmail.com
-- Construction company · 2.9K followers
+```
+images/
+├── *.jpg      ← the 23 used on the site, cropped, compressed, named by subject
+└── source/    ← all 54 originals as uploaded, plus _SELECTION_OVERVIEW.jpg
+```
 
-## What's here
-All 53 picks sit in this one folder, named `<pick#>_<facebook-filename>.jpg`.
-The pick numbers match the labels in `_SELECTION_OVERVIEW.jpg` and in `../bruce_contact_sheets/`.
+Nothing is thrown away: `source/` keeps every original under its Facebook filename with
+its `NNN_` pick number, so any of them can be brought into the site later.
 
-Categories (kept here for reference now that the folders are gone):
+## ⚠️ "Ltd" — do not use the two branding images
 
-| Category | Pick numbers | Use for |
-|---|---|---|
-| Driveways & paving | 103, 104, 123, 199, 201, 204, 207, 215, 216, 218, 264, 270, 300 | Strongest category. Block paving + gravel drives. |
-| Patios & gardens | 3, 53, 58, 67, 85, 116, 186, 209, 217, 239, 301 | Patios, decking, artificial lawn, fencing. |
-| Bathrooms | 32, 148, 151, 174, 187, 194, 255, 312 | Best interior work — #255 and #148 are the standouts. |
-| Kitchens & interiors | 13, 36, 66, 314, 317 | Thin. Worth shooting more. |
-| Roofing, solar & exterior | 70, 77, 79, 80, 162, 229, 259 | Fascias/soffits and solar installs. |
-| Team & plant | 35, 147, 165, 173, 250, 256, 271 | "About us" / credibility shots. Real people and machines. |
-| Branding | 128, 213 | Logo + banner with phone/email. #213 is the clean one. |
+`source/128_*.jpg` (logo) and `source/213_*.jpg` (banner) both read **"BRUCE THE BUILDER UK LTD"**.
+No matching company exists on Companies House, so the business appears to be a sole trader,
+and under **Companies Act 2006 s.1194** trading under a name ending in "ltd" when you are not
+a limited company is a criminal offence. Both are deliberately excluded from the site, and
+"Ltd" is absent from `index.html` for the same reason. See the main README.
 
-## Suggested picks
-- **Hero banner:** #201, #204 or #207 (sweeping block-paved drive) — best-composed shots on the page.
-- **Second hero / services intro:** #239 (artificial lawn + patio, good sky) or #301.
-- **About page:** #250 (Bruce on site by a new brick wall) — the only decent shot of a person facing camera.
-- **Trust strip:** #216 (branded van on a finished drive) ties work and brand together.
-- **Bathroom section lead:** #255 (spa bath + rainfall shower).
+(An earlier version of this file described the business as "Bruce the Builder UK Ltd". That
+was taken from the Facebook page and is the thing being flagged, not a confirmed fact.)
 
-## Important: resolution
-These are **Facebook feed renditions, roughly 590-960px on the long edge**. Fine for gallery
-thumbnails and cards. **Not big enough for a full-width hero banner.**
+## What's used where
 
-Facebook only serves the full-size version (up to 2048px) one photo at a time through its photo
-viewer, and every click there triggers a full page navigation, so it can't be scripted in bulk.
+| Where | File |
+|---|---|
+| Hero mosaic | `patio-pergola-decking.jpg`, `drive-block-paving-wide.jpg`, `groundworks-excavator.jpg` |
+| Gallery | all 23, filtered by the `data-cat` attribute on each `.shot` button |
 
-Two ways to fix this:
-1. **Best — get the originals from Bruce's phone.** Facebook recompresses and strips EXIF on
-   upload, so even FB's "full size" is a degraded copy. Originals will be 3000px+ and much cleaner.
-2. **Manual fallback** — open a photo on Facebook, click the `...` menu, choose Download. Gets the
-   full-size copy. Only worth doing for the handful used as heroes.
+Gallery categories: `driveways` (6), `gardens` (4), `groundworks` (6), `roofing` (4), `bathrooms` (4).
 
-## Other files
-- `../bruce_photos_all/` — all 317 photos (the complete archive)
-- `../bruce_contact_sheets/` — 16 numbered contact sheets + index.txt (number to filename map)
-- `_SELECTION_OVERVIEW.jpg` — this selection on one sheet
+## Processing applied
+
+- **Watermark crop.** Five photos carried a "SHOT ON POCO X3 NFC" stamp and carousel dots
+  along the bottom. Bottom 12% cropped off: picks 67, 85, 148, 151, 187.
+- **Recompressed** to JPEG quality 82, progressive. 23 files, ~1.2MB total.
+- **Renamed** by subject rather than by Facebook's numeric filenames, for the sake of anyone
+  who has to edit this later.
+
+## Resolution — the one real constraint
+
+These are Facebook feed renditions: **590px on the long edge**, a couple slightly larger.
+That is fine for gallery cards and for the hero mosaic, both of which display them at or
+below native size. It is **not** enough for a full-width background photo, which is why the
+hero is built as a mosaic rather than a banner — stretching a 590px image across a 1400px
+viewport looks exactly as bad as it sounds.
+
+To improve on this, get the originals off Bruce's phone. Facebook recompresses and strips
+EXIF on upload, so even its "full size" copy is degraded; his originals will be 3000px+.
+With those in hand the hero could become a proper full-bleed banner.
 
 ## Rights
-These are Bruce the Builder UK's own photos. Fine to use if this is your page or you're building
-the site for them. If not, get permission before publishing.
+
+These are Bruce the Builder UK's own photos, of customers' property. Fine to use with his
+say-so. Anything showing an identifiable house — a visible number, a distinctive frontage —
+is worth clearing with the customer before it goes on a commercial site.

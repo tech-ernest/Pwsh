@@ -8,8 +8,8 @@ onto Netlify / Cloudflare Pages / GitHub Pages.
 
 ```
 bruce-the-builder/
-├── index.html      ← the whole site (HTML + CSS + schema markup)
-├── images/         ← drop hero.jpg here (the hero looks for images/hero.jpg)
+├── index.html      ← the whole site (HTML + CSS + JS + schema markup)
+├── images/         ← 23 site photos + source/ with all 54 originals
 └── README.md
 ```
 
@@ -113,9 +113,8 @@ price of a domain), the step-by-step launch order, and ongoing upkeep.
 | Item | Why |
 |---|---|
 | Wire up the contact form | It posts nowhere. Formspree / Netlify Forms / Web3Forms — see the comment above `<form>`. Point it at the gmail address. |
-| Hero image | `images/hero.jpg`. Use one of his own job photos — there are 144 posts of them. Compress to under ~300KB. See [getting the photos](#getting-his-photos-off-facebook) below. |
 | Facebook link | ✅ Wired in — footer, reviews strip and contact list all point at the page. |
-| Photo gallery | Not built yet. A before/after grid is the single highest-value addition for a groundworks firm — the work is visual and he already has the content. Needs his customers' permission for property shots. See [getting the photos](#getting-his-photos-off-facebook) below. |
+| Photo gallery | ✅ Built — 23 photos, filterable by trade, with a lightbox. Still needs his customers' permission for identifiable property shots before it goes live. |
 | Google Business Profile | He has none. For a local trade this drives more calls than a website will. Free, ~20 minutes. Do it alongside launch. |
 | Privacy notice | UK GDPR — the form collects personal data, so a privacy notice must exist and be linked. |
 | Footer trading disclosure | Name done (Raitis Uzuls). Street + postcode still needed — "Peterborough" alone is not a serviceable address. |
@@ -134,26 +133,26 @@ price of a domain), the step-by-step launch order, and ongoing upkeep.
 - `GeneralContractor` structured data with the full service catalogue, all nine
   service-area towns and a `sameAs` link to Facebook, for the Google map pack.
 
-## Getting his photos off Facebook
+## Photos
 
-The hero image and the gallery both need his job photos, and Facebook has no export for
-them. [`../facebook/Get-FacebookSavedPageImage.ps1`](../facebook) does it: save the page
-from a logged-in browser, point the script at the HTML, and it extracts the CDN links and
-downloads the originals.
+23 of his own job photos are on the page, pulled from the Facebook page and sorted into
+five trades. See [images/README.md](images/README.md) for what is used where, what was
+cropped, and the resolution ceiling.
 
-```powershell
-# Save both the Photos tab and the timeline (Ctrl+S -> Webpage, HTML Only), then:
-..\facebook\Get-FacebookSavedPageImage.ps1 -Path .\*.html -OutputDirectory .\photo-dump
-```
+**Two things still open:**
 
-Roughly 30 usable images come out of one pass, mostly 1536-2048px. Pick the best one for
-`images/hero.jpg`, compress it under ~300KB, and keep the rest for the gallery.
+1. **Permission.** The photos are of customers' property. A Facebook post is one thing, a
+   commercial website another. Worth Bruce's say-so, and the customer's for anything with a
+   visible house number.
+2. **Resolution.** They are 590px Facebook renditions. Good enough for the gallery and the
+   hero mosaic, which is why the hero is a mosaic and not a full-bleed banner. Originals off
+   Bruce's phone would be 3000px+ and would allow a proper banner.
 
-Two constraints before any of them go on the site:
+The extractor that got them off Facebook lives at
+[`../facebook/Get-FacebookSavedPageImage.ps1`](../facebook) if more are needed later.
 
-- **The links expire.** Each carries a few days of validity, so save the page and run the
-  script the same week. If it reports expired links, re-save and run again.
-- **Permission.** The photos are of customers' property. Facebook posts are one thing;
-  a commercial website is another. Get his say-so, and his customers' for anything
-  identifiable — a house front with a visible number is identifiable.
+### Not used: the two branding images
 
+The logo and banner shots both read "BRUCE THE BUILDER UK **LTD**". That is the Companies
+Act s.1194 problem described above, so neither goes anywhere near the site until he either
+incorporates or reprints. Details in [images/README.md](images/README.md).
