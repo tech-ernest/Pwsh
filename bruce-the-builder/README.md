@@ -85,6 +85,11 @@ once they're all resolved.
 7. Optional but worth having: years trading, team size, CPCS/NPORS tickets, insurance
    cover amount, trade memberships (CHAS, TrustMark, FMB).
 
+## Launch, costs and upkeep
+
+See **[LAUNCH.md](LAUNCH.md)** — blocking items, what it costs to go live (about the
+price of a domain), the step-by-step launch order, and ongoing upkeep.
+
 ## Outstanding work
 
 | Item | Why |
