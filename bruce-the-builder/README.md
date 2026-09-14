@@ -1,7 +1,8 @@
-# Bruce the Builder — landing page
+# Bruce the Builder UK — landing page
 
-Single-file static landing page for a construction firm based in Spalding, Lincolnshire,
-covering Bourne and the surrounding area.
+Single-file static landing page for **Bruce the Builder UK Ltd**, a groundworks and
+home/garden improvement company based in Bourne, Lincolnshire.
+
 No build step, no dependencies. Open `index.html` in a browser, or drop the folder
 onto Netlify / Cloudflare Pages / GitHub Pages.
 
@@ -12,88 +13,71 @@ bruce-the-builder/
 └── README.md
 ```
 
-## ⚠️ Almost nothing here is verified
+## Verified details (from the Facebook page and business card)
 
-The business does exist: a Facebook page trading as **Bruce the Build UK**, a construction
-company listed in **Spalding**, with ~2,900 followers. That's the only confirmed source.
-There is no Companies House entry, no Checkatrade/MyBuilder/FMB profile and no website
-that could be found.
+| | |
+|---|---|
+| Trading name | Bruce the Builder UK Ltd |
+| Strapline | Home and Garden Improvements |
+| Base | Bourne, Lincolnshire |
+| Phone | 07770 064663 |
+| Email | brucethebuilderuk@gmail.com |
+| Hours | Always open |
+| Price band | ££ |
+| Reviews | 100% recommend, 11 reviews (Facebook) |
+| Following | 2.9K followers, 144 posts |
+| Areas served | Holbeach · Sleaford · Thurlby · Bourne · Market Deeping · Baston · Spalding · Stamford · Grantham |
 
-**Location conflict — resolve this first.** The brief said Bourne; Facebook says Spalding.
-They are ~10 miles apart. The page is currently written Spalding-first with Bourne as a
-covered area, and phone placeholders use the Spalding 01775 dialling code (Bourne is 01778).
-Flip it back if the brief was right.
+**Services** (from the pinned Facebook post — groundworks is the specialism):
+excavation & site preparation · foundations & concrete work · drainage & surface water
+management · driveways & paths · landscaping & garden solutions · demolition & earthmoving.
+Residential and commercial.
 
-Everything else — phone, email, address, years trading, insurance, the follower count —
-is a placeholder, highlighted yellow on the page via the `.tbc` CSS class.
-Search the file for `tbc`, `example.co.uk`, `000000`, `PE11 XXX` and `TBC`.
-Once the real details are in, delete the `.tbc` rule from the `<style>` block.
+Claims he already makes publicly and which are reused on the page verbatim:
+reliable & experienced team, fully licensed & insured, affordable & transparent pricing,
+attention to detail, free no-obligation quotes.
 
-Do not go live with fake numbers or invented accreditations — for a trade business
-that is a legal problem (ASA/CPRs), not just a cosmetic one.
+## Still to confirm with Bruce
 
-## First job: mine the Facebook page
+Placeholders are highlighted yellow on the page via the `.tbc` CSS class —
+search `index.html` for `tbc`. Delete the `.tbc` rule from the `<style>` block
+once they're all resolved.
 
-A page with 2.9k followers is a content goldmine and it is the single best source
-available. Pull from it before asking Bruce anything:
+1. **Company number, registered office and VAT number.** The card says "LTD" but no
+   matching Companies House record could be found from here (the register itself was
+   unreachable — this is not proof either way). If it *is* registered, the number,
+   registered office address and VAT number are legally required on the website under
+   the Companies Act 2006. If it *isn't*, the "Ltd" needs to come off the card and the
+   site — trading as a limited company when you aren't is an offence. **Check this first.**
+2. **The Facebook page URL** — three placeholder links point at `#` (footer, reviews
+   strip, contact list). The 2.9K following is his strongest asset; link it properly.
+3. **Bourne or Spalding?** The card says Bourne, the Facebook location field says Spalding,
+   and both are in his service area. Page is written Bourne-first to match the card.
+   Confirm which is the trading base.
+4. **Domain name** — `canonical` and `og:url` still point at `example.co.uk`.
+5. Optional but worth having: years trading, team size, CPCS/NPORS tickets, insurance
+   cover amount, trade memberships (CHAS, TrustMark, FMB).
 
-- **Photos of completed jobs** — already public, already his, no new shoot needed.
-- **Reviews / recommendations** — real social proof for the page.
-- **Contact details** — the About tab usually has the phone, email and service area.
-- **Services actually offered** — the search trail suggests "extension and new build
-  specialist", which is how the page is now written. Confirm it.
-- **Posting activity** — tells you whether he'll keep a website updated or whether
-  Facebook should stay his main channel with the site as a shopfront.
-
-Link the Facebook page from the site footer (placeholder is in there) — for a trade
-business with that following, it's a stronger trust signal than anything written copy does.
-
-## Questions to ask the client before go-live
-
-**Contact & identity**
-- Landline, mobile, email — which is the one they actually want ringing?
-- Sole trader or limited company? If Ltd: company number, registered address, VAT number
-  (legally required on a UK business website).
-- Full trading address / postcode, or does he only want the town shown?
-- Bourne or Spalding — which is the base, and which is the service area?
-- Is "Bruce the Build UK" the trading name, or is the website going out as "Bruce the Builder"?
-- Opening hours, and whether they take emergency call-outs.
-
-**Credibility (this is what converts on a trade site)**
-- Years trading, size of team.
-- Insurance: public liability cover amount, insurer.
-- Memberships/accreditations: FMB, TrustMark, CHAS, NHBC, Gas Safe, NICEIC, Part P.
-- Existing reviews — the Facebook page recommendations, plus Google Business Profile
-  and Checkatrade if he has them. Link them.
-- Photos of finished jobs. Ten decent before/after shots beat any amount of copy.
-  Need the client's permission for any photo of a customer's property.
-
-**Scope**
-- Which services are real? The six on the page lead with extensions and new builds
-  based on the Facebook trail — confirm, and cut what he doesn't do.
-- Realistic travel radius. Towns listed are guesses around a Spalding base.
-- Domain name — registered already or does it need buying?
-- Who receives form enquiries, and does anyone check that inbox daily?
-
-## Things that still need doing
+## Outstanding work
 
 | Item | Why |
 |---|---|
-| Wire up the contact form | It posts nowhere. Use Formspree, Netlify Forms or Web3Forms — see the comment above the `<form>` tag. |
-| Google Business Profile | For a local trade this drives more calls than the website. Free. Do it first. |
-| Privacy notice | UK GDPR — the form collects personal data, so a privacy notice must be linked. |
-| Cookie banner | Only if analytics is added. No analytics = no banner needed. Keep it that way if possible. |
-| Hero image | `images/hero.jpg` — a real photo of his work, not a stock photo. Compress it, keep under ~300KB. |
-| Favicon | Currently none. |
-| Fix the `og:` and canonical URLs | Both point at `example.co.uk`. |
-| Link the real Facebook page | Footer placeholder. 2.9k followers is the best trust signal available. |
-| Schema.org JSON-LD | At the bottom of `index.html`. Real data only — wrong structured data hurts local ranking. |
-| HTTPS | Free on any of the hosts above. Non-negotiable if a form collects details. |
+| Wire up the contact form | It posts nowhere. Formspree / Netlify Forms / Web3Forms — see the comment above `<form>`. Point it at the gmail address. |
+| Hero image | `images/hero.jpg`. Use one of his own job photos — there are 144 posts of them. Compress to under ~300KB. |
+| Photo gallery | Not built yet. A before/after grid is the single highest-value addition for a groundworks firm — the work is visual and he already has the content. Needs his customers' permission for property shots. |
+| Google Business Profile | He has none. For a local trade this drives more calls than a website will. Free, ~20 minutes. Do it alongside launch. |
+| Privacy notice | UK GDPR — the form collects personal data, so a privacy notice must exist and be linked. |
+| Favicon | None yet. The hard-hat character from the business card would work. |
+| Cookie banner | Only needed if analytics gets added. Skipping analytics avoids it entirely. |
+| HTTPS | Free on any of the hosts above. Non-negotiable with a form on the page. |
 
-## Built-in already
+## Built in already
 
-- Responsive down to ~320px; sticky tap-to-call bar on mobile.
-- Tap-to-call `tel:` links throughout (the main conversion action for a builder).
+- Brand colours pulled from the business card: hi-vis yellow `#f2c014` on near-black `#14181d`.
+- Responsive to 320px; sticky tap-to-call bar on mobile.
+- `tel:` links throughout — a phone call is the conversion action for this business.
+- Social proof strip using the real Facebook review count.
 - Semantic HTML, labelled form fields, visible focus outlines.
-- Spam honeypot field on the form.
-- LocalBusiness structured data scaffold for the Google map pack.
+- Spam honeypot on the form.
+- `GeneralContractor` structured data with the full service catalogue and all nine
+  service-area towns, for the Google map pack.

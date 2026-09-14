@@ -3,29 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bruce the Builder | Builders in Spalding &amp; Bourne, Lincolnshire</title>
-<meta name="description" content="Bruce the Builder — extensions, new builds, renovations and brickwork across Spalding, Bourne and South Lincolnshire. Free, no-obligation quotes.">
+<title>Bruce the Builder UK | Groundworks &amp; Home Improvements, Bourne</title>
+<meta name="description" content="Bruce the Builder UK Ltd — groundworks, foundations, drainage, driveways and landscaping across Bourne, Spalding, Stamford and South Lincolnshire. Free, no-obligation quotes. Call 07770 064663.">
 <link rel="canonical" href="https://www.example.co.uk/">
 <meta name="theme-color" content="#12171d">
 
-<!-- Open Graph / social preview -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="Bruce the Builder | Builders in Spalding &amp; Bourne, Lincolnshire">
-<meta property="og:description" content="Extensions, new builds, renovations and brickwork across Spalding, Bourne and South Lincolnshire.">
+<meta property="og:title" content="Bruce the Builder UK | Groundworks &amp; Home Improvements">
+<meta property="og:description" content="Groundworks, foundations, drainage, driveways and landscaping across Bourne, Spalding, Stamford and South Lincolnshire.">
 <meta property="og:locale" content="en_GB">
 
 <style>
-  /* ---- tokens ---- */
+  /* ---- tokens: hi-vis yellow + black, taken from the business card ---- */
   :root{
-    --ink:#12171d;
+    --ink:#14181d;
     --ink-2:#2b3440;
     --muted:#5b6673;
-    --line:#e2e6ea;
+    --line:#e3e6ea;
     --bg:#ffffff;
-    --bg-2:#f5f6f8;
-    --brand:#e8871e;        /* hi-vis amber */
-    --brand-dark:#b6650f;
-    --brand-ink:#12171d;
+    --bg-2:#f6f7f8;
+    --brand:#f2c014;
+    --brand-dark:#d1a200;
+    --brand-ink:#14181d;
     --radius:10px;
     --wrap:1120px;
     --font:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
@@ -33,10 +32,7 @@
 
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{
-    margin:0;font-family:var(--font);color:var(--ink);background:var(--bg);
-    line-height:1.6;-webkit-font-smoothing:antialiased;
-  }
+  body{margin:0;font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
   img{max-width:100%;display:block}
   a{color:inherit}
   .wrap{max-width:var(--wrap);margin-inline:auto;padding-inline:20px}
@@ -50,48 +46,45 @@
   .btn{
     display:inline-flex;align-items:center;gap:.5rem;
     padding:.85rem 1.4rem;border-radius:var(--radius);
-    font-weight:700;font-size:1rem;text-decoration:none;border:2px solid transparent;
+    font-weight:700;font-size:1rem;text-decoration:none;border:2px solid transparent;cursor:pointer;
     transition:transform .08s ease, background .15s ease, border-color .15s ease;
   }
   .btn:active{transform:translateY(1px)}
   .btn-primary{background:var(--brand);color:var(--brand-ink)}
-  .btn-primary:hover{background:var(--brand-dark);color:#fff}
-  .btn-ghost{border-color:currentColor}
+  .btn-primary:hover{background:var(--brand-dark)}
+  .btn-ghost{border-color:currentColor;color:#fff}
   .btn-ghost:hover{background:rgba(255,255,255,.12)}
 
   /* ---- header ---- */
-  header{
-    position:sticky;top:0;z-index:50;background:var(--ink);color:#fff;
-    border-bottom:3px solid var(--brand);
-  }
+  header{position:sticky;top:0;z-index:50;background:var(--ink);color:#fff;border-bottom:3px solid var(--brand)}
   .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-block:.9rem}
-  .logo{font-weight:800;font-size:1.15rem;letter-spacing:-.02em;text-decoration:none;display:flex;align-items:center;gap:.55rem}
+  .logo{font-weight:800;font-size:1.1rem;letter-spacing:-.02em;text-decoration:none;display:flex;align-items:center;gap:.55rem}
   .logo span{color:var(--brand)}
   .nav-links{display:flex;gap:1.4rem;align-items:center}
   .nav-links a{text-decoration:none;font-weight:600;font-size:.95rem;opacity:.9}
   .nav-links a:hover{opacity:1;color:var(--brand)}
   .nav-call{white-space:nowrap}
-  @media (max-width:820px){ .nav-links a:not(.nav-call){display:none} }
+  @media (max-width:880px){ .nav-links a:not(.nav-call){display:none} }
 
   /* ---- hero ---- */
   .hero{
     background:
-      linear-gradient(rgba(18,23,29,.78),rgba(18,23,29,.88)),
+      linear-gradient(rgba(20,24,29,.80),rgba(20,24,29,.90)),
       url("images/hero.jpg") center/cover no-repeat, var(--ink-2);
     color:#fff;padding-block:clamp(3.5rem,9vw,6.5rem);
   }
-  .hero-inner{max-width:760px}
+  .hero-inner{max-width:770px}
   .eyebrow{
     display:inline-block;background:var(--brand);color:var(--brand-ink);
     font-weight:700;font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;
     padding:.35rem .7rem;border-radius:4px;margin-bottom:1.1rem;
   }
-  .hero p.lead{font-size:clamp(1.05rem,2.2vw,1.25rem);opacity:.92;max-width:60ch}
+  .hero p.lead{font-size:clamp(1.05rem,2.2vw,1.25rem);opacity:.93;max-width:60ch}
   .hero-cta{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.6rem}
   .hero-trust{
     display:flex;flex-wrap:wrap;gap:1.2rem 2rem;margin-top:2.4rem;
     padding-top:1.6rem;border-top:1px solid rgba(255,255,255,.18);
-    font-size:.9rem;font-weight:600;opacity:.9;
+    font-size:.9rem;font-weight:600;opacity:.92;
   }
   .hero-trust div::before{content:"✓";color:var(--brand);font-weight:800;margin-right:.45rem}
 
@@ -104,41 +97,38 @@
   /* ---- services ---- */
   .grid{display:grid;gap:1.2rem;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
   .card{
-    background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);
-    padding:1.5rem;transition:border-color .15s ease, box-shadow .15s ease;
+    background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:1.5rem;
+    transition:border-color .15s ease, box-shadow .15s ease;
   }
-  .card:hover{border-color:var(--brand);box-shadow:0 6px 20px rgba(18,23,29,.07)}
+  .card:hover{border-color:var(--brand);box-shadow:0 6px 20px rgba(20,24,29,.08)}
   .card h3{margin-bottom:.35rem}
   .card p{color:var(--muted);font-size:.95rem;margin-bottom:0}
-  .card .ico{
-    width:42px;height:42px;border-radius:8px;background:var(--brand);
-    display:grid;place-items:center;margin-bottom:1rem;font-size:1.25rem;
+  .card .ico{width:42px;height:42px;border-radius:8px;background:var(--brand);display:grid;place-items:center;margin-bottom:1rem;font-size:1.25rem}
+
+  /* ---- reviews strip ---- */
+  .review-strip{
+    background:var(--ink);color:#fff;text-align:center;
+    padding-block:clamp(2.25rem,5vw,3rem);
   }
+  .stars{color:var(--brand);font-size:1.5rem;letter-spacing:.15em}
+  .review-strip .big{font-size:clamp(1.4rem,3.5vw,1.9rem);font-weight:800;margin:.6rem 0 .2rem;letter-spacing:-.02em}
+  .review-strip .sub{opacity:.72;font-size:.92rem;margin:0}
 
   /* ---- areas ---- */
   .pills{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1.4rem}
-  .pill{
-    background:var(--bg);border:1px solid var(--line);border-radius:100px;
-    padding:.4rem .9rem;font-size:.9rem;font-weight:600;
-  }
+  .pill{background:var(--bg);border:1px solid var(--line);border-radius:100px;padding:.4rem .9rem;font-size:.9rem;font-weight:600}
 
   /* ---- contact ---- */
   .contact-grid{display:grid;gap:2.5rem;grid-template-columns:1fr 1fr;align-items:start}
   @media (max-width:860px){ .contact-grid{grid-template-columns:1fr} }
 
   .contact-list{list-style:none;padding:0;margin:0 0 1.5rem}
-  .contact-list li{
-    display:flex;gap:.9rem;align-items:flex-start;
-    padding:1rem 0;border-bottom:1px solid var(--line);
-  }
+  .contact-list li{display:flex;gap:.9rem;align-items:flex-start;padding:1rem 0;border-bottom:1px solid var(--line)}
   .contact-list li:last-child{border-bottom:0}
   .contact-list .k{font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
-  .contact-list .v{font-size:1.1rem;font-weight:700;text-decoration:none}
+  .contact-list .v{font-size:1.1rem;font-weight:700;text-decoration:none;word-break:break-word}
   .contact-list .v:hover{color:var(--brand-dark)}
-  .contact-list .badge{
-    width:38px;height:38px;flex:none;border-radius:8px;background:var(--brand);
-    display:grid;place-items:center;font-size:1.05rem;
-  }
+  .contact-list .badge{width:38px;height:38px;flex:none;border-radius:8px;background:var(--brand);display:grid;place-items:center;font-size:1.05rem}
 
   form{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:1.6rem}
   .field{margin-bottom:1rem}
@@ -147,46 +137,42 @@
     width:100%;padding:.7rem .8rem;border:1px solid var(--line);border-radius:8px;
     font:inherit;font-size:.98rem;background:var(--bg);color:var(--ink);
   }
-  input:focus,textarea:focus,select:focus{outline:2px solid var(--brand);outline-offset:1px;border-color:var(--brand)}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--brand-dark);outline-offset:1px;border-color:var(--brand-dark)}
   textarea{min-height:120px;resize:vertical}
-  .hp{position:absolute;left:-9999px}        /* honeypot */
+  .hp{position:absolute;left:-9999px}
   .form-note{font-size:.82rem;color:var(--muted);margin:1rem 0 0}
 
   /* ---- footer ---- */
   footer{background:var(--ink);color:#fff;padding-block:2.5rem;font-size:.9rem}
   footer a{color:var(--brand)}
   .foot-grid{display:flex;flex-wrap:wrap;gap:1.5rem 3rem;justify-content:space-between;align-items:flex-start}
-  .foot-legal{opacity:.6;font-size:.82rem;margin-top:1.8rem;padding-top:1.2rem;border-top:1px solid rgba(255,255,255,.15)}
+  .foot-legal{opacity:.62;font-size:.82rem;margin-top:1.8rem;padding-top:1.2rem;border-top:1px solid rgba(255,255,255,.15)}
 
   /* ---- sticky mobile call bar ---- */
   .callbar{
     position:fixed;inset:auto 0 0 0;z-index:60;display:none;
-    background:var(--brand);color:var(--brand-ink);
-    text-align:center;font-weight:800;padding:.95rem;text-decoration:none;
-    box-shadow:0 -2px 14px rgba(0,0,0,.2);
+    background:var(--brand);color:var(--brand-ink);text-align:center;font-weight:800;
+    padding:.95rem;text-decoration:none;box-shadow:0 -2px 14px rgba(0,0,0,.2);
   }
-  @media (max-width:700px){
-    .callbar{display:block}
-    body{padding-bottom:3.6rem}
-  }
+  @media (max-width:700px){ .callbar{display:block} body{padding-bottom:3.6rem} }
 
-  /* ---- TBC placeholder marker: delete the rule once real content is in ---- */
+  /* ---- placeholder marker: delete this rule once the real values are in ---- */
   .tbc{background:#fff3cd;color:#7a5a00;border-bottom:1px dashed #c9a227;padding:0 .2em;font-style:normal}
 </style>
 </head>
 <body>
 
-<a class="callbar" href="tel:+441775000000">📞 Call Bruce — <span class="tbc">01775 000 000</span></a>
+<a class="callbar" href="tel:+447770064663">📞 Call Bruce — 07770 064663</a>
 
 <header>
   <div class="wrap nav">
-    <a class="logo" href="#top">🧱 Bruce <span>the Builder</span></a>
+    <a class="logo" href="#top">🧱 Bruce the <span>Builder UK</span></a>
     <nav class="nav-links">
       <a href="#services">Services</a>
       <a href="#areas">Areas covered</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
-      <a class="btn btn-primary nav-call" href="tel:+441775000000">Call <span class="tbc">01775 000 000</span></a>
+      <a class="btn btn-primary nav-call" href="tel:+447770064663">07770 064663</a>
     </nav>
   </div>
 </header>
@@ -196,22 +182,22 @@
   <!-- ============ HERO ============ -->
   <section class="hero">
     <div class="wrap hero-inner">
-      <span class="eyebrow">Spalding, Bourne &amp; South Lincolnshire</span>
-      <h1>Building work done properly, first time.</h1>
+      <span class="eyebrow">Bourne, Lincolnshire · Home &amp; Garden Improvements</span>
+      <h1>Groundworks done right, from the ground up.</h1>
       <p class="lead">
-        Extension and new build specialists, plus renovations and brickwork for homes and
-        businesses across Spalding, Bourne and South Lincolnshire. Straight answers, fair
-        prices and a tidy site — every job, every time.
+        Excavation, foundations, drainage, driveways and landscaping for homes and businesses
+        across South Lincolnshire. Reliable team, transparent pricing, and attention to detail
+        on every project — so you can focus on building your dream.
       </p>
       <div class="hero-cta">
-        <a class="btn btn-primary" href="tel:+441775000000">Call <span class="tbc">01775 000 000</span></a>
+        <a class="btn btn-primary" href="tel:+447770064663">Call 07770 064663</a>
         <a class="btn btn-ghost" href="#contact">Get a free quote</a>
       </div>
       <div class="hero-trust">
-        <div><span class="tbc">XX</span> years in the trade</div>
+        <div>100% recommended on Facebook</div>
         <div>Free, no-obligation quotes</div>
-        <div>Fully insured</div>
-        <div><span class="tbc">2,900+</span> followers on Facebook</div>
+        <div>Fully licensed &amp; insured</div>
+        <div>Residential &amp; commercial</div>
       </div>
     </div>
   </section>
@@ -221,40 +207,53 @@
     <div class="wrap">
       <div class="section-head">
         <h2>What we do</h2>
-        <p>Extensions and new builds are our speciality — but from a single garden wall upwards, if it needs building, we build it.</p>
+        <p>Groundworks is our speciality — but we handle home and garden improvements right through to the finish.</p>
       </div>
       <div class="grid">
         <article class="card">
-          <div class="ico">🏠</div>
-          <h3>Extensions</h3>
-          <p>Single and two-storey extensions, from foundations to final finish, managed end to end.</p>
-        </article>
-        <article class="card">
-          <div class="ico">🧱</div>
-          <h3>Brickwork &amp; groundwork</h3>
-          <p>Garden walls, repointing, footings, patios and driveways built to last the Lincolnshire weather.</p>
-        </article>
-        <article class="card">
-          <div class="ico">🔨</div>
-          <h3>Renovations</h3>
-          <p>Full property refurbishments, knock-throughs, structural alterations and barn conversions.</p>
-        </article>
-        <article class="card">
-          <div class="ico">🚪</div>
-          <h3>Conversions</h3>
-          <p>Loft and garage conversions that turn dead space into a room you'll actually use.</p>
-        </article>
-        <article class="card">
-          <div class="ico">🛠️</div>
-          <h3>General building</h3>
-          <p>Roofing repairs, plastering, carpentry and the smaller jobs other firms won't take on.</p>
+          <div class="ico">🚜</div>
+          <h3>Excavation &amp; site preparation</h3>
+          <p>Clearing and levelling your site properly, so everything built on top of it stands straight.</p>
         </article>
         <article class="card">
           <div class="ico">🏗️</div>
-          <h3>New builds</h3>
-          <p>Complete new build homes taken from groundworks through to handover.</p>
+          <h3>Foundations &amp; concrete work</h3>
+          <p>Footings, slabs and concrete bases laid to spec for extensions, garages and new builds.</p>
+        </article>
+        <article class="card">
+          <div class="ico">💧</div>
+          <h3>Drainage &amp; surface water</h3>
+          <p>New drainage runs, soakaways and surface water management — essential on flat Lincolnshire ground.</p>
+        </article>
+        <article class="card">
+          <div class="ico">🚗</div>
+          <h3>Driveways &amp; paths</h3>
+          <p>Block paving, gravel and concrete driveways and paths, built on a base that won't sink.</p>
+        </article>
+        <article class="card">
+          <div class="ico">🌱</div>
+          <h3>Landscaping &amp; garden solutions</h3>
+          <p>Patios, retaining walls, turfing and full garden transformations.</p>
+        </article>
+        <article class="card">
+          <div class="ico">🔨</div>
+          <h3>Demolition &amp; earthmoving</h3>
+          <p>Outbuildings down, muck shifted and the site left clear and ready for the next stage.</p>
         </article>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ REVIEWS ============ -->
+  <section class="review-strip">
+    <div class="wrap">
+      <div class="stars" aria-hidden="true">★★★★★</div>
+      <p class="big">100% recommend — 11 reviews</p>
+      <p class="sub">
+        Rated by customers on our
+        <a class="tbc" href="#" style="color:var(--brand)">Facebook page</a>,
+        followed by over 2,900 people.
+      </p>
     </div>
   </section>
 
@@ -263,23 +262,18 @@
     <div class="wrap">
       <div class="section-head">
         <h2>Areas we cover</h2>
-        <p>Based in Spalding, working across South Lincolnshire, Rutland and North Cambridgeshire. Not on the list? Ask anyway.</p>
+        <p>Based in Bourne, working right across South Lincolnshire. Not on the list? Give us a ring anyway.</p>
       </div>
       <div class="pills">
-        <span class="pill">Spalding</span>
         <span class="pill">Bourne</span>
+        <span class="pill">Spalding</span>
         <span class="pill">Stamford</span>
+        <span class="pill">Grantham</span>
+        <span class="pill">Sleaford</span>
         <span class="pill">Market Deeping</span>
         <span class="pill">Holbeach</span>
-        <span class="pill">Pinchbeck</span>
-        <span class="pill">Moulton</span>
-        <span class="pill">Deeping St James</span>
-        <span class="pill">Morton</span>
         <span class="pill">Thurlby</span>
-        <span class="pill">Billingborough</span>
-        <span class="pill">Peterborough</span>
-        <span class="pill">Sleaford</span>
-        <span class="pill">Oakham</span>
+        <span class="pill">Baston</span>
       </div>
     </div>
   </section>
@@ -287,11 +281,21 @@
   <!-- ============ ABOUT ============ -->
   <section id="about">
     <div class="wrap section-head">
-      <h2>About Bruce the Builder</h2>
+      <h2>About Bruce the Builder UK</h2>
+      <p>
+        We're a Lincolnshire groundworks and home improvement company working out of Bourne,
+        covering everything from a new garden patio to full commercial site preparation.
+        Residential or commercial, the approach is the same: a reliable, experienced team,
+        pricing you can actually understand, and a job finished on time and to standard.
+      </p>
+      <p>
+        Every job starts with a free, no-obligation quote. Ring us, drop us an email, or send
+        a message and we'll come out and take a look.
+      </p>
       <p class="tbc">
-        PLACEHOLDER — replace with the real story from Bruce: when he started, what he trained in,
-        who's on the team, the kind of work he's proudest of, and any trade memberships
-        (FMB, TrustMark, NHBC, CHAS) or qualifications. Two short paragraphs is plenty.
+        OPTIONAL — ask Bruce for: how long he's been trading, team size, any qualifications
+        or trade memberships (CPCS/NPORS tickets, CHAS, TrustMark, FMB), and insurance cover
+        amount. Concrete numbers here beat adjectives every time.
       </p>
     </div>
   </section>
@@ -301,7 +305,7 @@
     <div class="wrap">
       <div class="section-head">
         <h2>Get in touch</h2>
-        <p>Tell us what you're planning and we'll come out, take a look and give you an honest price.</p>
+        <p>Tell us what you're planning and we'll come out, take a look and give you an honest price — free, with no obligation.</p>
       </div>
 
       <div class="contact-grid">
@@ -311,50 +315,50 @@
               <span class="badge">📞</span>
               <span>
                 <span class="k">Phone</span><br>
-                <a class="v tbc" href="tel:+441775000000">01775 000 000</a>
-              </span>
-            </li>
-            <li>
-              <span class="badge">📱</span>
-              <span>
-                <span class="k">Mobile</span><br>
-                <a class="v tbc" href="tel:+447000000000">07000 000 000</a>
+                <a class="v" href="tel:+447770064663">07770 064663</a>
               </span>
             </li>
             <li>
               <span class="badge">✉️</span>
               <span>
                 <span class="k">Email</span><br>
-                <a class="v tbc" href="mailto:hello@example.co.uk">hello@example.co.uk</a>
+                <a class="v" href="mailto:brucethebuilderuk@gmail.com">brucethebuilderuk@gmail.com</a>
               </span>
             </li>
             <li>
               <span class="badge">📍</span>
               <span>
                 <span class="k">Based in</span><br>
-                <span class="v">Spalding, Lincolnshire <span class="tbc">PE11 XXX</span></span>
+                <span class="v">Bourne, Lincolnshire</span>
               </span>
             </li>
             <li>
               <span class="badge">🕗</span>
               <span>
-                <span class="k">Opening hours</span><br>
-                <span class="v tbc">Mon–Fri 7:30am–5pm · Sat 8am–1pm</span>
+                <span class="k">Hours</span><br>
+                <span class="v">Always open</span>
+              </span>
+            </li>
+            <li>
+              <span class="badge">💬</span>
+              <span>
+                <span class="k">Social</span><br>
+                <a class="v tbc" href="#">Message us on Facebook</a>
               </span>
             </li>
           </ul>
         </div>
 
         <!--
-          FORM SETUP: this posts nowhere until you wire it up.
-          Easiest options, no server needed:
+          FORM SETUP: this posts nowhere until it is wired up.
+          No-server options:
             • Formspree  — action="https://formspree.io/f/XXXXXXX"
-            • Netlify    — add  netlify  and  data-netlify="true"  attributes
+            • Netlify    — add  netlify  and  data-netlify="true"
             • Web3Forms  — action="https://api.web3forms.com/submit" + hidden access_key
-          Until then the honeypot field and required attributes are already in place.
+          Point it at brucethebuilderuk@gmail.com.
         -->
         <form action="#" method="POST">
-          <h3>Request a quote</h3>
+          <h3>Request a free quote</h3>
           <div class="field">
             <label for="name">Your name</label>
             <input id="name" name="name" type="text" autocomplete="name" required>
@@ -370,12 +374,13 @@
           <div class="field">
             <label for="job">Type of work</label>
             <select id="job" name="job">
-              <option>Extension</option>
-              <option>Renovation</option>
-              <option>Brickwork / groundwork</option>
-              <option>Loft or garage conversion</option>
-              <option>General building</option>
-              <option>Commercial</option>
+              <option>Excavation &amp; site preparation</option>
+              <option>Foundations &amp; concrete</option>
+              <option>Drainage &amp; surface water</option>
+              <option>Driveway or path</option>
+              <option>Landscaping &amp; garden</option>
+              <option>Demolition &amp; earthmoving</option>
+              <option>Home improvements</option>
               <option>Something else</option>
             </select>
           </div>
@@ -383,12 +388,11 @@
             <label for="message">Tell us about the job</label>
             <textarea id="message" name="message" required></textarea>
           </div>
-          <!-- spam honeypot: bots fill it, humans never see it -->
           <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
           <button class="btn btn-primary" type="submit">Send enquiry</button>
           <p class="form-note">
             We'll only use your details to reply to this enquiry.
-            <span class="tbc">Add a link to the privacy notice here (required under UK GDPR).</span>
+            <span class="tbc">Link the privacy notice here — required under UK GDPR.</span>
           </p>
         </form>
       </div>
@@ -400,24 +404,26 @@
   <div class="wrap">
     <div class="foot-grid">
       <div>
-        <div class="logo" style="margin-bottom:.6rem">🧱 Bruce <span>the Builder</span></div>
-        <div>Extension &amp; new build specialists — Spalding, Lincolnshire</div>
+        <div class="logo" style="margin-bottom:.6rem">🧱 Bruce the <span>Builder UK</span></div>
+        <div>Groundworks · Home &amp; Garden Improvements<br>Bourne, Lincolnshire</div>
       </div>
       <div>
         <strong>Contact</strong><br>
-        <a class="tbc" href="tel:+441775000000">01775 000 000</a><br>
-        <a class="tbc" href="mailto:hello@example.co.uk">hello@example.co.uk</a>
+        <a href="tel:+447770064663">07770 064663</a><br>
+        <a href="mailto:brucethebuilderuk@gmail.com">brucethebuilderuk@gmail.com</a>
       </div>
       <div>
         <strong>Find us</strong><br>
-        <a class="tbc" href="#">Facebook</a> ·
-        <a class="tbc" href="#">Checkatrade</a> ·
-        <a class="tbc" href="#">Google reviews</a>
+        <a class="tbc" href="#">Facebook</a>
+        <span class="tbc">— add Google Business Profile once it exists</span>
       </div>
     </div>
     <div class="foot-legal">
-      &copy; <span id="yr">2026</span> Bruce the Builder.
-      <span class="tbc">Company no. / VAT no. / registered address go here if it's a limited company — legally required on the website.</span>
+      &copy; <span id="yr">2026</span> Bruce the Builder UK Ltd.
+      <span class="tbc">
+        Company registration number, registered office address and VAT number go here —
+        legally required for a limited company (Companies Act 2006). Get these from Bruce.
+      </span>
     </div>
   </div>
 </footer>
@@ -425,36 +431,55 @@
 <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
 
 <!--
-  Local SEO: this block is what puts the business in Google's map pack.
-  Every "TBC" value below MUST be replaced with the real details before go-live —
-  wrong data here is worse than no data.
+  Local SEO: this is what feeds Google's map pack.
+  All values below are taken from the Facebook page and business card.
+  Replace the "url" once the domain is live, and add the sameAs Facebook URL.
 -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "GeneralContractor",
-  "name": "Bruce the Builder",
-  "description": "Extension and new build specialists, renovations and brickwork across Spalding, Bourne and South Lincolnshire.",
+  "name": "Bruce the Builder UK Ltd",
+  "description": "Groundworks, foundations, drainage, driveways, landscaping and home and garden improvements across Bourne and South Lincolnshire.",
   "url": "https://www.example.co.uk/",
-  "telephone": "+44-1775-000000",
-  "email": "hello@example.co.uk",
+  "telephone": "+447770064663",
+  "email": "brucethebuilderuk@gmail.com",
+  "priceRange": "££",
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "TBC",
-    "addressLocality": "Spalding",
+    "addressLocality": "Bourne",
     "addressRegion": "Lincolnshire",
-    "postalCode": "TBC",
     "addressCountry": "GB"
   },
   "areaServed": [
-    { "@type": "City", "name": "Spalding" },
     { "@type": "City", "name": "Bourne" },
+    { "@type": "City", "name": "Spalding" },
     { "@type": "City", "name": "Stamford" },
+    { "@type": "City", "name": "Grantham" },
+    { "@type": "City", "name": "Sleaford" },
     { "@type": "City", "name": "Market Deeping" },
     { "@type": "City", "name": "Holbeach" },
-    { "@type": "City", "name": "Peterborough" }
+    { "@type": "City", "name": "Thurlby" },
+    { "@type": "City", "name": "Baston" }
   ],
-  "openingHours": "Mo-Fr 07:30-17:00 Sa 08:00-13:00"
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+    "opens": "00:00",
+    "closes": "23:59"
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Groundworks and home improvement services",
+    "itemListElement": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Excavation & site preparation" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Foundations & concrete work" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Drainage & surface water management" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Driveways & paths" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Landscaping & garden solutions" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Demolition & earthmoving" } }
+    ]
+  }
 }
 </script>
 
