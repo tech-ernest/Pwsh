@@ -25,6 +25,7 @@ bruce-the-builder/
 | Hours | Always open |
 | Price band | ££ |
 | Reviews | 100% recommend, 11 reviews (Facebook) |
+| Facebook | https://www.facebook.com/share/1DWqdMNwaY/ |
 | Following | 2.9K followers, 144 posts |
 | Areas served | Holbeach · Sleaford · Thurlby · Bourne · Market Deeping · Baston · Spalding · Stamford · Grantham |
 
@@ -49,8 +50,10 @@ once they're all resolved.
    registered office address and VAT number are legally required on the website under
    the Companies Act 2006. If it *isn't*, the "Ltd" needs to come off the card and the
    site — trading as a limited company when you aren't is an offence. **Check this first.**
-2. **The Facebook page URL** — three placeholder links point at `#` (footer, reviews
-   strip, contact list). The 2.9K following is his strongest asset; link it properly.
+2. **A cleaner Facebook URL (optional).** The share link `facebook.com/share/1DWqdMNwaY/`
+   is wired in and works, but it's an opaque redirect. If the page has a vanity URL
+   (`facebook.com/BruceTheBuilderUK` or similar), grab it from the browser address bar
+   and swap it in — better for the `sameAs` structured data and less likely to rot.
 3. **Bourne or Spalding?** The card says Bourne, the Facebook location field says Spalding,
    and both are in his service area. Page is written Bourne-first to match the card.
    Confirm which is the trading base.
@@ -64,6 +67,7 @@ once they're all resolved.
 |---|---|
 | Wire up the contact form | It posts nowhere. Formspree / Netlify Forms / Web3Forms — see the comment above `<form>`. Point it at the gmail address. |
 | Hero image | `images/hero.jpg`. Use one of his own job photos — there are 144 posts of them. Compress to under ~300KB. |
+| Facebook link | ✅ Wired in — footer, reviews strip and contact list all point at the page. |
 | Photo gallery | Not built yet. A before/after grid is the single highest-value addition for a groundworks firm — the work is visual and he already has the content. Needs his customers' permission for property shots. |
 | Google Business Profile | He has none. For a local trade this drives more calls than a website will. Free, ~20 minutes. Do it alongside launch. |
 | Privacy notice | UK GDPR — the form collects personal data, so a privacy notice must exist and be linked. |
@@ -79,5 +83,5 @@ once they're all resolved.
 - Social proof strip using the real Facebook review count.
 - Semantic HTML, labelled form fields, visible focus outlines.
 - Spam honeypot on the form.
-- `GeneralContractor` structured data with the full service catalogue and all nine
-  service-area towns, for the Google map pack.
+- `GeneralContractor` structured data with the full service catalogue, all nine
+  service-area towns and a `sameAs` link to Facebook, for the Google map pack.
