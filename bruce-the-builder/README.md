@@ -113,9 +113,9 @@ price of a domain), the step-by-step launch order, and ongoing upkeep.
 | Item | Why |
 |---|---|
 | Wire up the contact form | It posts nowhere. Formspree / Netlify Forms / Web3Forms — see the comment above `<form>`. Point it at the gmail address. |
-| Hero image | `images/hero.jpg`. Use one of his own job photos — there are 144 posts of them. Compress to under ~300KB. |
+| Hero image | `images/hero.jpg`. Use one of his own job photos — there are 144 posts of them. Compress to under ~300KB. See [getting the photos](#getting-his-photos-off-facebook) below. |
 | Facebook link | ✅ Wired in — footer, reviews strip and contact list all point at the page. |
-| Photo gallery | Not built yet. A before/after grid is the single highest-value addition for a groundworks firm — the work is visual and he already has the content. Needs his customers' permission for property shots. |
+| Photo gallery | Not built yet. A before/after grid is the single highest-value addition for a groundworks firm — the work is visual and he already has the content. Needs his customers' permission for property shots. See [getting the photos](#getting-his-photos-off-facebook) below. |
 | Google Business Profile | He has none. For a local trade this drives more calls than a website will. Free, ~20 minutes. Do it alongside launch. |
 | Privacy notice | UK GDPR — the form collects personal data, so a privacy notice must exist and be linked. |
 | Footer trading disclosure | Name done (Raitis Uzuls). Street + postcode still needed — "Peterborough" alone is not a serviceable address. |
@@ -133,3 +133,27 @@ price of a domain), the step-by-step launch order, and ongoing upkeep.
 - Spam honeypot on the form.
 - `GeneralContractor` structured data with the full service catalogue, all nine
   service-area towns and a `sameAs` link to Facebook, for the Google map pack.
+
+## Getting his photos off Facebook
+
+The hero image and the gallery both need his job photos, and Facebook has no export for
+them. [`../facebook/Get-FacebookSavedPageImage.ps1`](../facebook) does it: save the page
+from a logged-in browser, point the script at the HTML, and it extracts the CDN links and
+downloads the originals.
+
+```powershell
+# Save both the Photos tab and the timeline (Ctrl+S -> Webpage, HTML Only), then:
+..\facebook\Get-FacebookSavedPageImage.ps1 -Path .\*.html -OutputDirectory .\photo-dump
+```
+
+Roughly 30 usable images come out of one pass, mostly 1536-2048px. Pick the best one for
+`images/hero.jpg`, compress it under ~300KB, and keep the rest for the gallery.
+
+Two constraints before any of them go on the site:
+
+- **The links expire.** Each carries a few days of validity, so save the page and run the
+  script the same week. If it reports expired links, re-save and run again.
+- **Permission.** The photos are of customers' property. Facebook posts are one thing;
+  a commercial website is another. Get his say-so, and his customers' for anything
+  identifiable — a house front with a visible number is identifiable.
+

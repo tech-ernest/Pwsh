@@ -1,0 +1,8 @@
+# Downloaded media and manifests from Get-FacebookSavedPageImage.ps1
+fb-images/
+downloads/
+manifest.csv
+
+# Saved Facebook page sources - these can carry session tokens
+*view-source*.html
+*_Facebook.html
