@@ -1,7 +1,52 @@
-# Bruce the Builder UK — landing page
+# Landing page — groundworks business, South Lincolnshire
 
-Single-file static landing page for **Bruce the Builder UK**, a groundworks and
-home/garden improvement company based in Bourne, Lincolnshire.
+Static landing page for Raitis Uzuls' groundworks and home/garden improvement
+business, based in Bourne, Lincolnshire.
+
+## ⚠️ The trading name on this site is a PLACEHOLDER
+
+The page currently reads **"Fenland Groundworks"**. That is a stand-in, not a decision.
+Bruce is rebranding (see below) and hadn't picked a name when this was built. It is
+deliberately not "Bourne Groundworks", so nothing here quietly commits him to Bourne as
+the trading base while that is still unconfirmed.
+
+**To rename**, replace the placeholder everywhere:
+
+```bash
+grep -rn "Fenland Groundworks" index.html privacy.html README.md
+sed -i 's/Fenland Groundworks/NEW NAME/g' index.html privacy.html
+# the logo is split for two-tone styling — fix it by hand:
+#   <a class="logo" ...>Fenland <em>Groundworks</em></a>
+```
+
+Also update: `<title>`, the `og:` tags, the JSON-LD `name`, and the two `[trading name]`
+placeholders in the footer disclosure.
+
+## Why there is a rebrand
+
+Two independent reasons, both his decision:
+
+1. **The name is crowded.** At least four other trade businesses use "Bruce the Builder"
+   or close to it — a US roofer, a general contractor in Springfield MA with a BBB
+   profile, and two more American builders. He cannot control what surfaces under that
+   name and never will.
+2. **A disputed site already occupies it.** See below.
+
+## ⚠️ brucethebuilderuk.com is not ours and is disputed
+
+A previous developer built a site at `brucethebuilderuk.com`. Bruce did not pay, believed
+it was never published, and it was published anyway. He does not want it. It carries his
+phone number, email and job photos. It has no contact form, so no enquiries are being
+diverted.
+
+**Nothing on this site may be copied from that one.** Not the headline, not the service
+descriptions, not a sentence. That copy is the unpaid developer's work and using it would
+hand him a genuine grievance. Everything here was written independently from Bruce's
+Facebook page and business card — the git history timestamps and documents that, which is
+worth preserving as evidence of provenance.
+
+The rebrand largely resolves the dispute commercially: under a new name on a new domain,
+that site stops competing with him and stops mattering.
 
 No build step, no dependencies. Open `index.html` in a browser, or drop the folder
 onto Netlify / Cloudflare Pages / GitHub Pages.
@@ -10,9 +55,11 @@ onto Netlify / Cloudflare Pages / GitHub Pages.
 bruce-the-builder/
 ├── index.html      ← the whole site (HTML + CSS + JS + schema markup)
 ├── privacy.html    ← UK GDPR privacy notice, self-contained
-├── images/         ← 23 site photos + source/ with all 54 originals
+├── images/         ← 27 site photos + source/ with all 53 originals
 └── README.md
 ```
+
+No build step, no dependencies, no external fonts or scripts.
 
 ## Verified details (from the Facebook page and business card)
 
@@ -116,6 +163,9 @@ price of a domain), the step-by-step launch order, and ongoing upkeep.
 | Wire up the contact form | It posts nowhere. Formspree / Netlify Forms / Web3Forms — see the comment above `<form>`. Point it at the gmail address. |
 | Facebook link | ✅ Wired in — footer, reviews strip and contact list all point at the page. |
 | Photo gallery | ✅ Built — 23 photos, filterable by trade, with a lightbox. Still needs his customers' permission for identifiable property shots before it goes live. |
+| Before/after | ✅ Built — three verified pairs. More would be better; see the note below. |
+| Mobile navigation | ✅ Built — burger menu. Previously there was none at all below 880px. |
+| Trading name | ❌ Placeholder. Everything else waits on this. |
 | Google Business Profile | He has none. For a local trade this drives more calls than a website will. Free, ~20 minutes. Do it alongside launch. |
 | Privacy notice | ✅ Written — `privacy.html`, linked from the form and the footer. Three placeholders left: the service address, the form provider's name, and the host's name. Fill them when those are decided. |
 | Footer trading disclosure | Name done (Raitis Uzuls). Street + postcode still needed — "Peterborough" alone is not a serviceable address. |
@@ -123,9 +173,30 @@ price of a domain), the step-by-step launch order, and ongoing upkeep.
 | Cookie banner | Only needed if analytics gets added. Skipping analytics avoids it entirely. |
 | HTTPS | Free on any of the hosts above. Non-negotiable with a form on the page. |
 
+## Design: deliberately not the other site
+
+The disputed site is black and hi-vis yellow, with condensed all-caps headings, yellow
+outline icons and numbered white service cards. Ours had converged on much the same look,
+because both were built from the same business card and the same Facebook page.
+
+This version moves away from it on every axis that reads at a glance:
+
+| | Disputed site | This site |
+|---|---|---|
+| Ground | Black-dominant | Warm stone `#f5f2ed`, light |
+| Accent | Hi-vis yellow `#f2c014` | Clay `#a8481f` — dug earth, not safety gear |
+| Headings | ALL CAPS CONDENSED | Sentence case, large, tight tracking |
+| Services | Icon cards, yellow rules | Plain numbered list, hairline rules |
+| Corners | Rounded cards | Near-square, 3px |
+| Photos | Inline per service | Before/after pairs + filterable gallery |
+
+The hi-vis palette came off the business card, which is being reprinted anyway over the
+Ltd problem — so the brand was already in flux and nothing was lost by moving.
+
 ## Built in already
 
-- Brand colours pulled from the business card: hi-vis yellow `#f2c014` on near-black `#14181d`.
+- **Before and after** — three genuine same-property pairs, the one thing no template and
+  no competitor can reproduce. See the note on pairs below.
 - Responsive to 320px; sticky tap-to-call bar on mobile.
 - `tel:` links throughout — a phone call is the conversion action for this business.
 - Social proof strip using the real Facebook review count.
@@ -157,3 +228,25 @@ The extractor that got them off Facebook lives at
 The logo and banner shots both read "BRUCE THE BUILDER UK **LTD**". That is the Companies
 Act s.1194 problem described above, so neither goes anywhere near the site until he either
 incorporates or reprints. Details in [images/README.md](images/README.md).
+
+## Note on the before/after pairs
+
+Three pairs are genuine — same property, verified by matching fences, rooflines and
+neighbouring houses:
+
+| Pair | Source picks | Job |
+|---|---|---|
+| Garden base | `116` → `103` | Bare lawn → concrete base poured square to the fence |
+| Gravel driveway | `199` → `218` | Rough hardcore and old fencing → finished gravel and new panels |
+| Fascias | `070` → `079` | Ladder up, weathered boards → new fascias, soffits, guttering |
+
+They are shown **side by side rather than as a drag slider**. A slider needs the two shots
+framed from the same spot, and these are not — the fence line jumps between them, which
+looks broken rather than impressive.
+
+If Bruce can shoot future jobs from a **fixed position, before and after**, a slider
+becomes possible and would be the strongest thing on the page. Worth asking him to stand
+in the same place twice. It costs him nothing and it is the best marketing asset he could
+generate.
+
+Never pair photos of two different jobs to fake a before/after.

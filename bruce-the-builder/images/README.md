@@ -26,8 +26,9 @@ was taken from the Facebook page and is the thing being flagged, not a confirmed
 
 | Where | File |
 |---|---|
-| Hero mosaic | `patio-pergola-decking.jpg`, `drive-block-paving-wide.jpg`, `groundworks-excavator.jpg` |
-| Gallery | all 23, filtered by the `data-cat` attribute on each `.shot` button |
+| Hero | `patio-pergola-decking.jpg` (large) + `groundworks-excavator.jpg` (offset square) |
+| Before &amp; after | `ba-garden-before` → `ba-garden-after`, `ba-drive-before` → `drive-gravel-garage`, `ba-roof-before` → `roofing-dormers` |
+| Gallery | all 23, built from the `SHOTS` array in `index.html` |
 
 Gallery categories: `driveways` (6), `gardens` (4), `groundworks` (5), `roofing` (4), `bathrooms` (4).
 

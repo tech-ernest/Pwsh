@@ -3,253 +3,262 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bruce the Builder UK | Groundworks &amp; Home Improvements, Bourne</title>
-<meta name="description" content="Bruce the Builder UK — groundworks, foundations, drainage, driveways and landscaping across Bourne, Spalding, Stamford and South Lincolnshire. Free, no-obligation quotes. Call 07770 064663.">
+<title>Fenland Groundworks | Groundworks &amp; Driveways, South Lincolnshire</title>
+<meta name="description" content="Groundworks, foundations, drainage, driveways and landscaping across Bourne, Spalding, Stamford and South Lincolnshire. Free, no-obligation quotes. Call 07770 064663.">
 <link rel="canonical" href="https://www.example.co.uk/">
-<meta name="theme-color" content="#12171d">
+<meta name="theme-color" content="#f5f2ed">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="Bruce the Builder UK | Groundworks &amp; Home Improvements">
-<meta property="og:description" content="Groundworks, foundations, drainage, driveways and landscaping across Bourne, Spalding, Stamford and South Lincolnshire.">
+<meta property="og:title" content="Fenland Groundworks | Groundworks &amp; Driveways">
+<meta property="og:description" content="Groundworks, foundations, drainage, driveways and landscaping across South Lincolnshire.">
 <meta property="og:locale" content="en_GB">
 
 <style>
-  /* ---- tokens: hi-vis yellow + black, taken from the business card ---- */
+  /* ============================================================
+     PLACEHOLDER BRAND — "Fenland Groundworks"
+     Stand-in until the real name is chosen. To rename, see README.
+     ============================================================ */
   :root{
-    --ink:#14181d;
-    --ink-2:#2b3440;
-    --muted:#5b6673;
-    --line:#e3e6ea;
-    --bg:#ffffff;
-    --bg-2:#f6f7f8;
-    --brand:#f2c014;
-    --brand-dark:#d1a200;
-    --brand-ink:#14181d;
-    --radius:10px;
-    --wrap:1120px;
+    --stone:#f5f2ed;        /* warm page ground */
+    --paper:#fffdfa;
+    --ink:#1b1e20;
+    --ink-2:#4a5257;
+    --muted:#6f7a80;
+    --line:#e4ded4;
+    --clay:#a8481f;         /* accent: dug earth, not hi-vis */
+    --clay-dk:#8a3a17;
+    --slate:#23292c;        /* dark sections */
+    --radius:3px;           /* nearly square — quieter than rounded cards */
+    --wrap:1140px;
     --font:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
   }
 
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{margin:0;font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  body{margin:0;font-family:var(--font);color:var(--ink);background:var(--stone);line-height:1.6;-webkit-font-smoothing:antialiased}
   img{max-width:100%;display:block}
   a{color:inherit}
-  .wrap{max-width:var(--wrap);margin-inline:auto;padding-inline:20px}
+  .wrap{max-width:var(--wrap);margin-inline:auto;padding-inline:22px}
 
-  h1,h2,h3{line-height:1.15;margin:0 0 .5em;letter-spacing:-.02em}
-  h1{font-size:clamp(2rem,5.5vw,3.4rem);font-weight:800}
-  h2{font-size:clamp(1.5rem,3.5vw,2.1rem);font-weight:800}
-  h3{font-size:1.15rem;font-weight:700}
+  /* Sentence case, tight, large. Deliberately not condensed all-caps. */
+  h1,h2,h3{line-height:1.1;margin:0 0 .5em;letter-spacing:-.025em;font-weight:800}
+  h1{font-size:clamp(2.1rem,5.2vw,3.5rem)}
+  h2{font-size:clamp(1.65rem,3.6vw,2.4rem)}
+  h3{font-size:1.1rem;letter-spacing:-.015em}
   p{margin:0 0 1em}
 
-  .btn{
-    display:inline-flex;align-items:center;gap:.5rem;
-    padding:.85rem 1.4rem;border-radius:var(--radius);
-    font-weight:700;font-size:1rem;text-decoration:none;border:2px solid transparent;cursor:pointer;
-    transition:transform .08s ease, background .15s ease, border-color .15s ease;
+  .eyebrow{
+    display:block;font-size:.76rem;font-weight:800;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--clay);margin-bottom:1rem;
   }
-  .btn:active{transform:translateY(1px)}
-  .btn-primary{background:var(--brand);color:var(--brand-ink)}
-  .btn-primary:hover{background:var(--brand-dark)}
-  .btn-ghost{border-color:currentColor;color:#fff}
-  .btn-ghost:hover{background:rgba(255,255,255,.12)}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:.5rem;padding:.9rem 1.5rem;
+    border-radius:var(--radius);font-weight:700;font-size:1rem;text-decoration:none;
+    border:1.5px solid transparent;cursor:pointer;transition:background .15s ease,border-color .15s ease,color .15s ease;
+  }
+  .btn-primary{background:var(--clay);color:#fff}
+  .btn-primary:hover{background:var(--clay-dk)}
+  .btn-line{border-color:var(--ink);color:var(--ink)}
+  .btn-line:hover{background:var(--ink);color:var(--stone)}
+  .btn:focus-visible{outline:3px solid var(--clay);outline-offset:3px}
 
   /* ---- header ---- */
-  header{position:sticky;top:0;z-index:50;background:var(--ink);color:#fff;border-bottom:3px solid var(--brand)}
-  .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-block:.9rem}
-  .logo{font-weight:800;font-size:1.1rem;letter-spacing:-.02em;text-decoration:none;display:flex;align-items:center;gap:.55rem;white-space:nowrap}
-  .logo span{color:var(--brand)}
-  .nav-links{display:flex;gap:1.4rem;align-items:center}
-  .nav-links a{text-decoration:none;font-weight:600;font-size:.95rem;opacity:.9}
-  .nav-links a:hover{opacity:1;color:var(--brand)}
-  .nav-call{white-space:nowrap}
-  @media (max-width:880px){ .nav-links a:not(.nav-call){display:none} }
-  /* below 700px the sticky bottom call bar takes over, so the header button is redundant */
-  @media (max-width:700px){ .nav-call{display:none} .logo{font-size:1rem} }
+  header{position:sticky;top:0;z-index:50;background:rgba(245,242,237,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-block:1rem}
+  .logo{font-weight:800;font-size:1.05rem;letter-spacing:-.03em;text-decoration:none;white-space:nowrap}
+  .logo em{font-style:normal;color:var(--clay)}
+  .nav-links{display:flex;gap:1.6rem;align-items:center}
+  .nav-links a{text-decoration:none;font-weight:600;font-size:.93rem;color:var(--ink-2)}
+  .nav-links a:hover{color:var(--clay)}
+  .nav-call{white-space:nowrap;padding:.6rem 1.1rem;font-size:.92rem}
+
+  .burger{display:none;background:none;border:1.5px solid var(--line);border-radius:var(--radius);
+          width:44px;height:44px;cursor:pointer;padding:0;align-items:center;justify-content:center}
+  .burger span,.burger span::before,.burger span::after{
+    content:"";display:block;width:19px;height:2px;background:var(--ink);transition:transform .2s ease,opacity .2s ease}
+  .burger span::before{transform:translateY(-6px)}
+  .burger span::after{transform:translateY(4px)}
+  .burger[aria-expanded="true"] span{background:transparent}
+  .burger[aria-expanded="true"] span::before{transform:rotate(45deg)}
+  .burger[aria-expanded="true"] span::after{transform:rotate(-45deg) translateY(-2px)}
+
+  @media (max-width:900px){
+    .burger{display:flex}
+    .nav-links{
+      position:absolute;inset:100% 0 auto 0;background:var(--stone);border-bottom:1px solid var(--line);
+      flex-direction:column;align-items:stretch;gap:0;padding:.5rem 22px 1.1rem;
+    }
+    .nav-links[hidden]{display:none}
+    .nav-links a{padding:.85rem 0;border-bottom:1px solid var(--line);font-size:1rem}
+    .nav-links .nav-call{border-bottom:0;margin-top:.9rem;justify-content:center}
+  }
 
   /* ---- hero ---- */
-  /* No full-bleed background photo: the source images are 590px on the long edge,
-     and stretching one across a 1400px viewport turns it to mush. The mosaic shows
-     them at a size they can actually fill. */
-  .hero{position:relative;background:var(--ink);color:#fff;padding-block:clamp(3rem,7vw,5rem);overflow:hidden}
-  .hero::before{
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background:
-      radial-gradient(900px 420px at 12% -15%, rgba(242,192,20,.17), transparent 62%),
-      radial-gradient(760px 520px at 105% 115%, rgba(242,192,20,.09), transparent 60%);
-  }
-  .hero-grid{
-    position:relative;display:grid;align-items:center;
-    grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(2rem,5vw,3.6rem);
-  }
+  .hero{padding-block:clamp(2.75rem,7vw,5rem)}
+  .hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.92fr);gap:clamp(2rem,5vw,4.5rem);align-items:center}
   @media (max-width:940px){ .hero-grid{grid-template-columns:1fr;gap:2.6rem} }
-  .hero-copy{max-width:36rem}
+  .hero p.lead{font-size:clamp(1.02rem,1.9vw,1.18rem);color:var(--ink-2);max-width:46ch}
+  .hero-cta{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1.8rem}
 
-  .mosaic{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;position:relative}
-  .mosaic figure{margin:0;border-radius:var(--radius);overflow:hidden;background:var(--ink-2);box-shadow:0 16px 38px rgba(0,0,0,.45)}
-  .mosaic img{width:100%;height:100%;object-fit:cover}
-  .mosaic .lg{grid-column:1 / -1;aspect-ratio:16/10}
-  .mosaic .sm{aspect-ratio:4/3}
-  .mosaic-badge{
-    position:absolute;left:12px;top:12px;z-index:2;background:var(--brand);color:var(--brand-ink);
-    border-radius:8px;padding:.55rem .8rem;font-weight:800;line-height:1.2;font-size:.88rem;
-    box-shadow:0 8px 22px rgba(0,0,0,.45);
+  /* offset pair, rather than a neat grid of tiles */
+  .hero-art{position:relative;padding-bottom:3.5rem}
+  .hero-art figure{margin:0}
+  .hero-art .big{width:87%;margin-left:auto}
+  .hero-art .big img{aspect-ratio:4/3;object-fit:cover;width:100%;height:auto}
+  .hero-art .small{position:absolute;left:0;bottom:0;width:47%;border:7px solid var(--stone)}
+  .hero-art .small img{aspect-ratio:1/1;object-fit:cover;width:100%;height:auto}
+
+  .trust{display:flex;flex-wrap:wrap;gap:.6rem 2rem;margin-top:2rem;padding-top:1.4rem;border-top:1px solid var(--line);
+         font-size:.88rem;font-weight:600;color:var(--ink-2)}
+  .trust div::before{content:"—";color:var(--clay);font-weight:800;margin-right:.5rem}
+
+  /* ---- sections ---- */
+  section{padding-block:clamp(3rem,7vw,5rem)}
+  section[id]{scroll-margin-top:5.5rem}
+  .band{background:var(--paper);border-block:1px solid var(--line)}
+  .dark{background:var(--slate);color:var(--stone)}
+  .dark h2{color:#fff}
+  .section-head{max-width:58ch;margin-bottom:2.6rem}
+  .section-head p{color:var(--muted);margin-bottom:0}
+  .dark .section-head p{color:#b9c2c6}
+
+  /* ---- before & after ---- */
+  .ba-list{display:grid;gap:2.2rem}
+  .ba{display:grid;gap:1rem}
+  .ba-pair{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+  .ba-pair figure{margin:0;position:relative}
+  .ba-pair img{aspect-ratio:4/3;object-fit:cover;width:100%;height:auto;border-radius:var(--radius)}
+  .ba-tag{
+    position:absolute;top:.6rem;left:.6rem;font-size:.68rem;font-weight:800;letter-spacing:.11em;
+    text-transform:uppercase;padding:.3rem .55rem;border-radius:2px;background:rgba(27,30,32,.82);color:#fff;
   }
-  .mosaic-badge small{display:block;font-weight:700;font-size:.72rem;opacity:.72;letter-spacing:.02em}
+  .ba-pair figure:last-child .ba-tag{background:var(--clay)}
+  .ba-cap{font-size:.95rem;color:var(--ink-2);margin:0}
+  .ba-cap strong{color:var(--ink)}
+  @media (min-width:860px){ .ba-list{grid-template-columns:1fr 1fr;gap:2.6rem 2rem} }
+
+  /* ---- services: a list, not icon cards ---- */
+  .svc{display:grid;gap:0;grid-template-columns:1fr 1fr}
+  @media (max-width:760px){ .svc{grid-template-columns:1fr} }
+  .svc article{padding:1.6rem 1.8rem 1.6rem 0;border-top:1px solid var(--line)}
+  @media (min-width:761px){ .svc article:nth-child(even){padding-left:2.2rem;border-left:1px solid var(--line)} }
+  .svc .num{font-size:.75rem;font-weight:800;color:var(--clay);letter-spacing:.1em;display:block;margin-bottom:.5rem}
+  .svc p{color:var(--muted);font-size:.95rem;margin-bottom:0}
 
   /* ---- gallery ---- */
-  .filters{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem}
+  .filters{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:1.5rem}
   .filter{
-    border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:100px;
-    padding:.45rem 1rem;font:inherit;font-size:.9rem;font-weight:700;cursor:pointer;
+    border:1.5px solid var(--line);background:transparent;color:var(--ink-2);border-radius:100px;
+    padding:.45rem 1rem;font:inherit;font-size:.88rem;font-weight:700;cursor:pointer;
     transition:background .15s ease,border-color .15s ease,color .15s ease;
   }
-  .filter:hover{border-color:var(--brand-dark)}
-  .filter[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
-  .filter:focus-visible{outline:3px solid var(--brand-dark);outline-offset:2px}
+  .filter:hover{border-color:var(--clay);color:var(--clay)}
+  .filter[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--stone)}
+  .filter:focus-visible{outline:3px solid var(--clay);outline-offset:2px}
 
-  .gallery{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fill,minmax(225px,1fr))}
-  /* two-up on phones: one column turns 23 photos into an endless scroll */
-  @media (max-width:560px){ .gallery{grid-template-columns:1fr 1fr;gap:.6rem} .shot-label{font-size:.72rem;left:.5rem;right:.5rem} }
-  .shot{
-    position:relative;display:block;padding:0;border:0;overflow:hidden;cursor:zoom-in;
-    border-radius:var(--radius);background:var(--ink-2);aspect-ratio:4/3;
-  }
+  .gallery{display:grid;gap:.8rem;grid-template-columns:repeat(auto-fill,minmax(225px,1fr))}
+  @media (max-width:560px){ .gallery{grid-template-columns:1fr 1fr;gap:.55rem} .shot-label{font-size:.7rem;left:.5rem;right:.5rem} }
+  .shot{position:relative;display:block;padding:0;border:0;overflow:hidden;cursor:zoom-in;
+        border-radius:var(--radius);background:var(--line);aspect-ratio:4/3}
   .shot img{width:100%;height:100%;object-fit:cover;transition:transform .45s ease}
-  .shot::after{
-    content:"";position:absolute;inset:0;opacity:0;transition:opacity .25s ease;
-    background:linear-gradient(to top,rgba(20,24,29,.78),transparent 58%);
-  }
-  .shot:hover img,.shot:focus-visible img{transform:scale(1.06)}
+  .shot::after{content:"";position:absolute;inset:0;opacity:0;transition:opacity .25s ease;
+               background:linear-gradient(to top,rgba(27,30,32,.8),transparent 58%)}
+  .shot:hover img,.shot:focus-visible img{transform:scale(1.05)}
   .shot:hover::after,.shot:focus-visible::after{opacity:1}
-  .shot:focus-visible{outline:3px solid var(--brand-dark);outline-offset:2px}
-  /* must come after .shot's display:block, which otherwise overrides the UA [hidden] rule */
+  .shot:focus-visible{outline:3px solid var(--clay);outline-offset:2px}
+  /* must follow .shot's display:block, which otherwise beats the UA [hidden] rule */
   .shot[hidden]{display:none}
-  .shot-label{
-    position:absolute;left:.75rem;right:.75rem;bottom:.6rem;z-index:2;text-align:left;
-    color:#fff;font-size:.82rem;font-weight:700;opacity:0;transform:translateY(6px);
-    transition:opacity .25s ease,transform .25s ease;
-  }
+  .shot-label{position:absolute;left:.7rem;right:.7rem;bottom:.6rem;z-index:2;text-align:left;color:#fff;
+              font-size:.8rem;font-weight:700;opacity:0;transform:translateY(6px);
+              transition:opacity .25s ease,transform .25s ease}
   .shot:hover .shot-label,.shot:focus-visible .shot-label{opacity:1;transform:none}
   @media (hover:none){ .shot::after{opacity:1} .shot-label{opacity:1;transform:none} }
 
   /* ---- lightbox ---- */
   .lb{border:0;padding:0;background:transparent;max-width:min(94vw,920px);width:fit-content}
-  .lb::backdrop{background:rgba(10,12,15,.9)}
-  .lb-fig{margin:0;background:var(--ink);border-radius:var(--radius);overflow:hidden;position:relative}
-  /* never enlarge past the original: these are 590px phone photos and upscaling shows */
-  .lb-fig img{display:block;width:auto;max-width:100%;max-height:72vh;margin-inline:auto;background:#0a0c0f}
+  .lb::backdrop{background:rgba(12,14,15,.92)}
+  .lb-fig{margin:0;background:var(--slate);border-radius:var(--radius);overflow:hidden}
+  /* never enlarge past the original: these are 590px phone photos */
+  .lb-fig img{display:block;width:auto;max-width:100%;max-height:72vh;margin-inline:auto;background:#0a0c0d}
   .lb-cap{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;justify-content:space-between;color:#fff;padding:.85rem 1rem}
   .lb-cap p{margin:0;font-size:.92rem;opacity:.9}
   .lb-nav{display:flex;gap:.4rem;flex:none}
-  .lb-btn{
-    background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:8px;
-    width:38px;height:38px;font-size:1.05rem;cursor:pointer;line-height:1;
-  }
-  .lb-btn:hover{background:var(--brand);color:var(--brand-ink)}
-  .lb-btn:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+  .lb-btn{background:rgba(255,255,255,.13);color:#fff;border:0;border-radius:var(--radius);width:38px;height:38px;font-size:1.05rem;cursor:pointer;line-height:1}
+  .lb-btn:hover{background:var(--clay)}
+  .lb-btn:focus-visible{outline:3px solid var(--clay);outline-offset:2px}
   .lb-count{font-size:.8rem;opacity:.6;font-weight:700;white-space:nowrap}
-  .eyebrow{
-    display:inline-block;background:var(--brand);color:var(--brand-ink);
-    font-weight:700;font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;
-    padding:.35rem .7rem;border-radius:4px;margin-bottom:1.1rem;
-  }
-  .hero p.lead{font-size:clamp(1.05rem,2.2vw,1.25rem);opacity:.93;max-width:60ch}
-  .hero-cta{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.6rem}
-  .hero-trust{
-    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem 1.6rem;margin-top:2.2rem;
-    padding-top:1.6rem;border-top:1px solid rgba(255,255,255,.18);
-    font-size:.9rem;font-weight:600;opacity:.92;
-  }
-  @media (max-width:520px){ .hero-trust{grid-template-columns:1fr} }
-  .hero-trust div::before{content:"✓";color:var(--brand);font-weight:800;margin-right:.45rem}
 
-  /* ---- sections ---- */
-  section{padding-block:clamp(3rem,7vw,4.75rem)}
-  section[id]{scroll-margin-top:5.5rem}   /* clears the sticky header on anchor jumps */
-  .alt{background:var(--bg-2);border-block:1px solid var(--line)}
-  .section-head{max-width:62ch;margin-bottom:2.4rem}
-  .section-head p{color:var(--muted);margin-bottom:0}
-
-  /* ---- services ---- */
-  .grid{display:grid;gap:1.2rem;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
-  .card{
-    background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:1.5rem;
-    transition:border-color .15s ease, box-shadow .15s ease;
+  /* ---- process ---- */
+  .steps{display:grid;gap:2rem;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));counter-reset:s}
+  .steps article{counter-increment:s}
+  .steps article::before{
+    content:counter(s,decimal-leading-zero);display:block;font-size:2.4rem;font-weight:800;
+    letter-spacing:-.04em;color:var(--clay);line-height:1;margin-bottom:.6rem;opacity:.9;
   }
-  .card:hover{border-color:var(--brand);box-shadow:0 6px 20px rgba(20,24,29,.08)}
-  .card h3{margin-bottom:.35rem}
-  .card p{color:var(--muted);font-size:.95rem;margin-bottom:0}
-  .card .ico{width:42px;height:42px;border-radius:8px;background:var(--brand);display:grid;place-items:center;margin-bottom:1rem;font-size:1.25rem}
+  .steps p{color:var(--muted);font-size:.95rem;margin-bottom:0}
+  .dark .steps p{color:#b9c2c6}
 
-  /* ---- reviews strip ---- */
-  .review-strip{
-    background:var(--ink);color:#fff;text-align:center;
-    padding-block:clamp(2.25rem,5vw,3rem);
-  }
-  .stars{color:var(--brand);font-size:1.5rem;letter-spacing:.15em}
-  .review-strip .big{font-size:clamp(1.4rem,3.5vw,1.9rem);font-weight:800;margin:.6rem 0 .2rem;letter-spacing:-.02em}
-  .review-strip .sub{opacity:.72;font-size:.92rem;margin:0}
+  /* ---- reviews ---- */
+  .reviews{text-align:center}
+  .reviews .stars{color:var(--clay);font-size:1.3rem;letter-spacing:.2em}
+  .reviews .big{font-size:clamp(1.5rem,3.6vw,2.1rem);font-weight:800;letter-spacing:-.025em;margin:.5rem 0 .3rem}
+  .reviews .sub{color:#b9c2c6;font-size:.93rem;margin:0}
+  .reviews a{color:#fff}
 
   /* ---- areas ---- */
-  .pills{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1.4rem}
-  .pill{background:var(--bg);border:1px solid var(--line);border-radius:100px;padding:.4rem .9rem;font-size:.9rem;font-weight:600}
+  .pills{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.4rem}
+  .pill{border:1px solid var(--line);background:var(--paper);border-radius:100px;padding:.4rem .95rem;font-size:.9rem;font-weight:600}
 
   /* ---- contact ---- */
-  .contact-grid{display:grid;gap:2.5rem;grid-template-columns:1fr 1fr;align-items:start}
+  .contact-grid{display:grid;gap:2.6rem;grid-template-columns:1fr 1fr;align-items:start}
   @media (max-width:860px){ .contact-grid{grid-template-columns:1fr} }
-
-  .contact-list{list-style:none;padding:0;margin:0 0 1.5rem}
-  .contact-list li{display:flex;gap:.9rem;align-items:flex-start;padding:1rem 0;border-bottom:1px solid var(--line)}
+  .contact-list{list-style:none;padding:0;margin:0}
+  .contact-list li{padding:1rem 0;border-bottom:1px solid var(--line)}
   .contact-list li:last-child{border-bottom:0}
-  .contact-list .k{font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
-  .contact-list .v{font-size:1.1rem;font-weight:700;text-decoration:none;word-break:break-word}
-  .contact-list .v:hover{color:var(--brand-dark)}
-  .contact-list .badge{width:38px;height:38px;flex:none;border-radius:8px;background:var(--brand);display:grid;place-items:center;font-size:1.05rem}
+  .contact-list .k{font-size:.74rem;text-transform:uppercase;letter-spacing:.11em;color:var(--muted);font-weight:800;display:block;margin-bottom:.2rem}
+  .contact-list .v{font-size:1.08rem;font-weight:700;text-decoration:none;word-break:break-word}
+  .contact-list .v:hover{color:var(--clay)}
 
-  form{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:1.6rem}
+  form{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:1.7rem}
   .field{margin-bottom:1rem}
-  label{display:block;font-weight:700;font-size:.88rem;margin-bottom:.35rem}
-  input,textarea,select{
-    width:100%;padding:.7rem .8rem;border:1px solid var(--line);border-radius:8px;
-    font:inherit;font-size:.98rem;background:var(--bg);color:var(--ink);
-  }
-  input:focus,textarea:focus,select:focus{outline:2px solid var(--brand-dark);outline-offset:1px;border-color:var(--brand-dark)}
+  label{display:block;font-weight:700;font-size:.86rem;margin-bottom:.35rem}
+  input,textarea,select{width:100%;padding:.75rem .85rem;border:1.5px solid var(--line);border-radius:var(--radius);
+                        font:inherit;font-size:.98rem;background:var(--paper);color:var(--ink)}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--clay);outline-offset:1px;border-color:var(--clay)}
   textarea{min-height:120px;resize:vertical}
   .hp{position:absolute;left:-9999px}
   .form-note{font-size:.82rem;color:var(--muted);margin:1rem 0 0}
 
   /* ---- footer ---- */
-  footer{background:var(--ink);color:#fff;padding-block:2.5rem;font-size:.9rem}
-  footer a{color:var(--brand)}
-  .foot-grid{display:flex;flex-wrap:wrap;gap:1.5rem 3rem;justify-content:space-between;align-items:flex-start}
-  .foot-legal{opacity:.62;font-size:.82rem;margin-top:1.8rem;padding-top:1.2rem;border-top:1px solid rgba(255,255,255,.15)}
+  footer{background:var(--slate);color:var(--stone);padding-block:2.8rem;font-size:.9rem}
+  footer a{color:#fff}
+  .foot-grid{display:flex;flex-wrap:wrap;gap:1.6rem 3rem;justify-content:space-between;align-items:flex-start}
+  .foot-grid strong{display:block;margin-bottom:.4rem;font-size:.74rem;text-transform:uppercase;letter-spacing:.11em;color:var(--clay)}
+  .foot-legal{opacity:.6;font-size:.81rem;margin-top:2rem;padding-top:1.2rem;border-top:1px solid rgba(255,255,255,.14)}
 
   /* ---- sticky mobile call bar ---- */
-  .callbar{
-    position:fixed;inset:auto 0 0 0;z-index:60;display:none;
-    background:var(--brand);color:var(--brand-ink);text-align:center;font-weight:800;
-    padding:.95rem;text-decoration:none;box-shadow:0 -2px 14px rgba(0,0,0,.2);
-  }
+  .callbar{position:fixed;inset:auto 0 0 0;z-index:60;display:none;background:var(--clay);color:#fff;
+           text-align:center;font-weight:800;padding:.95rem;text-decoration:none;box-shadow:0 -2px 14px rgba(0,0,0,.18)}
   @media (max-width:700px){ .callbar{display:block} body{padding-bottom:3.6rem} }
 
-  /* ---- placeholder marker: delete this rule once the real values are in ---- */
-  .tbc{background:#fff3cd;color:#7a5a00;border-bottom:1px dashed #c9a227;padding:0 .2em;font-style:normal}
+  /* placeholder marker — delete this rule once the real values are in */
+  .tbc{background:#fdf0d5;color:#7a5a00;border-bottom:1px dashed #c9a227;padding:0 .2em;font-style:normal}
 </style>
 </head>
 <body>
 
-<a class="callbar" href="tel:+447770064663">📞 Call Bruce — 07770 064663</a>
+<a class="callbar" href="tel:+447770064663">Call us — 07770 064663</a>
 
 <header>
   <div class="wrap nav">
-    <a class="logo" href="#top">🧱 Bruce the <span>Builder UK</span></a>
-    <nav class="nav-links">
+    <a class="logo" href="#top">Fenland <em>Groundworks</em></a>
+    <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="navlinks" aria-label="Menu"><span></span></button>
+    <nav class="nav-links" id="navlinks">
+      <a href="#before-after">Before &amp; after</a>
       <a href="#services">Services</a>
       <a href="#work">Our work</a>
-      <a href="#areas">Areas covered</a>
-      <a href="#about">About</a>
+      <a href="#areas">Areas</a>
       <a href="#contact">Contact</a>
       <a class="btn btn-primary nav-call" href="tel:+447770064663">07770 064663</a>
     </nav>
@@ -261,37 +270,69 @@
   <!-- ============ HERO ============ -->
   <section class="hero">
     <div class="wrap hero-grid">
-      <div class="hero-copy">
-        <span class="eyebrow">Bourne, Lincolnshire &middot; Home &amp; Garden Improvements</span>
-        <h1>Groundworks done right, from the ground up.</h1>
+      <div>
+        <span class="eyebrow">South Lincolnshire · Groundworks &amp; landscaping</span>
+        <h1>The ground comes first. Everything else stands on it.</h1>
         <p class="lead">
-          Excavation, foundations, drainage, driveways and landscaping for homes and businesses
-          across South Lincolnshire. Reliable team, transparent pricing, and attention to detail
-          on every project &mdash; so you can focus on building your dream.
+          Excavation, foundations, drainage, driveways and garden transformations
+          for homes and businesses across South Lincolnshire — dug properly, laid on a
+          base that won't sink, and finished to the edge.
         </p>
         <div class="hero-cta">
           <a class="btn btn-primary" href="tel:+447770064663">Call 07770 064663</a>
-          <a class="btn btn-ghost" href="#work">See our work</a>
+          <a class="btn btn-line" href="#before-after">See the difference</a>
         </div>
-        <div class="hero-trust">
-          <div>Groundworks specialists</div>
+        <div class="trust">
           <div>Free, no-obligation quotes</div>
-          <div>Fully licensed &amp; insured</div>
           <div>Residential &amp; commercial</div>
+          <div class="tbc">Fully insured — pending evidence</div>
         </div>
       </div>
 
-      <div class="mosaic">
-        <figure class="lg">
+      <div class="hero-art">
+        <figure class="big">
           <img src="images/patio-pergola-decking.jpg" width="590" height="385" alt="Porcelain patio and hardwood decking under a steel pergola with festoon lighting">
         </figure>
-        <figure class="sm">
-          <img src="images/drive-block-paving-wide.jpg" width="590" height="443" alt="Wide block-paved driveway with drainage channel, finished to the kerb">
-        </figure>
-        <figure class="sm">
+        <figure class="small">
           <img src="images/groundworks-excavator.jpg" width="590" height="443" alt="Tracked excavator digging out a rear garden behind a new retaining wall">
         </figure>
-        <div class="mosaic-badge">100% recommended<small>11 reviews on Facebook</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BEFORE & AFTER ============ -->
+  <section id="before-after" class="band">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Before &amp; after</span>
+        <h2>The same patch of ground, twice.</h2>
+        <p>Real jobs, photographed on the day. No staging, no stock photos.</p>
+      </div>
+
+      <div class="ba-list">
+        <article class="ba">
+          <div class="ba-pair">
+            <figure><span class="ba-tag">Before</span><img src="images/ba-garden-before.jpg" width="590" height="443" loading="lazy" alt="Bare rear lawn against a new close-board fence before work started"></figure>
+            <figure><span class="ba-tag">After</span><img src="images/ba-garden-after.jpg" width="590" height="443" loading="lazy" alt="The same corner with a level concrete base laid against the fence line"></figure>
+          </div>
+          <p class="ba-cap"><strong>Garden base, new build.</strong> Levelled and dug out, then a concrete base poured square to the fence line, ready for a shed or garden room.</p>
+        </article>
+
+        <article class="ba">
+          <div class="ba-pair">
+            <figure><span class="ba-tag">Before</span><img src="images/ba-drive-before.jpg" width="590" height="443" loading="lazy" alt="Rough hardcore driveway and old fencing in front of a garage before work"></figure>
+            <figure><span class="ba-tag">After</span><img src="images/drive-gravel-garage.jpg" width="590" height="443" loading="lazy" alt="The same garage with a finished gravel driveway, timber edging and new fence panels"></figure>
+          </div>
+          <p class="ba-cap"><strong>Gravel driveway and fencing.</strong> Old surface lifted, membrane and sub-base laid, edged in timber and finished in gravel. New fence panels along the boundary.</p>
+        </article>
+
+        <article class="ba">
+          <div class="ba-pair">
+            <figure><span class="ba-tag">Before</span><img src="images/ba-roof-before.jpg" width="590" height="443" loading="lazy" alt="Dormer roof with weathered fascias and a ladder up during the work"></figure>
+            <figure><span class="ba-tag">After</span><img src="images/roofing-dormers.jpg" width="590" height="443" loading="lazy" alt="The same dormers with new white fascias, soffits and guttering fitted"></figure>
+          </div>
+          <p class="ba-cap"><strong>Fascias, soffits and guttering.</strong> Stripped back and replaced across the full dormer run, leaving a clean line under the tiles.</p>
+        </article>
       </div>
     </div>
   </section>
@@ -300,51 +341,51 @@
   <section id="services">
     <div class="wrap">
       <div class="section-head">
-        <h2>What we do</h2>
-        <p>Groundworks is our speciality — but we handle home and garden improvements right through to the finish.</p>
+        <span class="eyebrow">What we do</span>
+        <h2>Groundworks is the speciality. The finish is the rest of the job.</h2>
       </div>
-      <div class="grid">
-        <article class="card">
-          <div class="ico">🚜</div>
+      <div class="svc">
+        <article>
+          <span class="num">01</span>
           <h3>Excavation &amp; site preparation</h3>
-          <p>Clearing and levelling your site properly, so everything built on top of it stands straight.</p>
+          <p>Clearing and levelling the site properly, so everything built on top of it stands straight.</p>
         </article>
-        <article class="card">
-          <div class="ico">🏗️</div>
-          <h3>Foundations &amp; concrete work</h3>
+        <article>
+          <span class="num">02</span>
+          <h3>Foundations &amp; concrete</h3>
           <p>Footings, slabs and concrete bases laid to spec for extensions, garages and new builds.</p>
         </article>
-        <article class="card">
-          <div class="ico">💧</div>
+        <article>
+          <span class="num">03</span>
           <h3>Drainage &amp; surface water</h3>
-          <p>New drainage runs, soakaways and surface water management — essential on flat Lincolnshire ground.</p>
+          <p>New runs, soakaways and surface water management — which matters on flat Lincolnshire ground.</p>
         </article>
-        <article class="card">
-          <div class="ico">🚗</div>
+        <article>
+          <span class="num">04</span>
           <h3>Driveways &amp; paths</h3>
-          <p>Block paving, gravel and concrete driveways and paths, built on a base that won't sink.</p>
+          <p>Block paving, gravel and concrete, built on a base that won't sink in two winters.</p>
         </article>
-        <article class="card">
-          <div class="ico">🌱</div>
-          <h3>Landscaping &amp; garden solutions</h3>
-          <p>Patios, retaining walls, turfing and full garden transformations.</p>
+        <article>
+          <span class="num">05</span>
+          <h3>Landscaping &amp; gardens</h3>
+          <p>Patios, retaining walls, turfing, fencing and full garden transformations.</p>
         </article>
-        <article class="card">
-          <div class="ico">🔨</div>
+        <article>
+          <span class="num">06</span>
           <h3>Demolition &amp; earthmoving</h3>
-          <p>Outbuildings down, muck shifted and the site left clear and ready for the next stage.</p>
+          <p>Outbuildings down, muck shifted, site left clear and ready for the next stage.</p>
         </article>
       </div>
     </div>
   </section>
 
-
   <!-- ============ OUR WORK ============ -->
-  <section id="work" class="alt">
+  <section id="work" class="band">
     <div class="wrap">
       <div class="section-head">
-        <h2>Recent work</h2>
-        <p>Every photo here is a real job, taken on site. Tap any of them for a closer look.</p>
+        <span class="eyebrow">Recent work</span>
+        <h2>Twenty-three jobs, photographed on site.</h2>
+        <p>Tap any of them for a closer look.</p>
       </div>
 
       <div class="filters" role="group" aria-label="Filter work by type">
@@ -356,138 +397,54 @@
         <button class="filter" type="button" data-filter="bathrooms" aria-pressed="false">Bathrooms</button>
       </div>
 
-      <div class="gallery" id="gallery">
-        <button class="shot" type="button" data-cat="gardens">
-          <img src="images/patio-pergola-decking.jpg" width="590" height="385" loading="lazy" decoding="async" alt="Porcelain patio and hardwood decking under a steel pergola with festoon lighting">
-          <span class="shot-label">Patios &amp; gardens</span>
-        </button>
-        <button class="shot" type="button" data-cat="driveways">
-          <img src="images/drive-block-paving-wide.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Wide block-paved driveway with drainage channel, finished to the kerb">
-          <span class="shot-label">Driveways &amp; paving</span>
-        </button>
-        <button class="shot" type="button" data-cat="groundworks">
-          <img src="images/groundworks-excavator.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Tracked excavator digging out a rear garden behind a new retaining wall">
-          <span class="shot-label">Groundworks</span>
-        </button>
-        <button class="shot" type="button" data-cat="gardens">
-          <img src="images/garden-lawn-turf.jpg" width="704" height="528" loading="lazy" decoding="async" alt="Freshly laid striped lawn with a raised patio and retaining wall">
-          <span class="shot-label">Patios &amp; gardens</span>
-        </button>
-        <button class="shot" type="button" data-cat="driveways">
-          <img src="images/drive-gravel-garage.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Gravel driveway with timber edging, new fencing and a garage">
-          <span class="shot-label">Driveways &amp; paving</span>
-        </button>
-        <button class="shot" type="button" data-cat="roofing">
-          <img src="images/roofing-solar-install.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Fitting solar panels on a pitched tiled roof">
-          <span class="shot-label">Roofing &amp; solar</span>
-        </button>
-        <button class="shot" type="button" data-cat="bathrooms">
-          <img src="images/bathroom-corner-bath.jpg" width="437" height="519" loading="lazy" decoding="async" alt="Corner whirlpool bath with marble-effect tiling and lit display niches">
-          <span class="shot-label">Bathrooms</span>
-        </button>
-        <button class="shot" type="button" data-cat="driveways">
-          <img src="images/drive-gravel-semi.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Wide gravel driveway laid across the full frontage of a semi-detached house">
-          <span class="shot-label">Driveways &amp; paving</span>
-        </button>
-        <button class="shot" type="button" data-cat="gardens">
-          <img src="images/patio-pergola-wide.jpg" width="590" height="385" loading="lazy" decoding="async" alt="Rear garden with decking, porcelain paving, pergola and new fencing">
-          <span class="shot-label">Patios &amp; gardens</span>
-        </button>
-        <button class="shot" type="button" data-cat="groundworks">
-          <img src="images/groundworks-concrete-slab.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Screeding a freshly poured concrete base">
-          <span class="shot-label">Groundworks</span>
-        </button>
-        <button class="shot" type="button" data-cat="roofing">
-          <img src="images/roofing-dormers.jpg" width="590" height="443" loading="lazy" decoding="async" alt="New fascias, soffits and guttering across a dormer roof">
-          <span class="shot-label">Roofing &amp; solar</span>
-        </button>
-        <button class="shot" type="button" data-cat="gardens">
-          <img src="images/garden-porcelain-patio.jpg" width="443" height="590" loading="lazy" decoding="async" alt="Porcelain paving path beside a new build with artificial lawn">
-          <span class="shot-label">Patios &amp; gardens</span>
-        </button>
-        <button class="shot" type="button" data-cat="driveways">
-          <img src="images/drive-block-paving-van.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Newly laid block paving with contrasting kerb edging, company van on the drive">
-          <span class="shot-label">Driveways &amp; paving</span>
-        </button>
-        <button class="shot" type="button" data-cat="bathrooms">
-          <img src="images/bathroom-marble-vanity.jpg" width="437" height="519" loading="lazy" decoding="async" alt="Marble-effect bathroom with fitted vanity unit and chrome towel radiator">
-          <span class="shot-label">Bathrooms</span>
-        </button>
-        <button class="shot" type="button" data-cat="roofing">
-          <img src="images/exterior-detached-house.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Detached house with gravel driveway and garage, exterior work complete">
-          <span class="shot-label">Roofing &amp; solar</span>
-        </button>
-        <button class="shot" type="button" data-cat="groundworks">
-          <img src="images/groundworks-site-clearance.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Site cleared and levelled ready for the base to go down">
-          <span class="shot-label">Groundworks</span>
-        </button>
-        <button class="shot" type="button" data-cat="driveways">
-          <img src="images/drive-block-paving-house.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Block-paved driveway and parking for three cars in front of a detached house">
-          <span class="shot-label">Driveways &amp; paving</span>
-        </button>
-        <button class="shot" type="button" data-cat="roofing">
-          <img src="images/roofing-solar-newbuild.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Completed solar panel installation on a new build">
-          <span class="shot-label">Roofing &amp; solar</span>
-        </button>
-        <button class="shot" type="button" data-cat="bathrooms">
-          <img src="images/bathroom-loft-ensuite.jpg" width="443" height="590" loading="lazy" decoding="async" alt="Loft shower room with walk-in enclosure under a pitched ceiling">
-          <span class="shot-label">Bathrooms</span>
-        </button>
-        <button class="shot" type="button" data-cat="driveways">
-          <img src="images/drive-gravel-car.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Gravel driveway and turning area leading to a garage">
-          <span class="shot-label">Driveways &amp; paving</span>
-        </button>
-        <button class="shot" type="button" data-cat="groundworks">
-          <img src="images/team-bruce-onsite.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Bruce on site during a front garden clearance">
-          <span class="shot-label">Groundworks</span>
-        </button>
-        <button class="shot" type="button" data-cat="groundworks">
-          <img src="images/groundworks-concrete-pour.jpg" width="590" height="443" loading="lazy" decoding="async" alt="Concrete delivery on site for a new driveway base">
-          <span class="shot-label">Groundworks</span>
-        </button>
-        <button class="shot" type="button" data-cat="bathrooms">
-          <img src="images/bathroom-tiled-shower.jpg" width="443" height="590" loading="lazy" decoding="async" alt="Bath with tiled shower surround and herringbone flooring">
-          <span class="shot-label">Bathrooms</span>
-        </button>
+      <div class="gallery" id="gallery"></div>
+    </div>
+  </section>
+
+  <!-- ============ PROCESS ============ -->
+  <section class="dark">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">How it works</span>
+        <h2>What happens when you ring.</h2>
+      </div>
+      <div class="steps">
+        <article>
+          <h3>You call or message</h3>
+          <p>Tell us roughly what you're after. If we're on site we'll ring you back the same day.</p>
+        </article>
+        <article>
+          <h3>We come and look</h3>
+          <p>We come out, look at the ground, talk through what it actually needs, and give you a clear written price. Free, and no obligation.</p>
+        </article>
+        <article>
+          <h3>We book it in and do it</h3>
+          <p>Agreed price, agreed dates. We turn up when we say, keep you posted, and clear the site before we leave.</p>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- lightbox -->
-  <dialog class="lb" id="lightbox" aria-label="Photo viewer">
-    <figure class="lb-fig">
-      <img id="lb-img" alt="">
-      <figcaption class="lb-cap">
-        <p id="lb-cap-text"></p>
-        <span class="lb-count" id="lb-count"></span>
-        <span class="lb-nav">
-          <button class="lb-btn" type="button" id="lb-prev" aria-label="Previous photo">&#8592;</button>
-          <button class="lb-btn" type="button" id="lb-next" aria-label="Next photo">&#8594;</button>
-          <button class="lb-btn" type="button" id="lb-close" aria-label="Close viewer">&#10005;</button>
-        </span>
-      </figcaption>
-    </figure>
-  </dialog>
-
   <!-- ============ REVIEWS ============ -->
-  <section class="review-strip">
+  <section class="dark reviews" style="border-top:1px solid rgba(255,255,255,.12)">
     <div class="wrap">
       <div class="stars" aria-hidden="true">★★★★★</div>
-      <p class="big">100% recommend — 11 reviews</p>
+      <p class="big">100% recommend — <span class="tbc">11</span> reviews</p>
       <p class="sub">
-        Rated by customers on our
-        <a href="https://www.facebook.com/share/1DWqdMNwaY/" target="_blank" rel="noopener" style="color:var(--brand)">Facebook page</a>,
+        Rated by customers on
+        <a href="https://www.facebook.com/share/1DWqdMNwaY/" target="_blank" rel="noopener">Facebook</a>,
         followed by over 2,900 people.
       </p>
     </div>
   </section>
 
   <!-- ============ AREAS ============ -->
-  <section id="areas" class="alt">
+  <section id="areas">
     <div class="wrap">
       <div class="section-head">
-        <h2>Areas we cover</h2>
-        <p>Based in Bourne, working right across South Lincolnshire. Not on the list? Give us a ring anyway.</p>
+        <span class="eyebrow">Where we work</span>
+        <h2>Across South Lincolnshire.</h2>
+        <p>Not on the list? Ring anyway — if it's near enough we'll come and look.</p>
       </div>
       <div class="pills">
         <span class="pill">Bourne</span>
@@ -503,79 +460,31 @@
     </div>
   </section>
 
-  <!-- ============ ABOUT ============ -->
-  <section id="about">
-    <div class="wrap section-head">
-      <h2>About Bruce the Builder UK</h2>
-      <p>
-        We're a Lincolnshire groundworks and home improvement company working out of Bourne,
-        covering everything from a new garden patio to full commercial site preparation.
-        Residential or commercial, the approach is the same: a reliable, experienced team,
-        pricing you can actually understand, and a job finished on time and to standard.
-      </p>
-      <p>
-        Every job starts with a free, no-obligation quote. Ring us, drop us an email, or send
-        a message and we'll come out and take a look.
-      </p>
-    </div>
-  </section>
-
   <!-- ============ CONTACT ============ -->
-  <section id="contact" class="alt">
+  <section id="contact" class="band">
     <div class="wrap">
       <div class="section-head">
-        <h2>Get in touch</h2>
-        <p>Tell us what you're planning and we'll come out, take a look and give you an honest price — free, with no obligation.</p>
+        <span class="eyebrow">Get in touch</span>
+        <h2>Tell us what you're planning.</h2>
+        <p>We'll come out, take a look and give you an honest price — free, with no obligation.</p>
       </div>
 
       <div class="contact-grid">
         <div>
           <ul class="contact-list">
-            <li>
-              <span class="badge">📞</span>
-              <span>
-                <span class="k">Phone</span><br>
-                <a class="v" href="tel:+447770064663">07770 064663</a>
-              </span>
-            </li>
-            <li>
-              <span class="badge">✉️</span>
-              <span>
-                <span class="k">Email</span><br>
-                <a class="v" href="mailto:brucethebuilderuk@gmail.com">brucethebuilderuk@gmail.com</a>
-              </span>
-            </li>
-            <li>
-              <span class="badge">📍</span>
-              <span>
-                <span class="k">Based in</span><br>
-                <span class="v">Bourne, Lincolnshire</span>
-              </span>
-            </li>
-            <li>
-              <span class="badge">🕗</span>
-              <span>
-                <span class="k">Hours</span><br>
-                <span class="v">Always open</span>
-              </span>
-            </li>
-            <li>
-              <span class="badge">💬</span>
-              <span>
-                <span class="k">Social</span><br>
-                <a class="v" href="https://www.facebook.com/share/1DWqdMNwaY/" target="_blank" rel="noopener">Message us on Facebook</a>
-              </span>
-            </li>
+            <li><span class="k">Phone</span><a class="v" href="tel:+447770064663">07770 064663</a></li>
+            <li><span class="k">Email</span><a class="v" href="mailto:brucethebuilderuk@gmail.com">brucethebuilderuk@gmail.com</a></li>
+            <li><span class="k">Based in</span><span class="v">Bourne, Lincolnshire</span></li>
+            <li><span class="k">Hours</span><span class="v">Always open</span></li>
+            <li><span class="k">Social</span><a class="v" href="https://www.facebook.com/share/1DWqdMNwaY/" target="_blank" rel="noopener">Message us on Facebook</a></li>
           </ul>
         </div>
 
         <!--
           FORM SETUP: this posts nowhere until it is wired up.
-          No-server options:
-            • Formspree  — action="https://formspree.io/f/XXXXXXX"
-            • Netlify    — add  netlify  and  data-netlify="true"
-            • Web3Forms  — action="https://api.web3forms.com/submit" + hidden access_key
-          Point it at brucethebuilderuk@gmail.com.
+            • Web3Forms — action="https://api.web3forms.com/submit" + hidden access_key (250/mo free)
+            • Formspree  — action="https://formspree.io/f/XXXXXXX"  (50/mo free)
+          Point it at the gmail address, then send a test and confirm it arrives.
         -->
         <form action="#" method="POST">
           <h3>Request a free quote</h3>
@@ -611,7 +520,7 @@
           <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
           <button class="btn btn-primary" type="submit">Send enquiry</button>
           <p class="form-note">
-            We'll only use your details to reply to this enquiry &mdash; see our
+            We'll only use your details to reply to this enquiry — see our
             <a href="privacy.html">privacy notice</a>.
           </p>
         </form>
@@ -624,50 +533,131 @@
   <div class="wrap">
     <div class="foot-grid">
       <div>
-        <div class="logo" style="margin-bottom:.6rem">🧱 Bruce the <span>Builder UK</span></div>
-        <div>Groundworks · Home &amp; Garden Improvements<br>Bourne, Lincolnshire</div>
+        <div class="logo" style="display:block;margin-bottom:.5rem">Fenland <em>Groundworks</em></div>
+        Groundworks · Driveways · Landscaping<br>Bourne, Lincolnshire
       </div>
       <div>
-        <strong>Contact</strong><br>
+        <strong>Contact</strong>
         <a href="tel:+447770064663">07770 064663</a><br>
         <a href="mailto:brucethebuilderuk@gmail.com">brucethebuilderuk@gmail.com</a>
       </div>
       <div>
-        <strong>Find us</strong><br>
+        <strong>Find us</strong>
         <a href="https://www.facebook.com/share/1DWqdMNwaY/" target="_blank" rel="noopener">Facebook</a><br>
-        <span class="tbc">Add the Google Business Profile link here once it exists</span>
+        <span class="tbc">Google Business Profile — not set up yet</span>
       </div>
       <div>
-        <strong>Legal</strong><br>
+        <strong>Legal</strong>
         <a href="privacy.html">Privacy notice</a>
       </div>
     </div>
     <div class="foot-legal">
-      &copy; <span id="yr">2026</span> Bruce the Builder UK.
-      Raitis Uzuls trading as Bruce the Builder UK.
+      &copy; <span id="yr">2026</span> <span class="tbc">[trading name]</span>.
+      Raitis Uzuls trading as <span class="tbc">[trading name]</span>.
       Address for service of documents:
       <span class="tbc">[house/street]</span>, Peterborough, <span class="tbc">[postcode]</span>.
       <!--
         SOLE TRADER DISCLOSURE — Companies Act 2006, ss.1202-1204.
         Trading under a name that isn't his own personal name means the proprietor's
-        name and an address where documents can be served MUST appear on the website,
-        letterheads and invoices. It can be a home address; there is no way to omit it.
-        "Ltd" is deliberately absent from this page — see README.
-        NOTE: a town name alone does not satisfy s.1204 — the address must be one at
-        which documents can be EFFECTIVELY SERVED, so street and postcode are required.
+        name and an address where documents can be served MUST appear here, and on
+        letterheads and invoices. A town name alone does not satisfy s.1204 — the
+        address must be one at which documents can be EFFECTIVELY SERVED.
+        "Ltd" is deliberately absent — no matching company exists at Companies House.
       -->
     </div>
   </div>
 </footer>
 
+<!-- lightbox -->
+<dialog class="lb" id="lightbox" aria-label="Photo viewer">
+  <figure class="lb-fig">
+    <img id="lb-img" alt="">
+    <figcaption class="lb-cap">
+      <p id="lb-cap-text"></p>
+      <span class="lb-count" id="lb-count"></span>
+      <span class="lb-nav">
+        <button class="lb-btn" type="button" id="lb-prev" aria-label="Previous photo">&#8592;</button>
+        <button class="lb-btn" type="button" id="lb-next" aria-label="Next photo">&#8594;</button>
+        <button class="lb-btn" type="button" id="lb-close" aria-label="Close viewer">&#10005;</button>
+      </span>
+    </figcaption>
+  </figure>
+</dialog>
+
 <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
 
 <script>
-/* Gallery filtering + lightbox. No dependencies. */
+/* Mobile menu. */
 (function () {
+  var burger = document.getElementById('burger');
+  var links  = document.getElementById('navlinks');
+  if (!burger || !links) return;
+
+  function setOpen(open) {
+    burger.setAttribute('aria-expanded', String(open));
+    links.hidden = !open;
+  }
+  function narrow() { return window.matchMedia('(max-width:900px)').matches; }
+
+  /* Only collapse on small screens — on desktop the nav is always visible. */
+  function sync() { if (narrow()) { setOpen(false); } else { links.hidden = false; burger.setAttribute('aria-expanded','false'); } }
+  sync();
+  window.addEventListener('resize', sync);
+
+  burger.addEventListener('click', function () {
+    setOpen(burger.getAttribute('aria-expanded') !== 'true');
+  });
+  links.addEventListener('click', function (e) {
+    if (e.target.tagName === 'A' && narrow()) { setOpen(false); }
+  });
+})();
+</script>
+
+<script>
+/* Gallery: built from one list so the markup and the filters can't drift apart. */
+(function () {
+  var SHOTS = [
+    ['patio-pergola-decking','gardens','Patios & gardens','Porcelain patio and hardwood decking under a steel pergola with festoon lighting',590,385],
+    ['drive-block-paving-wide','driveways','Driveways & paving','Wide block-paved driveway with drainage channel, finished to the kerb',590,443],
+    ['groundworks-excavator','groundworks','Groundworks','Tracked excavator digging out a rear garden behind a new retaining wall',590,443],
+    ['garden-lawn-turf','gardens','Patios & gardens','Freshly laid striped lawn with a raised patio and retaining wall',704,528],
+    ['drive-gravel-garage','driveways','Driveways & paving','Gravel driveway with timber edging, new fencing and a garage',590,443],
+    ['roofing-solar-install','roofing','Roofing & solar','Fitting solar panels on a pitched tiled roof',590,443],
+    ['bathroom-corner-bath','bathrooms','Bathrooms','Corner whirlpool bath with marble-effect tiling and lit display niches',437,519],
+    ['drive-gravel-semi','driveways','Driveways & paving','Wide gravel driveway laid across the full frontage of a semi-detached house',590,443],
+    ['patio-pergola-wide','gardens','Patios & gardens','Rear garden with decking, porcelain paving, pergola and new fencing',590,385],
+    ['groundworks-concrete-slab','groundworks','Groundworks','Screeding a freshly poured concrete base',590,443],
+    ['roofing-dormers','roofing','Roofing & solar','New fascias, soffits and guttering across a dormer roof',590,443],
+    ['garden-porcelain-patio','gardens','Patios & gardens','Porcelain paving path beside a new build with artificial lawn',443,590],
+    ['drive-block-paving-van','driveways','Driveways & paving','Newly laid block paving with contrasting kerb edging, company van on the drive',590,443],
+    ['bathroom-marble-vanity','bathrooms','Bathrooms','Marble-effect bathroom with fitted vanity unit and chrome towel radiator',437,519],
+    ['exterior-detached-house','roofing','Roofing & solar','Detached house with gravel driveway and garage, exterior work complete',590,443],
+    ['groundworks-site-clearance','groundworks','Groundworks','Site cleared and levelled ready for the base to go down',590,443],
+    ['drive-block-paving-house','driveways','Driveways & paving','Block-paved driveway and parking for three cars in front of a detached house',590,443],
+    ['roofing-solar-newbuild','roofing','Roofing & solar','Completed solar panel installation on a new build',590,443],
+    ['bathroom-loft-ensuite','bathrooms','Bathrooms','Loft shower room with walk-in enclosure under a pitched ceiling',443,590],
+    ['drive-gravel-car','driveways','Driveways & paving','Gravel driveway and turning area leading to a garage',590,443],
+    ['team-bruce-onsite','groundworks','Groundworks','On site during a front garden clearance',590,443],
+    ['groundworks-concrete-pour','groundworks','Groundworks','Concrete delivery on site for a new driveway base',590,443],
+    ['bathroom-tiled-shower','bathrooms','Bathrooms','Bath with tiled shower surround and herringbone flooring',443,590]
+  ];
+
   var gallery = document.getElementById('gallery');
   var dlg = document.getElementById('lightbox');
   if (!gallery || !dlg) return;
+
+  SHOTS.forEach(function (s) {
+    var b = document.createElement('button');
+    b.className = 'shot'; b.type = 'button'; b.dataset.cat = s[1];
+    var img = document.createElement('img');
+    img.src = 'images/' + s[0] + '.jpg';
+    img.width = s[4]; img.height = s[5];
+    img.loading = 'lazy'; img.decoding = 'async'; img.alt = s[3];
+    var lab = document.createElement('span');
+    lab.className = 'shot-label'; lab.textContent = s[2];
+    b.appendChild(img); b.appendChild(lab);
+    gallery.appendChild(b);
+  });
 
   var shots   = Array.prototype.slice.call(gallery.querySelectorAll('.shot'));
   var filters = Array.prototype.slice.call(document.querySelectorAll('.filter'));
@@ -700,17 +690,14 @@
     s.addEventListener('click', function () {
       visible = shots.filter(function (x) { return !x.hidden; });
       show(visible.indexOf(s));
-      if (dlg.showModal) { dlg.showModal(); } else { dlg.setAttribute('open', ''); }
+      if (dlg.showModal) { dlg.showModal(); } else { dlg.setAttribute('open',''); }
     });
   });
 
   document.getElementById('lb-prev').addEventListener('click', function () { show(index - 1); });
   document.getElementById('lb-next').addEventListener('click', function () { show(index + 1); });
   document.getElementById('lb-close').addEventListener('click', function () { dlg.close(); });
-
-  /* click the backdrop to dismiss */
   dlg.addEventListener('click', function (e) { if (e.target === dlg) dlg.close(); });
-
   document.addEventListener('keydown', function (e) {
     if (!dlg.open) return;
     if (e.key === 'ArrowLeft')  { show(index - 1); }
@@ -719,17 +706,11 @@
 })();
 </script>
 
-
-<!--
-  Local SEO: this is what feeds Google's map pack.
-  All values below are taken from the Facebook page and business card.
-  Replace the "url" once the domain is live, and add the sameAs Facebook URL.
--->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "GeneralContractor",
-  "name": "Bruce the Builder UK",
+  "name": "Fenland Groundworks",
   "description": "Groundworks, foundations, drainage, driveways, landscaping and home and garden improvements across Bourne and South Lincolnshire.",
   "url": "https://www.example.co.uk/",
   "telephone": "+447770064663",
